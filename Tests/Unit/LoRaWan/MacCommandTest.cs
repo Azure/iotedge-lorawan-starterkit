@@ -61,5 +61,16 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(input));
             Assert.Equal($"Property '{missingProperty}' is missing", ex.Message);
         }
+
+        [Theory]
+        [InlineData(Cid.Zero)]
+        [InlineData(Cid.One)]
+        [InlineData(Cid.LinkCheckCmd)]
+        [InlineData(Cid.TxParamSetupCmd)]
+        public void When_Serializing_Invalid_Cid_Should_Throw(Cid cid)
+        {
+            var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(@$"{{""cid"":{(int)cid}}}"));
+            Assert.Equal($"Unhandled command identifier: {cid}", ex.Message);
+        }
     }
 }
