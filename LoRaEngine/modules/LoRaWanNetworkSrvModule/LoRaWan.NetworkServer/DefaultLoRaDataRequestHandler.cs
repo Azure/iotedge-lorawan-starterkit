@@ -834,7 +834,16 @@ namespace LoRaWan.NetworkServer
         protected virtual FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
             => this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
 
-        protected virtual async Task DelayProcessing() => await Task.Delay(TimeSpan.FromMilliseconds(400));
+        protected virtual async Task DelayProcessing()
+        {
+            var processingDelay = this.configuration.ProcessingDelayInMilliseconds;
+            if (processingDelay <= 0)
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(processingDelay));
+        }
 
         protected virtual async Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
         {
