@@ -57,6 +57,7 @@ namespace LoRaWan.Tests.Simulation
             {
                 DeviceID = "0000000000001001",
                 GatewayID = gatewayID,
+                Deduplication = DeduplicationMode.Drop,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
                 AppSKey = GetAppSessionKey(1001),
@@ -71,6 +72,7 @@ namespace LoRaWan.Tests.Simulation
                 AppEui = JoinEui.Parse("0000000000001002"),
                 AppKey = GetAppKey(1002),
                 GatewayID = gatewayID,
+                Deduplication = DeduplicationMode.Drop,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
             };
@@ -129,6 +131,7 @@ namespace LoRaWan.Tests.Simulation
                     AppEui = JoinEui.Parse(deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture)),
                     AppKey = GetAppKey(deviceId),
                     GatewayID = gatewayID,
+                    Deduplication = DeduplicationMode.Drop,
                     IsIoTHubDevice = true,
                     SensorDecoder = "DecoderValueSensor",
                     AppSKey = GetAppSessionKey(deviceId),
@@ -136,7 +139,7 @@ namespace LoRaWan.Tests.Simulation
                     DevAddr = DevAddr.Parse(deviceId.ToString("00000000", CultureInfo.InvariantCulture)),
                 };
 
-            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode deduplicationMode = DeduplicationMode.None) =>
+            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode deduplicationMode = DeduplicationMode.Drop) =>
                 new TestDeviceInfo
                 {
                     DeviceID = deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture),
