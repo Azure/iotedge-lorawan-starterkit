@@ -29,10 +29,10 @@ namespace LoRaTools
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRAnswer"/> class.
         /// </summary>
-        public LinkADRAnswer(bool powerAck, bool dataRateAck, bool channelMaskAck)
+        public LinkADRAnswer(byte powerAck, bool dataRateAck, bool channelMaskAck)
         {
             Cid = Cid.LinkADRCmd;
-            Status |= (byte)((powerAck ? 1 : 0) << 2);
+            Status |= (byte)((byte)(powerAck & 0b00000011) << 2);
             Status |= (byte)((dataRateAck ? 1 : 0) << 1);
             Status |= (byte)(channelMaskAck ? 1 : 0);
         }

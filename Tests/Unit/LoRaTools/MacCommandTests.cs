@@ -127,7 +127,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public sealed class LinkAdrAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkADRCmd;
-            public override LinkADRAnswer Subject => new LinkADRAnswer(true, true, false);
+            public override LinkADRAnswer Subject => new LinkADRAnswer(1, true, false);
             public override IReadOnlyList<byte> DataBytes => new byte[] { 0b110 };
             public override int Length => 2;
 
