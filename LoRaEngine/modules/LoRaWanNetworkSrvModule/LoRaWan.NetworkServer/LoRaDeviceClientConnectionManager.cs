@@ -131,8 +131,7 @@ namespace LoRaWan.NetworkServer
 
         public async ValueTask DisposeAsync()
         {
-            foreach (var client in this.clientByDevEui.Values)
-                await client.DisposeAsync();
+            await Parallel.ForEachAsync(this.clientByDevEui.Values, (client, _) => client.DisposeAsync());
         }
 
         public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)

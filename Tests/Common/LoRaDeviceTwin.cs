@@ -40,10 +40,7 @@ namespace LoRaWan.Tests.Common
                 {
                     case null:
                         break;
-                    case uint:
-                    case int:
-                    case Enum:
-                    case bool:
+                    case uint or int or bool or (Enum and not (LoRaRegionType or LoRaDeviceClassType)):
                         target[key] = value;
                         break;
                     case IConvertible convertible:
@@ -80,40 +77,46 @@ namespace LoRaWan.Tests.Common
         public bool? AbpRelaxMode { get; init; }
         public uint? FCntUpStart { get; init; }
         public uint? FCntDownStart { get; init; }
-        public int? FCntResetCounter { get; init; }
+        public uint? FCntResetCounter { get; init; }
         public int? Rx1DROffset { get; init; }
         public DataRateIndex? Rx2DataRate { get; init; }
         public ReceiveWindowNumber? PreferredWindow { get; init; }
         public int? RxDelay { get; init; }
-        public char? ClassType { get; init; }
+        public LoRaDeviceClassType? ClassType { get; init; }
         public TimeSpan? KeepAliveTimeout { get; init; }
+        public uint? Version { get; init; }
+        public bool? DownlinkEnabled { get; init; }
+        public int? Cn470JoinChannel { get; init; }
 
         public override IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            yield return KeyValuePair.Create(TwinProperty.DevEUI, (object?)DevEui);
-            yield return KeyValuePair.Create(TwinProperty.DevAddr, (object?)DevAddr);
-            yield return KeyValuePair.Create(TwinProperty.AppEui, (object?)JoinEui);
-            yield return KeyValuePair.Create(TwinProperty.AppKey, (object?)AppKey);
-            yield return KeyValuePair.Create(TwinProperty.AppSKey, (object?)AppSessionKey);
-            yield return KeyValuePair.Create(TwinProperty.NwkSKey, (object?)NetworkSessionKey);
-            yield return KeyValuePair.Create(TwinProperty.GatewayID, (object?)GatewayId);
-            yield return KeyValuePair.Create(TwinProperty.SensorDecoder, (object?)SensorDecoder);
-            yield return KeyValuePair.Create(TwinProperty.Supports32BitFCnt, (object?)Supports32BitFCnt);
-            yield return KeyValuePair.Create(TwinProperty.ABPRelaxMode, (object?)AbpRelaxMode);
-            yield return KeyValuePair.Create(TwinProperty.FCntUpStart, (object?)FCntUpStart);
-            yield return KeyValuePair.Create(TwinProperty.FCntDownStart, (object?)FCntDownStart);
-            yield return KeyValuePair.Create(TwinProperty.FCntResetCounter, (object?)FCntResetCounter);
-            yield return KeyValuePair.Create(TwinProperty.RX1DROffset, (object?)Rx1DROffset);
-            yield return KeyValuePair.Create(TwinProperty.RX2DataRate, (object?)Rx2DataRate);
-            yield return KeyValuePair.Create(TwinProperty.PreferredWindow, PreferredWindow switch
+            yield return KeyValuePair.Create("DevEUI", (object?)DevEui);
+            yield return KeyValuePair.Create("DevAddr", (object?)DevAddr);
+            yield return KeyValuePair.Create("AppEUI", (object?)JoinEui);
+            yield return KeyValuePair.Create("AppKey", (object?)AppKey);
+            yield return KeyValuePair.Create("AppSKey", (object?)AppSessionKey);
+            yield return KeyValuePair.Create("NwkSKey", (object?)NetworkSessionKey);
+            yield return KeyValuePair.Create("GatewayID", (object?)GatewayId);
+            yield return KeyValuePair.Create("SensorDecoder", (object?)SensorDecoder);
+            yield return KeyValuePair.Create("Supports32BitFCnt", (object?)Supports32BitFCnt);
+            yield return KeyValuePair.Create("ABPRelaxMode", (object?)AbpRelaxMode);
+            yield return KeyValuePair.Create("FCntUpStart", (object?)FCntUpStart);
+            yield return KeyValuePair.Create("FCntDownStart", (object?)FCntDownStart);
+            yield return KeyValuePair.Create("FCntResetCounter", (object?)FCntResetCounter);
+            yield return KeyValuePair.Create("RX1DROffset", (object?)Rx1DROffset);
+            yield return KeyValuePair.Create("RX2DataRate", (object?)Rx2DataRate);
+            yield return KeyValuePair.Create("PreferredWindow", PreferredWindow switch
             {
                 ReceiveWindowNumber.ReceiveWindow1 => 1,
                 ReceiveWindowNumber.ReceiveWindow2 => 2,
                 _ => (object?)null
             });
-            yield return KeyValuePair.Create(TwinProperty.RXDelay, (object?)RxDelay);
-            yield return KeyValuePair.Create(TwinProperty.ClassType, (object?)ClassType);
-            yield return KeyValuePair.Create(TwinProperty.KeepAliveTimeout, (object?)KeepAliveTimeout?.TotalSeconds);
+            yield return KeyValuePair.Create("RXDelay", (object?)RxDelay);
+            yield return KeyValuePair.Create("ClassType", (object?)ClassType);
+            yield return KeyValuePair.Create("KeepAliveTimeout", (object?)KeepAliveTimeout?.TotalSeconds);
+            yield return KeyValuePair.Create("$version", (object?)Version);
+            yield return KeyValuePair.Create("Downlink", (object?)DownlinkEnabled);
+            yield return KeyValuePair.Create("CN470JoinChannel", (object?)Cn470JoinChannel);
         }
     }
 
@@ -127,29 +130,33 @@ namespace LoRaWan.Tests.Common
         public NetworkSessionKey? NetworkSessionKey { get; init; }
         public DevAddr? DevAddr { get; init; }
         public DevNonce? DevNonce { get; init; }
-        public int? FCntResetCounter { get; init; }
+        public uint? FCntResetCounter { get; init; }
         public string? PreferredGatewayId { get; init; }
         public LoRaRegionType? Region { get; init; }
         public NetId? NetId { get; init; }
         public DataRateIndex? Rx2DataRate { get; init; }
         public StationEui? LastProcessingStation { get; init; }
+        public uint? Version { get; init; }
+        public int? Cn470JoinChannel { get; init; }
 
         public override IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            yield return KeyValuePair.Create(TwinProperty.FCntUp, (object?)FCntUp);
-            yield return KeyValuePair.Create(TwinProperty.FCntUpStart, (object?)FCntUpStart);
-            yield return KeyValuePair.Create(TwinProperty.FCntDown, (object?)FCntDown);
-            yield return KeyValuePair.Create(TwinProperty.FCntDownStart, (object?)FCntDownStart);
-            yield return KeyValuePair.Create(TwinProperty.AppSKey, (object?)AppSessionKey);
-            yield return KeyValuePair.Create(TwinProperty.NwkSKey, (object?)NetworkSessionKey);
-            yield return KeyValuePair.Create(TwinProperty.DevAddr, (object?)DevAddr);
-            yield return KeyValuePair.Create(TwinProperty.DevNonce, (object?)DevNonce);
-            yield return KeyValuePair.Create(TwinProperty.FCntResetCounter, (object?)FCntResetCounter);
-            yield return KeyValuePair.Create(TwinProperty.PreferredGatewayID, (object?)PreferredGatewayId);
-            yield return KeyValuePair.Create(TwinProperty.Region, (object?)Region);
-            yield return KeyValuePair.Create(TwinProperty.NetId, (object?)NetId);
-            yield return KeyValuePair.Create(TwinProperty.RX2DataRate, (object?)Rx2DataRate);
-            yield return KeyValuePair.Create(TwinProperty.LastProcessingStationEui, (object?)LastProcessingStation);
+            yield return KeyValuePair.Create("FCntUp", (object?)FCntUp);
+            yield return KeyValuePair.Create("FCntUpStart", (object?)FCntUpStart);
+            yield return KeyValuePair.Create("FCntDown", (object?)FCntDown);
+            yield return KeyValuePair.Create("FCntDownStart", (object?)FCntDownStart);
+            yield return KeyValuePair.Create("AppSKey", (object?)AppSessionKey);
+            yield return KeyValuePair.Create("NwkSKey", (object?)NetworkSessionKey);
+            yield return KeyValuePair.Create("DevAddr", (object?)DevAddr);
+            yield return KeyValuePair.Create("DevNonce", (object?)DevNonce);
+            yield return KeyValuePair.Create("FCntResetCounter", (object?)FCntResetCounter);
+            yield return KeyValuePair.Create("PreferredGatewayID", (object?)PreferredGatewayId);
+            yield return KeyValuePair.Create("Region", (object?)Region);
+            yield return KeyValuePair.Create("NetId", (object?)NetId);
+            yield return KeyValuePair.Create("RX2DataRate", (object?)Rx2DataRate);
+            yield return KeyValuePair.Create("LastProcessingStationEui", (object?)LastProcessingStation);
+            yield return KeyValuePair.Create("$version", (object?)Version);
+            yield return KeyValuePair.Create("CN470JoinChannel", (object?)Cn470JoinChannel);
         }
     }
 

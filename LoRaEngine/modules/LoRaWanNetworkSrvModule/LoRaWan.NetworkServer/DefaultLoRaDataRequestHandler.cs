@@ -33,7 +33,6 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> receiveWindowHits;
         private readonly Histogram<int> d2cPayloadSizeHistogram;
         private readonly Counter<int> c2dMessageTooLong;
-        private readonly Counter<int> unhandledExceptionCount;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -61,13 +60,14 @@ namespace LoRaWan.NetworkServer
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.d2cPayloadSizeHistogram = meter?.CreateHistogram<int>(MetricRegistry.D2CMessageSize);
             this.c2dMessageTooLong = meter?.CreateCounter<int>(MetricRegistry.C2DMessageTooLong);
-            this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
+            List<Task> deferredTasks = null;
 
             var timeWatcher = request.GetTimeWatcher();
 
@@ -126,11 +126,12 @@ namespace LoRaWan.NetworkServer
             {
                 #region FunctionBundler
                 FunctionBundlerResult bundlerResult = null;
-                if (useMultipleGateways && (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission))
+                if (useMultipleGateways
+                    && concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate
+                                                       or ConcentratorDeduplicationResult.DuplicateDueToResubmission)
                 {
                     // in the case of resubmissions we need to contact the function to get a valid frame counter down
-                    var bundler = CreateBundler(loraPayload, loRaDevice, request);
-                    if (bundler != null)
+                    if (CreateBundler(loraPayload, loRaDevice, request) is { } bundler)
                     {
                         if (loRaDevice.IsConnectionOwner is false)
                         {
@@ -314,7 +315,7 @@ namespace LoRaWan.NetworkServer
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         // We did not get a valid frame count down, therefore we should not process the message
-                                        _ = cloudToDeviceMessage.AbandonAsync();
+                                        TrackDeferredTask(cloudToDeviceMessage.AbandonAsync());
 
                                         cloudToDeviceMessage = null;
                                     }
@@ -325,7 +326,10 @@ namespace LoRaWan.NetworkServer
                                 }
                                 else
                                 {
-                                    SendClassCDeviceMessage(decodePayloadResult.CloudToDeviceMessage);
+                                    if (this.classCDeviceMessageSender != null)
+                                    {
+                                        TrackDeferredTask(this.classCDeviceMessageSender.SendAsync(decodePayloadResult.CloudToDeviceMessage));
+                                    }
                                 }
                             }
                         }
@@ -401,7 +405,7 @@ namespace LoRaWan.NetworkServer
                     if (downlinkMessageBuilderResp.DownlinkMessage != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
-                        _ = request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
+                        TrackDeferredTask(request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage));
 
                         if (cloudToDeviceMessage != null)
                         {
@@ -437,7 +441,7 @@ namespace LoRaWan.NetworkServer
                         if (cloudToDeviceMessage != null && !ValidateCloudToDeviceMessage(loRaDevice, request, cloudToDeviceMessage))
                         {
                             // Reject cloud to device message based on result from ValidateCloudToDeviceMessage
-                            _ = cloudToDeviceMessage.RejectAsync();
+                            TrackDeferredTask(cloudToDeviceMessage.RejectAsync());
                             cloudToDeviceMessage = null;
                         }
 
@@ -452,7 +456,7 @@ namespace LoRaWan.NetworkServer
                                 if (!fcntDown.HasValue || fcntDown <= 0)
                                 {
                                     // We did not get a valid frame count down, therefore we should not process the message
-                                    _ = cloudToDeviceMessage.AbandonAsync();
+                                    TrackDeferredTask(cloudToDeviceMessage.AbandonAsync());
                                     cloudToDeviceMessage = null;
                                 }
                                 else
@@ -473,7 +477,7 @@ namespace LoRaWan.NetworkServer
                                     {
                                         fpending = true;
                                         this.logger.LogInformation($"found cloud to device message, setting fpending flag, message id: {additionalMsg.MessageId ?? "undefined"}");
-                                        _ = additionalMsg.AbandonAsync();
+                                        TrackDeferredTask(additionalMsg.AbandonAsync());
                                     }
                                 }
                             }
@@ -503,24 +507,24 @@ namespace LoRaWan.NetworkServer
                     {
                         this.receiveWindowMissed?.Add(1);
                         this.logger.LogInformation($"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-                        _ = cloudToDeviceMessage.AbandonAsync();
+                        TrackDeferredTask(cloudToDeviceMessage.AbandonAsync());
                     }
                     else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
                     {
                         this.c2dMessageTooLong?.Add(1);
                         this.logger.LogError($"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}");
-                        _ = cloudToDeviceMessage.AbandonAsync();
+                        TrackDeferredTask(cloudToDeviceMessage.AbandonAsync());
                     }
                     else
                     {
-                        _ = cloudToDeviceMessage.CompleteAsync();
+                        TrackDeferredTask(cloudToDeviceMessage.CompleteAsync());
                     }
                 }
 
                 if (confirmDownlinkMessageBuilderResp.DownlinkMessage != null)
                 {
                     this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
-                    _ = SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp);
+                    TrackDeferredTask(SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp));
                 }
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage);
@@ -530,6 +534,8 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
+                    // #1556 Ideally we should add the SaveChanges to DeferredTasks and change the logic for not doing 
+                    // a "WhenAll" but loop through all the deferred tasks and throw an aggregate exception for all those tasks that failed.
                     if (loRaDevice.IsConnectionOwner is true)
                         await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
                 }
@@ -541,10 +547,27 @@ namespace LoRaWan.NetworkServer
                 {
                     this.logger.LogError($"The device properties are out of range. {ex.Message}");
                 }
-                if (deviceConnectionActivity is { } someDeviceConnectionActivity)
+                finally
                 {
-                    await someDeviceConnectionActivity.DisposeAsync();
+                    try
+                    {
+                        if (deferredTasks is { } someDeferredTasks)
+                            await Task.WhenAll(someDeferredTasks);
+                    }
+                    finally
+                    {
+                        if (deviceConnectionActivity is { } someDeviceConnectionActivity)
+                        {
+                            await someDeviceConnectionActivity.DisposeAsync();
+                        }
+                    }
                 }
+            }
+
+            void TrackDeferredTask(Task task)
+            {
+                deferredTasks ??= new List<Task>();
+                deferredTasks.Add(task);
             }
         }
 
@@ -613,16 +636,6 @@ namespace LoRaWan.NetworkServer
         }
 
         public void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
-
-        private void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
-        {
-            if (this.classCDeviceMessageSender != null)
-            {
-                _ = TaskUtil.RunOnThreadPool(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage),
-                                             ex => this.logger.LogError(ex, $"[class-c] error sending class C cloud to device message. {ex.Message}"),
-                                             this.unhandledExceptionCount);
-            }
-        }
 
         protected virtual async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
@@ -821,19 +834,19 @@ namespace LoRaWan.NetworkServer
         protected virtual FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
             => this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
 
-        protected virtual async Task DelayProcessing() => await Task.Delay(400);
+        protected virtual async Task DelayProcessing() => await Task.Delay(TimeSpan.FromMilliseconds(400));
 
         protected virtual async Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
         {
-            _ = bundler ?? throw new ArgumentNullException(nameof(bundler));
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            ArgumentNullException.ThrowIfNull(bundler, nameof(bundler));
+            ArgumentNullException.ThrowIfNull(loRaDevice, nameof(loRaDevice));
 
             var bundlerResult = await bundler.Execute();
-            if (bundlerResult.NextFCntDown.HasValue)
+            if (bundlerResult.NextFCntDown is { } nextFCntDown)
             {
                 // we got a new framecounter down. Make sure this
                 // gets saved eventually to the twins
-                loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
+                loRaDevice.SetFcntDown(nextFCntDown);
             }
 
             return bundlerResult;

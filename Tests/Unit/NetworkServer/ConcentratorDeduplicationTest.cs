@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(CreateKeyDataMessagesTheoryData))]
-        internal async Task CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(DataMessageKeyHolder expectedKey, DevEui devEui, Mic mic, ushort frameCounter, string? fieldNotUsedInKey = null)
+        public async Task CreateKeyMethod_Should_Return_Expected_Keys_For_Different_Data_Messages(DataMessageKeyHolder expectedKey, DevEui devEui, Mic mic, ushort frameCounter, string? fieldNotUsedInKey = null)
         {
             var options = fieldNotUsedInKey ?? string.Empty;
             await using var testDevice = new LoRaDevice(this.simulatedABPDevice.DevAddr, devEui, this.connectionManager);

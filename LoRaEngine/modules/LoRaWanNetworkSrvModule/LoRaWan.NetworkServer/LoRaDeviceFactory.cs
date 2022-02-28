@@ -98,7 +98,6 @@ namespace LoRaWan.NetworkServer
                     catch (ManagedConnectionException) { }
                 }
 
-                await this.connectionManager.ReleaseAsync(loRaDevice);
                 await loRaDevice.DisposeAsync();
                 throw;
             }

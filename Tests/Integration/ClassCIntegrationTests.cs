@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Integration
         {
             const uint payloadFcnt = 2; // to avoid relax mode reset
 
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'), frmCntDown: fcntDownFromTwin);
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: LoRaDeviceClassType.C), frmCntDown: fcntDownFromTwin);
 
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -157,7 +157,7 @@ namespace LoRaWan.Tests.Integration
         [InlineData(ServerGatewayID)]
         public async Task When_OTAA_Join_Then_Sends_Upstream_DirectMethod_Should_Send_Downstream(string deviceGatewayID)
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: deviceGatewayID));
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaDesiredTwinProperties(),
@@ -348,7 +348,7 @@ namespace LoRaWan.Tests.Integration
             [CombinatorialValues(null, ServerGatewayID, "another-gateway")] string initialPreferredGatewayID,
             [CombinatorialValues(null, LoRaRegionType.EU868, LoRaRegionType.US915)] LoRaRegionType? initialLoRaRegion)
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: LoRaDeviceClassType.C, gatewayID: deviceGatewayID));
 
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                 .ReturnsAsync(LoRaDeviceTwin.Create(simDevice.LoRaDevice.GetOtaaDesiredTwinProperties(),
@@ -435,7 +435,7 @@ namespace LoRaWan.Tests.Integration
             const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
-                TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'),
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: LoRaDeviceClassType.C),
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
@@ -536,7 +536,7 @@ namespace LoRaWan.Tests.Integration
             const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
-                TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c'),
+                TestDeviceInfo.CreateABPDevice(1, deviceClassType: LoRaDeviceClassType.C),
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 

@@ -120,13 +120,12 @@ namespace LoRaWan.NetworkServer
 
         protected async Task CreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
-            List<Task<LoRaDevice>> initTasks = null;
-            List<Task> refreshTasks = null;
-            var deviceCreated = 0;
-
             if (devices?.Count > 0)
             {
-                initTasks = new List<Task<LoRaDevice>>(devices.Count);
+                var deviceCreated = 0;
+                var initTasks = new List<Task<LoRaDevice>>(devices.Count);
+                List<Task> refreshTasks = null;
+                List<Exception> deviceInitExceptionList = null;
 
                 foreach (var foundDevice in devices)
                 {
@@ -144,7 +143,7 @@ namespace LoRaWan.NetworkServer
                             // (lost race with another gw) - refresh the twins now and keep it
                             // in the cache
                             refreshTasks ??= new List<Task>();
-                            refreshTasks.Add(RefreshDevice(cachedDevice));
+                            refreshTasks.Add(RefreshDeviceAsync(cachedDevice));
                             this.logger.LogDebug("refreshing device to fetch DevAddr");
                         }
                         else
@@ -165,7 +164,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                async Task RefreshDevice(LoRaDevice device)
+                async Task RefreshDeviceAsync(LoRaDevice device)
                 {
                     try
                     {
@@ -200,15 +199,37 @@ namespace LoRaWan.NetworkServer
                         {
                             var device = await deviceTask;
                             // run initializers
-                            InitializeDevice(device);
-                            deviceCreated++;
-                            await device.CloseConnectionAsync(CancellationToken.None);
+                            try
+                            {
+                                InitializeDevice(device);
+                                deviceCreated++;
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types (captured and thrown later)
+                            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                            {
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                                deviceInitExceptionList ??= new List<Exception>();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                                deviceInitExceptionList.Add(ex);
+                            }
+                            finally
+                            {
+                                await device.CloseConnectionAsync(CancellationToken.None);
+                            }
                         }
                     }
                 }
-            }
 
-            CreatedDevicesCount = deviceCreated;
+                CreatedDevicesCount = deviceCreated;
+
+                if (deviceInitExceptionList is { Count: > 0 } someExceptions)
+                    throw new AggregateException(someExceptions);
+            }
+            else
+            {
+                CreatedDevicesCount = 0;
+            }
         }
 
         private void NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason loRaDeviceRequestFailedReason = LoRaDeviceRequestFailedReason.ApplicationError)

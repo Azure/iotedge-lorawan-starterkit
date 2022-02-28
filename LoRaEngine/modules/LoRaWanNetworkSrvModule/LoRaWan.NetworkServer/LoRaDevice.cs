@@ -241,7 +241,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            var connection = this.connectionManager.GetClient(this);
+            var connection = Client;
             if (connection == null)
             {
                 throw new LoRaProcessingException("No connection registered.", LoRaProcessingErrorCode.DeviceInitializationFailed);
@@ -938,19 +938,16 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        protected virtual async ValueTask DisposeAsync(bool dispose)
+        protected virtual async ValueTask DisposeAsyncCore()
         {
-            if (dispose)
-            {
-                if (this.connectionManager is { } someConnectionManager)
-                    await someConnectionManager.ReleaseAsync(this);
-                this.syncSave.Dispose();
-            }
+            if (this.connectionManager is { } someConnectionManager)
+                await someConnectionManager.ReleaseAsync(this);
+            this.syncSave.Dispose();
         }
 
         public async ValueTask DisposeAsync()
         {
-            await DisposeAsync(true);
+            await DisposeAsyncCore();
             GC.SuppressFinalize(this);
         }
 
