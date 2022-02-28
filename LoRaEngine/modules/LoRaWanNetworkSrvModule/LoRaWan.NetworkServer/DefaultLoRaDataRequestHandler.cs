@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Runtime.ExceptionServices;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -66,6 +67,61 @@ namespace LoRaWan.NetworkServer
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
+            ProcessingState processingState = default;
+            try
+            {
+                ExceptionDispatchInfo edi = null;
+                try
+                {
+                    processingState = await ProcessRequestInternalAsync(request, loRaDevice);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types (exception is rethrown)
+                catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    edi = ExceptionDispatchInfo.Capture(ex);
+                }
+
+                Exception deferredTaskException = null;
+                if (processingState.DeferredTasks is { } someDeferredTasks)
+                {
+                    try
+                    {
+                        await Task.WhenAll(someDeferredTasks);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types (exception is rethrown)
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        deferredTaskException = ex;
+                    }
+                }
+
+                if (edi is { } someEdi)
+                {
+                    if (deferredTaskException is { } someDeferredTaskException)
+                        this.logger.LogError(someDeferredTaskException, "Processing of deferred tasks failed.");
+
+                    someEdi.Throw();
+                }
+                else if (deferredTaskException is { } someDeferredTaskException)
+                {
+                    throw someDeferredTaskException;
+                }
+
+                return processingState.ProcessResult;
+            }
+            finally
+            {
+                if (processingState.DeviceConnectionActivity is { } someDeviceConnectionActivity)
+                {
+                    await someDeviceConnectionActivity.DisposeAsync();
+                }
+            }
+        }
+
+        private async Task<ProcessingState> ProcessRequestInternalAsync(LoRaRequest request, LoRaDevice loRaDevice)
+        {
             if (request is null) throw new ArgumentNullException(nameof(request));
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
@@ -89,7 +145,7 @@ namespace LoRaWan.NetworkServer
             if (frameCounterStrategy == null)
             {
                 this.logger.LogError($"failed to resolve frame count update strategy, device gateway: {loRaDevice.GatewayID}, message ignored");
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
+                return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError), deferredTasks, null);
             }
 
             // Contains the Cloud to message we need to send
@@ -99,7 +155,7 @@ namespace LoRaWan.NetworkServer
             var concentratorDeduplicationResult = this.concentratorDeduplication.CheckDuplicateData(request, loRaDevice);
             if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.Duplicate)
             {
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop), deferredTasks, null);
             }
             else if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.SoftDuplicateDueToDeduplicationStrategy)
             {
@@ -117,7 +173,7 @@ namespace LoRaWan.NetworkServer
             if (ValidateRequest(loraPayload, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, concentratorDeduplicationResult,
                                 out var isConfirmedResubmit) is { } someFailedReason)
             {
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, someFailedReason);
+                return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, someFailedReason), deferredTasks, null);
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
@@ -181,7 +237,7 @@ namespace LoRaWan.NetworkServer
                         await loRaDevice.CloseConnectionAsync(CancellationToken.None);
                         // duplication strategy is indicating that we do not need to continue processing this message
                         this.logger.LogDebug($"duplication strategy indicated to not process message: {payloadFcnt}");
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                        return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop), deferredTasks, deviceConnectionActivity);
                     }
                 }
                 else
@@ -195,7 +251,7 @@ namespace LoRaWan.NetworkServer
                 deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
                 if (deviceConnectionActivity == null)
                 {
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
+                    return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed), deferredTasks, deviceConnectionActivity);
                 }
 
                 #region FrameCounterDown
@@ -212,7 +268,7 @@ namespace LoRaWan.NetworkServer
                     var result = HandleFrameCounterDownResult(fcntDown, loRaDevice, ref skipDownstreamToAvoidCollisions);
 
                     if (result != null)
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value);
+                        return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value), deferredTasks, deviceConnectionActivity);
                 }
                 #endregion
 
@@ -266,7 +322,7 @@ namespace LoRaWan.NetworkServer
                         var result = HandleFrameCounterDownResult(fcntDown, loRaDevice, ref skipDownstreamToAvoidCollisions);
 
                         if (result != null)
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value);
+                            return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, result.Value), deferredTasks, deviceConnectionActivity);
 
                         requiresConfirmation = true;
                     }
@@ -360,7 +416,7 @@ namespace LoRaWan.NetworkServer
                         if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, isDuplicate, decryptedPayloadData))
                         {
                             // failed to send event to IoT Hub, stop now
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
+                            return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem), deferredTasks, deviceConnectionActivity);
                         }
                     }
 
@@ -371,7 +427,7 @@ namespace LoRaWan.NetworkServer
                 if (skipDownstreamToAvoidCollisions)
                 {
                     this.logger.LogDebug($"skipping downstream messages due to deduplication ({timeWatcher.GetElapsedTime()})");
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                    return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request), deferredTasks, deviceConnectionActivity);
                 }
 
                 // We check if we have time to futher progress or not
@@ -385,7 +441,7 @@ namespace LoRaWan.NetworkServer
                         this.logger.LogInformation($"too late for down message ({timeWatcher.GetElapsedTime()})");
                     }
 
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                    return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request), deferredTasks, deviceConnectionActivity);
                 }
 
                 // If it is confirmed and
@@ -423,7 +479,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkMessage);
+                    return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkMessage), deferredTasks, deviceConnectionActivity);
                 }
 
                 // Flag indicating if there is another C2D message waiting
@@ -497,7 +553,7 @@ namespace LoRaWan.NetworkServer
                 // No C2D message and request was not confirmed, return nothing
                 if (!requiresConfirmation)
                 {
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                    return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request), deferredTasks, deviceConnectionActivity);
                 }
 
                 var confirmDownlinkMessageBuilderResp = DownlinkMessageBuilderResponse
@@ -529,33 +585,13 @@ namespace LoRaWan.NetworkServer
                     TrackDeferredTask(SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp));
                 }
 
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage);
+                return new ProcessingState(new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage), deferredTasks, deviceConnectionActivity);
                 #endregion
             }
             finally
             {
                 if (loRaDevice.IsConnectionOwner is true)
                     TrackDeferredTask(SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged));
-
-                try
-                {
-                    if (deferredTasks is { } someDeferredTasks)
-                    {
-                        var deferredTaskExecutionResult = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
-                        if (deferredTaskExecutionResult.Exception is { } someException)
-                        {
-                            this.logger.LogError(someException, "Error during the execution of at least one of the deferred tasks.");
-                            this.unhandledExceptions.Add(someException is AggregateException someAggregateException ? someAggregateException.InnerExceptions.Count : 1);
-                        }
-                    }
-                }
-                finally
-                {
-                    if (deviceConnectionActivity is { } someDeviceConnectionActivity)
-                    {
-                        await someDeviceConnectionActivity.DisposeAsync();
-                    }
-                }
             }
 
             void TrackDeferredTask(Task task)
@@ -564,6 +600,8 @@ namespace LoRaWan.NetworkServer
                 deferredTasks.Add(task);
             }
         }
+
+        private record struct ProcessingState(LoRaDeviceRequestProcessResult ProcessResult, List<Task> DeferredTasks, IAsyncDisposable DeviceConnectionActivity);
 
         protected virtual DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, LoRaADRResult loRaADRResult, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, uint? fcntDown, bool fpending)
         {
