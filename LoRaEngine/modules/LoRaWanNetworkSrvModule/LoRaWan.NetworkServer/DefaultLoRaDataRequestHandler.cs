@@ -198,9 +198,11 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // saving fcnt reset changes
-                await SaveChangesToDeviceAsync(loRaDevice, isFrameCounterFromNewlyStartedDevice);
                 if (isFrameCounterFromNewlyStartedDevice)
+                {
+                    await SaveChangesToDeviceAsync(loRaDevice, isFrameCounterFromNewlyStartedDevice);
                     fcntResetSaved = true;
+                }
 
                 #region FrameCounterDown
                 // if deduplication already processed the next framecounter down, use that
