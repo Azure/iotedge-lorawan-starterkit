@@ -17,16 +17,31 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
     public abstract class MacCommandTests
     {
+        /// <summary>
+        /// Gets the CID of the MAC command.
+        /// </summary>
         public abstract Cid Cid { get; }
+
+        /// <summary>
+        /// Gets a default MAC command test subject.
+        /// </summary>
         public abstract MacCommand Subject { get; }
-        public abstract IReadOnlyList<byte> Bytes { get; }
+
+        /// <summary>
+        /// Gets the list of data bytes (excluding the CID).
+        /// </summary>
+        public abstract IReadOnlyList<byte> DataBytes { get; }
+
+        /// <summary>
+        /// Gets the expected length of the MAC command.
+        /// </summary>
         public abstract int Length { get; }
 
         public sealed class TxParamSetupRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.TxParamSetupCmd;
             public override MacCommand Subject => new TxParamSetupRequest(new DwellTimeSetting(false, false, 0));
-            public override IReadOnlyList<byte> Bytes => new byte[] { 0b0000_0000 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 0b0000_0000 };
             public override int Length => 2;
 
             [Fact]
@@ -56,7 +71,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.TxParamSetupCmd;
             public override MacCommand Subject => new TxParamSetupAnswer();
-            public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
+            public override IReadOnlyList<byte> DataBytes => Array.Empty<byte>();
             public override int Length => 1;
         }
 
@@ -64,7 +79,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.DevStatusCmd;
             public override DevStatusAnswer Subject => new DevStatusAnswer(1, 2);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 1, 2 };
             public override int Length => 3;
 
             [Fact]
@@ -72,14 +87,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                                     && actual.Battery == Subject.Battery
                                                                     && actual.Margin == Subject.Margin,
                                                              bytes => new DevStatusAnswer(new ReadOnlySpan<byte>(bytes)),
-                                                             Bytes);
+                                                             DataBytes);
         }
 
         public sealed class DevStatusRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.DevStatusCmd;
             public override MacCommand Subject => new DevStatusRequest();
-            public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
+            public override IReadOnlyList<byte> DataBytes => Array.Empty<byte>();
             public override int Length => 1;
 
             [Fact]
@@ -91,7 +106,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.DutyCycleCmd;
             public override MacCommand Subject => new DutyCycleAnswer();
-            public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
+            public override IReadOnlyList<byte> DataBytes => Array.Empty<byte>();
             public override int Length => 1;
         }
 
@@ -99,7 +114,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.DutyCycleCmd;
             public override DutyCycleRequest Subject => new DutyCycleRequest(3);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 3 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 3 };
             public override int Length => 2;
 
             [Fact]
@@ -113,7 +128,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.LinkADRCmd;
             public override LinkADRAnswer Subject => new LinkADRAnswer(true, true, false);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 0b110 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 0b110 };
             public override int Length => 2;
 
             [Fact]
@@ -122,14 +137,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                                     && actual.DRAck
                                                                     && !actual.CHMaskAck,
                                                              bytes => new LinkADRAnswer(new ReadOnlySpan<byte>(bytes)),
-                                                             Bytes);
+                                                             DataBytes);
         }
 
         public sealed class LinkAdrRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkADRCmd;
             public override LinkADRRequest Subject => new LinkADRRequest(1, 2, 3, 4, 5);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 0b11, 0, 0b1000101 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 0b10010, 0b11, 0, 0b1000101 };
             public override int Length => 5;
 
             private Predicate<LinkADRRequest> Assert => actual => actual.Cid == Cid
@@ -144,14 +159,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                 DeserializationTest(Assert, @"{""cid"":3,""dataRate"":1,""txPower"":2,""chMask"":3,""chMaskCntl"":4,""nbRep"":5}");
 
             [Fact]
-            public void FromBytes_Success() => FromBytesTest(Assert, bytes => new LinkADRRequest(bytes), Bytes);
+            public void FromBytes_Success() => FromBytesTest(Assert, bytes => new LinkADRRequest(bytes), DataBytes);
         }
 
         public sealed class LinkCheckAnswerTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkCheckCmd;
             public override LinkCheckAnswer Subject => new LinkCheckAnswer(1, 2);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 1, 2 };
             public override int Length => 3;
 
             [Fact]
@@ -159,14 +174,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                                     && actual.Margin == Subject.Margin
                                                                     && actual.GwCnt == Subject.GwCnt,
                                                              bytes => new LinkCheckAnswer(new ReadOnlySpan<byte>(bytes)),
-                                                             Bytes);
+                                                             DataBytes);
         }
 
         public sealed class LinkCheckRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.LinkCheckCmd;
             public override MacCommand Subject => new LinkCheckRequest();
-            public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
+            public override IReadOnlyList<byte> DataBytes => Array.Empty<byte>();
             public override int Length => 1;
         }
 
@@ -174,7 +189,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.NewChannelCmd;
             public override NewChannelAnswer Subject => new NewChannelAnswer(false, true);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 1 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 1 };
             public override int Length => 2;
 
             [Fact]
@@ -182,14 +197,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                                     && !actual.DataRangeOk
                                                                     && actual.ChannelFreqOk,
                                                              bytes => new NewChannelAnswer(new ReadOnlySpan<byte>(bytes)),
-                                                             Bytes);
+                                                             DataBytes);
         }
 
         public sealed class NewChannelRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.NewChannelCmd;
             public override NewChannelRequest Subject => new NewChannelRequest(1, 2, 3, 4);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 1, 2, 0, 0, 0b110100 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 1, 2, 0, 0, 0b110100 };
             public override int Length => 6;
 
             [Fact]
@@ -206,7 +221,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.RXParamCmd;
             public override RXParamSetupAnswer Subject => new RXParamSetupAnswer(true, false, true);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 0b101 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 0b101 };
             public override int Length => 2;
 
             [Fact]
@@ -215,14 +230,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                                     && !actual.Rx2DROffsetAck
                                                                     && actual.ChannelAck,
                                                              bytes => new RXParamSetupAnswer(new ReadOnlySpan<byte>(bytes)),
-                                                             Bytes);
+                                                             DataBytes);
         }
 
         public sealed class RxParamSetupRequestTests : MacCommandTests
         {
             public override Cid Cid => Cid.RXParamCmd;
             public override RXParamSetupRequest Subject => new RXParamSetupRequest(1, 2, 3);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 0b10010, 3, 0, 0 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 0b10010, 3, 0, 0 };
             public override int Length => 5;
 
             [Fact]
@@ -238,7 +253,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.RXTimingCmd;
             public override MacCommand Subject => new RXTimingSetupAnswer();
-            public override IReadOnlyList<byte> Bytes => Array.Empty<byte>();
+            public override IReadOnlyList<byte> DataBytes => Array.Empty<byte>();
             public override int Length => 1;
         }
 
@@ -246,7 +261,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             public override Cid Cid => Cid.RXTimingCmd;
             public override RXTimingSetupRequest Subject => new RXTimingSetupRequest(1);
-            public override IReadOnlyList<byte> Bytes => new byte[] { 1 };
+            public override IReadOnlyList<byte> DataBytes => new byte[] { 1 };
             public override int Length => 2;
 
             [Fact]
@@ -256,7 +271,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         }
 
         [Fact]
-        public void ToBytes_Success() => ToBytes_Internal(Subject, Bytes);
+        public void ToBytes_Success() => ToBytes_Internal(Subject, DataBytes);
 
         protected void ToBytes_Internal(MacCommand macCommand, IReadOnlyList<byte> expectedBytes) =>
             Assert.Equal(GetFullBytes(expectedBytes), macCommand.ToBytes());
