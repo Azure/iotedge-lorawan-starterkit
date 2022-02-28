@@ -33,7 +33,6 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkCheckAnswer"/> class.
-        /// Test Constructor.
         /// </summary>
         public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {

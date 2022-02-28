@@ -47,8 +47,9 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class. For tests to serialize from byte.
+        /// Intended for test use only.
         /// </summary>
-        public LinkADRRequest(byte[] input)
+        internal LinkADRRequest(byte[] input)
         {
             if (input is null) throw new ArgumentNullException(nameof(input));
 
@@ -59,7 +60,7 @@ namespace LoRaTools
 
             Cid = Cid.LinkADRCmd;
             DataRateTXPower = input[1];
-            ChMask = BinaryPrimitives.ReadUInt16LittleEndian(input);
+            ChMask = BinaryPrimitives.ReadUInt16LittleEndian(input.AsSpan(2));
             Redundancy = input[4];
         }
 
