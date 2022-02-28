@@ -92,12 +92,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                     Fport = FramePort.AppMin
                                 };
 
+                                logger?.LogDebug($"Invoking direct method on LNS: {previousGateway} to drop connection for device: {devEUI}");
+                                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                                _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
+
                                 try
                                 {
-                                    logger?.LogDebug($"Invoking direct method on LNS: {previousGateway} to drop connection for device: {devEUI}");
-
-                                    var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                                    _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                                     if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
@@ -108,9 +108,9 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 {
                                     logger?.LogError(ex, $"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}");
 
-                                    // we don't want to rethrow if an exception is thrown.
-                                    // worst case the connection stays open on the gateway that lost
-                                    // the race.
+                                    // The exception is not rethrown.
+                                    // In this case the device connection would stay open
+                                    // on the gateway that lost the race.
                                 }
                             }
                         }
