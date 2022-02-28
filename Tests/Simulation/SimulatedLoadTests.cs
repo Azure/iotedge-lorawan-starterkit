@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Simulation
             this.simulatedBasicsStations =
                 testFixture.DeviceRange5000_BasicsStationSimulators
                            .Zip(Configuration.LnsEndpointsForSimulator.Repeat(),
-                                (tdi, lnsUrl) => new SimulatedBasicsStation(StationEui.Parse(tdi.DeviceID), lnsUrl))
+                                (tdi, lnsNameToUrl) => new SimulatedBasicsStation(StationEui.Parse(tdi.DeviceID), lnsNameToUrl.Value))
                            .ToList();
 
             Assert.True(this.simulatedBasicsStations.Count % Configuration.LnsEndpointsForSimulator.Count == 0, "Since Basics Stations are round-robin distributed to LNS, we must have the same number of stations per LNS for well-defined test assertions.");
@@ -94,9 +94,10 @@ namespace LoRaWan.Tests.Simulation
             await SendConfirmedUpstreamMessages(device, 1);
 
             // assert
+            var expectedLnsToDropConnection = Configuration.LnsEndpointsForSimulator.First().Key;
             await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => x.Contains(ModuleConnectionHost.DroppedConnectionLog, StringComparison.Ordinal) && x.Contains(Configuration.LeafDeviceGatewayID, StringComparison.Ordinal),
-                new SearchLogOptions($"{ModuleConnectionHost.DroppedConnectionLog} and {Configuration.LeafDeviceGatewayID}") { TreatAsError = true });
+                x => x.Contains(ModuleConnectionHost.DroppedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
+                new SearchLogOptions($"{ModuleConnectionHost.DroppedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
             await AssertIotHubMessageCountAsync(device, 2);
         }
 
