@@ -24,6 +24,8 @@ updates](station-firmware-upgrade.md) for example.
 
 ## Scalability & Availability
 
+There are multiple strategies that you can take to improve the availability of the starter kit listed below. For all the scenarios below, you can further increase the availability of a concentrator by using a highly available [LNS discovery service](lns-discovery.md).
+
 **Note**: This guide is only talking about the LBS/LNS deployment configuration. For the full solution, the function endpoint,
 IoT Hub and Redis need to be taken into consideration as well. There is documentation for all of these services explaining
 the different options for HA and scalability.
