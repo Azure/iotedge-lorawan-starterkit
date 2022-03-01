@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
 
-            Assert.Equal(400, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
 
             var input = JsonSerializer.Serialize(new
             {
@@ -153,7 +153,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
 
             await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
-            Assert.Equal(400, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Fact]
@@ -210,6 +210,37 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
             await Assert.ThrowsAsync<ConfigurationErrorsException>(() => moduleClient.CreateAsync(CancellationToken.None));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("500 ms")]
+        [InlineData("invalidDelay")]
+        public async Task InitModuleAsync_Does_Not_Fail_When_Processing_Delay_Missing_Or_Incorrect(string processingDelay)
+        {
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
+            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+
+            //networkServerConfiguration.IoTEdgeTimeout = 5;
+            var facadeUri = this.faker.Internet.Url();
+            var facadeCode = this.faker.Internet.Password();
+            var twinProperty = new TwinProperties
+            {
+                Desired = new TwinCollection(
+                    JsonSerializer.Serialize(new
+                    {
+                        FacadeServerUrl = facadeUri,
+                        FacadeAuthCode = facadeCode,
+                        ProcessingDelayInMilliseconds = processingDelay
+                    }))
+            };
+
+            loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
+
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            await moduleClient.CreateAsync(CancellationToken.None);
+            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Fact]
