@@ -86,7 +86,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(input2), null);
             Assert.Equal(url2 + "/", loRaDeviceApiServiceBase.URL.ToString());
             Assert.Equal(authCode, loRaDeviceApiServiceBase.AuthCode.ToString());
-
         }
 
         [Theory]
