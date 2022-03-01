@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
 
     internal static class TaskExtensions
     {
-        public static IList<Exception> GetExceptions(this IList<Task> tasks)
+        public static IList<Exception> GetExceptions(this ICollection<Task> tasks)
         {
             if (tasks.Any(static t => !t.IsCompleted)) throw new ArgumentException("All tasks must have completed.", nameof(tasks));
 
