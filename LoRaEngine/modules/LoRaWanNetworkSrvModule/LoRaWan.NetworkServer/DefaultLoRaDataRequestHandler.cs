@@ -599,7 +599,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        protected virtual DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, LoRaADRResult loRaADRResult, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, uint? fcntDown, bool fpending)
+        internal virtual DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, LoRaADRResult loRaADRResult, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, uint? fcntDown, bool fpending)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
             _ = request ?? throw new ArgumentNullException(nameof(request));
@@ -625,7 +625,7 @@ namespace LoRaWan.NetworkServer
             return request.DownstreamMessageSender.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
         }
 
-        protected virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
+        internal virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
@@ -665,7 +665,7 @@ namespace LoRaWan.NetworkServer
 
         public void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
 
-        protected virtual async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        internal virtual async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
@@ -736,7 +736,7 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-        protected virtual async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
+        internal virtual async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
             _ = timeWatcher ?? throw new ArgumentNullException(nameof(timeWatcher));

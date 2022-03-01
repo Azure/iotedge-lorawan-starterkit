@@ -55,13 +55,13 @@ namespace LoRaWan.Tests.Integration
         protected override Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
             => Task.FromResult(PerformADRAssert());
 
-        protected override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        internal override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
             => Task.FromResult<IReceivedLoRaCloudToDeviceMessage>(null);
 
-        protected override Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
+        internal override Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
             => Task.FromResult(SendDeviceAsyncAssert());
 
-        protected override DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request,
+        internal override DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request,
                                                                                          LoRaDevice loRaDevice,
                                                                                          LoRaOperationTimeWatcher timeWatcher,
                                                                                          LoRaADRResult loRaADRResult,
@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Integration
         protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
             => Task.FromResult(SendMessageDownstreamAsyncAssert(confirmDownlinkMessageBuilderResp));
 
-        protected override Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
+        internal override Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
             => Task.FromResult(SaveChangesToDeviceAsyncAssert());
 
         public virtual LoRaADRResult PerformADRAssert() => null;
