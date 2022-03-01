@@ -13,7 +13,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq;
     using Xunit;
 
-    public sealed class MultiGatewayFrameCounterUpdateStrategyTest : IDisposable
+    public sealed class MultiGatewayFrameCounterUpdateStrategyTest : IAsyncDisposable
     {
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
@@ -30,10 +30,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.device = new LoRaDevice(new DevAddr(1), new DevEui(2), connectionManager);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.device.Dispose();
-            this.connectionManager.Dispose();
+            await this.device.DisposeAsync();
+            await this.connectionManager.DisposeAsync();
         }
 
         [Theory]

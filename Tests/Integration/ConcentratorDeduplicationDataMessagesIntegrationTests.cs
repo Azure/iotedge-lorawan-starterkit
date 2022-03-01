@@ -226,7 +226,7 @@ namespace LoRaWan.Tests.Integration
             var request1 = CreateOTAARequest(dataPayload, station1);
             var request2 = CreateOTAARequest(dataPayload, station2);
 
-            using var loraOTAADevice = new LoRaDevice(simulatedOTAADevice.DevAddr, simulatedOTAADevice.DevEUI, ConnectionManager);
+            await using var loraOTAADevice = new LoRaDevice(simulatedOTAADevice.DevAddr, simulatedOTAADevice.DevEUI, ConnectionManager);
             loraOTAADevice.AppKey = AppKey.Parse(value32);
 
             loraOTAADevice.Deduplication = deduplicationMode;
@@ -247,8 +247,8 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 2, 2, 2)]
-        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 1, 2, 1)]
+        [InlineData("11-11-11-11-11-11-11-11", "11-11-11-11-11-11-11-11", 0, 2, 2)]
+        [InlineData("11-11-11-11-11-11-11-11", "22-22-22-22-22-22-22-22", 0, 2, 1)]
         public async Task When_SingleGateway_Deduplication_Should_Work_The_Same_Way(
             string station1,
             string station2,
@@ -432,14 +432,14 @@ namespace LoRaWan.Tests.Integration
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Exactly(twinSaves));
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsync(bool disposing)
         {
-            base.Dispose(disposing);
+            await base.DisposeAsync(disposing);
             if (disposing)
             {
                 this.cache.Dispose();
-                this.loraABPDevice.Dispose();
                 this.testOutputLoggerFactory.Dispose();
+                await this.loraABPDevice.DisposeAsync();
             }
         }
     }

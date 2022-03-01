@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_Not_In_Cache_It_Is_Loaded()
         {
-            using var cache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
             using var joinDeviceLoader = new JoinDeviceLoader(defaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
 
@@ -28,11 +28,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_In_Cache_It_Is_Not_Loaded()
         {
-            using var cache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
             using var joinDeviceLoader = new JoinDeviceLoader(defaultDeviceInfo, factory.Object, cache, NullLogger<JoinDeviceLoader>.Instance);
 
-            using var device = new LoRaDevice(defaultDeviceInfo.DevAddr, defaultDeviceInfo.DevEUI, null);
+            await using var device = new LoRaDevice(defaultDeviceInfo.DevAddr, defaultDeviceInfo.DevEUI, null);
             cache.Register(device);
 
             Assert.Equal(device, await joinDeviceLoader.LoadAsync());
@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_The_Load_Fails_CanCache_Is_False()
         {
-            using var cache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
             factory.Setup(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()))
                    .ThrowsAsync(new LoRaProcessingException());
@@ -57,10 +57,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task When_One_Load_Is_Pending_Other_Is_Waiting()
         {
-            using var cache = LoRaDeviceCacheDefault.CreateDefault();
+            await using var cache = LoRaDeviceCacheDefault.CreateDefault();
             var factory = new Mock<ILoRaDeviceFactory>();
 
-            using var device = new LoRaDevice(defaultDeviceInfo.DevAddr, defaultDeviceInfo.DevEUI, null);
+            await using var device = new LoRaDevice(defaultDeviceInfo.DevAddr, defaultDeviceInfo.DevEUI, null);
 
             factory.Setup(x => x.CreateAndRegisterAsync(defaultDeviceInfo, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(() =>

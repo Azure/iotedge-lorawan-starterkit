@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using global::LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
@@ -13,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq;
     using Xunit;
 
-    public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
+    public sealed class LoRaCloudToDeviceMessageWrapperTest : IAsyncDisposable
     {
         private readonly SingleDeviceConnectionManager connectionManager;
         private readonly LoRaDevice sampleDevice;
@@ -97,10 +98,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal(2, dutyCycleCmd.DutyCyclePL);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.sampleDevice.Dispose();
-            this.connectionManager.Dispose();
+            await this.sampleDevice.DisposeAsync();
+            await this.connectionManager.DisposeAsync();
         }
     }
 }

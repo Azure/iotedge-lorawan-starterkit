@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -69,11 +70,6 @@ namespace LoRaWan.NetworkServer
             List<Task> deferredTasks = null;
 
             var timeWatcher = request.GetTimeWatcher();
-            await using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
-            if (deviceConnectionActivity == null)
-            {
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
-            }
 
             var loraPayload = (LoRaPayloadData)request.Payload;
             this.d2cPayloadSizeHistogram?.Record(loraPayload.Frmpayload.Length);
@@ -124,13 +120,26 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
             var stationEuiChanged = false;
+            IAsyncDisposable deviceConnectionActivity = null;
 
             try
             {
                 #region FunctionBundler
                 FunctionBundlerResult bundlerResult = null;
-                if (concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate || concentratorDeduplicationResult is ConcentratorDeduplicationResult.DuplicateDueToResubmission)
-                    bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
+                if (useMultipleGateways
+                    && concentratorDeduplicationResult is ConcentratorDeduplicationResult.NotDuplicate
+                                                       or ConcentratorDeduplicationResult.DuplicateDueToResubmission)
+                {
+                    // in the case of resubmissions we need to contact the function to get a valid frame counter down
+                    if (CreateBundler(loraPayload, loRaDevice, request) is { } bundler)
+                    {
+                        if (loRaDevice.IsConnectionOwner is false)
+                        {
+                            await DelayProcessing();
+                        }
+                        bundlerResult = await TryUseBundler(bundler, loRaDevice);
+                    }
+                }
                 #endregion
 
                 loRaADRResult = bundlerResult?.AdrResult;
@@ -166,6 +175,8 @@ namespace LoRaWan.NetworkServer
                     // applying the correct deduplication
                     if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
+                        loRaDevice.IsConnectionOwner = false;
+                        await loRaDevice.CloseConnectionAsync(CancellationToken.None);
                         // duplication strategy is indicating that we do not need to continue processing this message
                         this.logger.LogDebug($"duplication strategy indicated to not process message: {payloadFcnt}");
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
@@ -176,6 +187,13 @@ namespace LoRaWan.NetworkServer
                     // we must save class C devices regions in order to send c2d messages
                     if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.Region.LoRaRegion != loRaDevice.LoRaRegion)
                         loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
+                }
+
+                loRaDevice.IsConnectionOwner = true;
+                deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
+                if (deviceConnectionActivity == null)
+                {
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
                 }
 
                 #region FrameCounterDown
@@ -516,7 +534,10 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
+                    // #1556 Ideally we should add the SaveChanges to DeferredTasks and change the logic for not doing 
+                    // a "WhenAll" but loop through all the deferred tasks and throw an aggregate exception for all those tasks that failed.
+                    if (loRaDevice.IsConnectionOwner is true)
+                        await SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged);
                 }
                 catch (OperationCanceledException saveChangesException)
                 {
@@ -526,9 +547,21 @@ namespace LoRaWan.NetworkServer
                 {
                     this.logger.LogError($"The device properties are out of range. {ex.Message}");
                 }
-
-                if (deferredTasks is { } someDeferredTasks)
-                    await Task.WhenAll(someDeferredTasks);
+                finally
+                {
+                    try
+                    {
+                        if (deferredTasks is { } someDeferredTasks)
+                            await Task.WhenAll(someDeferredTasks);
+                    }
+                    finally
+                    {
+                        if (deviceConnectionActivity is { } someDeviceConnectionActivity)
+                        {
+                            await someDeviceConnectionActivity.DisposeAsync();
+                        }
+                    }
+                }
             }
 
             void TrackDeferredTask(Task task)
@@ -798,25 +831,22 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        protected virtual async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
-        {
-            _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+        protected virtual FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
+            => this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
 
-            FunctionBundlerResult bundlerResult = null;
-            if (useMultipleGateways)
+        protected virtual async Task DelayProcessing() => await Task.Delay(TimeSpan.FromMilliseconds(400));
+
+        protected virtual async Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
+        {
+            ArgumentNullException.ThrowIfNull(bundler, nameof(bundler));
+            ArgumentNullException.ThrowIfNull(loRaDevice, nameof(loRaDevice));
+
+            var bundlerResult = await bundler.Execute();
+            if (bundlerResult.NextFCntDown is { } nextFCntDown)
             {
-                // in the case of resubmissions we need to contact the function to get a valid frame counter down
-                var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
-                if (bundler != null)
-                {
-                    bundlerResult = await bundler.Execute();
-                    if (bundlerResult.NextFCntDown.HasValue)
-                    {
-                        // we got a new framecounter down. Make sure this
-                        // gets saved eventually to the twins
-                        loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
-                    }
-                }
+                // we got a new framecounter down. Make sure this
+                // gets saved eventually to the twins
+                loRaDevice.SetFcntDown(nextFCntDown);
             }
 
             return bundlerResult;

@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
     using Xunit.Abstractions;
 
     internal class TestDefaultLoRaRequestHandler : DefaultLoRaDataRequestHandler
@@ -42,8 +43,13 @@ namespace LoRaWan.Tests.Integration
         {
             this.configuration = configuration;
         }
+        protected override FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
+            => new Mock<FunctionBundler>().Object;
 
-        protected override Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
+        protected override Task DelayProcessing()
+            => DelayProcessingAssert();
+
+        protected override Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
             => Task.FromResult(TryUseBundlerAssert());
 
         protected override Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
@@ -71,6 +77,8 @@ namespace LoRaWan.Tests.Integration
             => Task.FromResult(SaveChangesToDeviceAsyncAssert());
 
         public virtual LoRaADRResult PerformADRAssert() => null;
+
+        public virtual Task DelayProcessingAssert() => Task.CompletedTask;
 
         public virtual FunctionBundlerResult TryUseBundlerAssert() => null;
 

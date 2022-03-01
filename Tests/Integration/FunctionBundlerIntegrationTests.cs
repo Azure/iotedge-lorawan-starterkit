@@ -50,10 +50,10 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageProcessor1 = TestMessageDispatcher.Create(
+            await using var messageProcessor1 = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 loRaDeviceRegistry1,
