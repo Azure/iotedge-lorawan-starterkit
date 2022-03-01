@@ -142,10 +142,19 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                   LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
 
-            await using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
-            var twinCollection = new TwinCollection();
-            twinCollection[TwinProperty.Package] = package;
-            _ = await client.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
+            await this.cacheSemaphore.WaitAsync(cancellationToken);
+
+            try
+            {
+                await using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+                var twinCollection = new TwinCollection();
+                twinCollection[TwinProperty.Package] = package;
+                _ = await client.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
+            }
+            finally
+            {
+                _ = this.cacheSemaphore.Release();
+            }
         }
     }
 }

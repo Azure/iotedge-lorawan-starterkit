@@ -149,6 +149,8 @@ namespace LoRaWan.NetworkServer
                 var partConnection = CreateIoTHubConnectionString();
                 var deviceConnectionStr = FormattableString.Invariant($"{partConnection}DeviceId={deviceId};SharedAccessKey={primaryKey}");
 
+                this.logger.LogDebug($"Creating device client for {deviceId}");
+
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]
                 {
