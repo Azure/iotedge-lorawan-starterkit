@@ -18,8 +18,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public void GetExceptions_When_Task_Is_Not_Completed_Throws()
         {
             var tcs = new TaskCompletionSource();
-            var ex = Assert.Throws<InvalidOperationException>(() => new[] { tcs.Task }.GetExceptions());
-            Assert.Equal("All tasks must have completed.", ex.Message);
+            var ex = Assert.Throws<ArgumentException>(() => new[] { tcs.Task }.GetExceptions());
+            Assert.Equal("tasks", ex.ParamName);
+            Assert.Contains("All tasks must have completed.", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
         public static TheoryData<Task[], Exception[]> GetExceptions_Success_TheoryData() => TheoryDataFactory.From(new[]

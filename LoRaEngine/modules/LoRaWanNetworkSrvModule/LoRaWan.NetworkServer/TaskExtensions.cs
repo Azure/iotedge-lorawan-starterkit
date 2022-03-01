@@ -8,21 +8,19 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Threading.Tasks;
 
     internal static class TaskExtensions
     {
         public static IList<Exception> GetExceptions(this IList<Task> tasks)
         {
+            if (tasks.Any(static t => !t.IsCompleted)) throw new ArgumentException("All tasks must have completed.", nameof(tasks));
+
             var result = new List<Exception>();
 
             foreach (var task in tasks)
             {
-                if (!task.IsCompleted)
-                {
-                    throw new InvalidOperationException("All tasks must have completed.");
-                }
-
                 if (task.IsCompletedSuccessfully)
                     continue;
 
