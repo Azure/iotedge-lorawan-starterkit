@@ -73,54 +73,27 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                ExceptionDispatchInfo edi = null;
-                LoRaDeviceRequestProcessResult result = null;
-
-                try
-                {
-                    result = await ProcessAsync();
-                }
-#pragma warning disable CA1031 // Do not catch general exception types (exception is rethrown)
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    edi = ExceptionDispatchInfo.Capture(ex);
-                }
-
-                Exception deferredTaskException = null;
-                if (deferredTasks is { } someDeferredTasks)
-                {
-                    _ = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
-                    var exs = someDeferredTasks.GetExceptions();
-
-                    deferredTaskException = exs switch
-                    {
-                        { Count: 1 } => exs[0],
-                        { Count: > 1 } => new AggregateException(exs),
-                        _ => null
-                    };
-                }
-
-                if (edi is { } someEdi)
-                {
-                    if (deferredTaskException is { } someDeferredTaskException)
-                        this.logger.LogError(someDeferredTaskException, "Processing of deferred tasks failed.");
-
-                    someEdi.Throw();
-                }
-                else if (deferredTaskException is { } someDeferredTaskException)
-                {
-                    throw someDeferredTaskException;
-                }
-
-                return result;
+                return await ProcessAsync();
             }
             finally
             {
-                if (deviceConnectionActivity is { } someDeviceConnectionActivity)
+                if (deferredTasks is { } someDeferredTasks)
                 {
-                    await someDeviceConnectionActivity.DisposeAsync();
+                    _ = await Task.WhenAny(Task.WhenAll(someDeferredTasks));
+
+                    var exception = someDeferredTasks.GetExceptions() switch
+                    {
+                        { Count: 1 } exs => exs[0],
+                        { Count: > 1 } exs => new AggregateException(exs),
+                        _ => null
+                    };
+
+                    if (exception is { } someException)
+                        this.logger.LogError(someException, "Processing of deferred tasks failed.");
                 }
+
+                if (deviceConnectionActivity is { } someDeviceConnectionActivity)
+                    await someDeviceConnectionActivity.DisposeAsync();
             }
 
             async Task<LoRaDeviceRequestProcessResult> ProcessAsync()
@@ -460,7 +433,7 @@ namespace LoRaWan.NetworkServer
                         if (downlinkMessageBuilderResp.DownlinkMessage != null)
                         {
                             this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)downlinkMessageBuilderResp.ReceiveWindow));
-                            TrackDeferredTask(request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage));
+                            await request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkMessage);
 
                             if (cloudToDeviceMessage != null)
                             {
@@ -579,7 +552,7 @@ namespace LoRaWan.NetworkServer
                     if (confirmDownlinkMessageBuilderResp.DownlinkMessage != null)
                     {
                         this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)confirmDownlinkMessageBuilderResp.ReceiveWindow));
-                        TrackDeferredTask(SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp));
+                        await SendMessageDownstreamAsync(request, confirmDownlinkMessageBuilderResp);
                     }
 
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkMessage);

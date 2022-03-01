@@ -21,6 +21,7 @@ namespace LoRaWan.Tests.Integration
     {
         private readonly Mock<TestDefaultLoRaRequestHandler> mockTestDefaultLoRaRequestHandler;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
+        private readonly VerifiableLogger<DefaultLoRaDataRequestHandler> verifiableLogger = new();
 
         private TestDefaultLoRaRequestHandler Subject => this.mockTestDefaultLoRaRequestHandler.Object;
 
@@ -36,59 +37,64 @@ namespace LoRaWan.Tests.Integration
                 new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
                 new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
                 new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
-                testOutputHelper)
+                this.verifiableLogger)
             { CallBase = true };
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
         }
 
-        public static TheoryData<Exception?, Exception?, Exception?, Exception> Throws_Main_Processing_Exception_When_Deferred_Tasks_Failed_TheoryData() =>
-            TheoryDataFactory.From<Exception?, Exception?, Exception?, Exception>(new (Exception?, Exception?, Exception?, Exception)[]
+        public static TheoryData<Exception?, Exception?, Exception> Deferred_Task_Exceptions_TheoryData() =>
+            TheoryDataFactory.From(new (Exception?, Exception?, Exception)[]
             {
-                (new InvalidOperationException("Main exception"), new OperationCanceledException("Deferred task canceled"), null, new InvalidOperationException("Main exception")),
-                (null, new OperationCanceledException("Deferred task canceled"), null, new OperationCanceledException("Deferred task canceled")),
-                (null, null, new LoRaProcessingException(), new LoRaProcessingException()),
-                (null, new InvalidOperationException("A"), new LoRaProcessingException("B"), new AggregateException(new Exception[] { new InvalidOperationException("A"), new LoRaProcessingException("B") })),
+                (new OperationCanceledException("Deferred task canceled"), null, new OperationCanceledException("Deferred task canceled")),
+                (null, new LoRaProcessingException(), new LoRaProcessingException()),
+                (new InvalidOperationException("A"), new LoRaProcessingException("B"), new AggregateException(new Exception[] { new InvalidOperationException("A"), new LoRaProcessingException("B") })),
             });
 
         [Theory]
-        [MemberData(nameof(Throws_Main_Processing_Exception_When_Deferred_Tasks_Failed_TheoryData))]
-        public async Task Throws_Main_Processing_Exception_When_Deferred_Tasks_Failed(Exception? mainProcessingException, Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
+        [MemberData(nameof(Deferred_Task_Exceptions_TheoryData))]
+        public async Task Logs_Deferred_Task_Exceptions_Even_If_Main_Processing_Fails(Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
+        {
+            // arrange
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
+            using var request = CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage("foo"));
+            SetupMainProcessingFailure(new InvalidOperationException());
+
+            if (cloudToDeviceException is { } someCloudToDeviceException)
+                SetupCloudToDeviceFailure(someCloudToDeviceException);
+
+            if (saveChangesException is { } someSaveChangesException)
+                SetupSaveDeviceChangeFailure(someSaveChangesException);
+
+            // act + assert
+            _ = await Assert.ThrowsAsync<InvalidOperationException>(() => Subject.ProcessRequestAsync(request, CreateLoRaDevice(simulatedDevice)));
+            AssertDeferredTaskException(expected);
+        }
+
+        [Theory]
+        [MemberData(nameof(Deferred_Task_Exceptions_TheoryData))]
+        public async Task Logs_Deferred_Task_Exceptions(Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
             using var request = CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage("foo"));
 
-            if (mainProcessingException is { } someMainProcessingException)
-            {
-                this.mockTestDefaultLoRaRequestHandler.Setup(c => c.DownlinkMessageBuilderResponse(It.IsAny<LoRaRequest>(),
-                                                                                                   It.IsAny<LoRaDevice>(),
-                                                                                                   It.IsAny<LoRaOperationTimeWatcher>(),
-                                                                                                   It.IsAny<LoRaADRResult>(),
-                                                                                                   It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
-                                                                                                   It.IsAny<uint?>(),
-                                                                                                   It.IsAny<bool>()))
-                                                      .Throws(someMainProcessingException);
-            }
-
             if (cloudToDeviceException is { } someCloudToDeviceException)
-            {
-                var receivedCloudToDeviceMessage = new Mock<IReceivedLoRaCloudToDeviceMessage>();
-                receivedCloudToDeviceMessage.Setup(m => m.RejectAsync()).ThrowsAsync(someCloudToDeviceException);
-                this.mockTestDefaultLoRaRequestHandler.SetupSequence(c => c.ReceiveCloudToDeviceAsync(It.IsAny<LoRaDevice>(), It.IsAny<TimeSpan>()))
-                                                      .ReturnsAsync(receivedCloudToDeviceMessage.Object)
-                                                      .ReturnsAsync((IReceivedLoRaCloudToDeviceMessage?)null);
-            }
+                SetupCloudToDeviceFailure(someCloudToDeviceException);
 
             if (saveChangesException is { } someSaveChangesException)
-            {
-                this.mockTestDefaultLoRaRequestHandler.Setup(h => h.SaveChangesToDeviceAsync(It.IsAny<LoRaDevice>(), It.IsAny<bool>()))
-                                                      .ThrowsAsync(someSaveChangesException);
-            }
+                SetupSaveDeviceChangeFailure(someSaveChangesException);
 
-            // act + assert
-            var ex = await Assert.ThrowsAsync(expected.GetType(), () => Subject.ProcessRequestAsync(request, CreateLoRaDevice(simulatedDevice)));
+            // act
+            _ = await Subject.ProcessRequestAsync(request, CreateLoRaDevice(simulatedDevice));
 
+            // assert
+            AssertDeferredTaskException(expected);
+        }
+
+        private void AssertDeferredTaskException(Exception expected)
+        {
+            var ex = Assert.Single(this.verifiableLogger.Logs.Where(l => l.Exception is not null)).Exception;
             if (ex is AggregateException someAggregateException)
             {
                 var expectedAggregateException = Assert.IsType<AggregateException>(expected);
@@ -101,8 +107,35 @@ namespace LoRaWan.Tests.Integration
             }
             else
             {
-                Assert.Equal(expected.Message, ex.Message);
+                Assert.Equal(expected.Message, ex!.Message);
             }
+        }
+
+        private void SetupMainProcessingFailure(Exception exception)
+        {
+            this.mockTestDefaultLoRaRequestHandler.Setup(c => c.DownlinkMessageBuilderResponse(It.IsAny<LoRaRequest>(),
+                                                                                                   It.IsAny<LoRaDevice>(),
+                                                                                                   It.IsAny<LoRaOperationTimeWatcher>(),
+                                                                                                   It.IsAny<LoRaADRResult>(),
+                                                                                                   It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
+                                                                                                   It.IsAny<uint?>(),
+                                                                                                   It.IsAny<bool>()))
+                                                  .Throws(exception);
+        }
+
+        private void SetupCloudToDeviceFailure(Exception exception)
+        {
+            var receivedCloudToDeviceMessage = new Mock<IReceivedLoRaCloudToDeviceMessage>();
+            receivedCloudToDeviceMessage.Setup(m => m.RejectAsync()).ThrowsAsync(exception);
+            this.mockTestDefaultLoRaRequestHandler.SetupSequence(c => c.ReceiveCloudToDeviceAsync(It.IsAny<LoRaDevice>(), It.IsAny<TimeSpan>()))
+                                                  .ReturnsAsync(receivedCloudToDeviceMessage.Object)
+                                                  .ReturnsAsync((IReceivedLoRaCloudToDeviceMessage?)null);
+        }
+
+        private void SetupSaveDeviceChangeFailure(Exception exception)
+        {
+            this.mockTestDefaultLoRaRequestHandler.Setup(h => h.SaveChangesToDeviceAsync(It.IsAny<LoRaDevice>(), It.IsAny<bool>()))
+                                                  .ThrowsAsync(exception);
         }
 
         protected override async ValueTask DisposeAsync(bool disposing)

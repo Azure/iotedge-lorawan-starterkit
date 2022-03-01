@@ -336,7 +336,7 @@ namespace LoRaWan.Tests.Integration
 
         [Fact]
         // https://github.com/Azure/iotedge-lorawan-starterkit/issues/1540.
-        public async Task Deferred_Tasks_Do_Not_Impact_Downstream_Message_Delivery_And_Cause_Processing_Failure()
+        public async Task Deferred_Tasks_Do_Not_Impact_Downstream_Message_Delivery_And_Do_Not_Cause_Processing_Failure()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
             var loRaDevice = CreateLoRaDevice(simulatedDevice);
@@ -358,7 +358,7 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             Assert.Single(DownstreamMessageSender.DownlinkMessages);
-            Assert.True(request.ProcessingFailed);
+            Assert.True(request.ProcessingSucceeded);
         }
 
         [Theory]

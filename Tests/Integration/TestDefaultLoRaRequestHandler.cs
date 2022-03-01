@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit.Abstractions;
@@ -29,7 +30,7 @@ namespace LoRaWan.Tests.Integration
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
             IFunctionBundlerProvider functionBundlerProvider,
-            ITestOutputHelper testOutputHelper) : base(
+            ITestOutputHelper testOutputHelper) : this(
                 configuration,
                 frameCounterUpdateStrategyProvider,
                 concentratorDeduplication,
@@ -38,11 +39,33 @@ namespace LoRaWan.Tests.Integration
                 loRaADRStrategyProvider,
                 loRaADRManagerFactory,
                 functionBundlerProvider,
-                new TestOutputLogger<DefaultLoRaDataRequestHandler>(testOutputHelper),
+                new TestOutputLogger<DefaultLoRaDataRequestHandler>(testOutputHelper))
+        { }
+
+        public TestDefaultLoRaRequestHandler(
+            NetworkServerConfiguration configuration,
+            ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
+            IConcentratorDeduplication concentratorDeduplication,
+            ILoRaPayloadDecoder payloadDecoder,
+            IDeduplicationStrategyFactory deduplicationFactory,
+            ILoRaADRStrategyProvider loRaADRStrategyProvider,
+            ILoRAADRManagerFactory loRaADRManagerFactory,
+            IFunctionBundlerProvider functionBundlerProvider,
+            ILogger<DefaultLoRaDataRequestHandler> logger) : base(
+                configuration,
+                frameCounterUpdateStrategyProvider,
+                concentratorDeduplication,
+                payloadDecoder,
+                deduplicationFactory,
+                loRaADRStrategyProvider,
+                loRaADRManagerFactory,
+                functionBundlerProvider,
+                logger,
                 TestMeter.Instance)
         {
             this.configuration = configuration;
         }
+
         protected override FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
             => new Mock<FunctionBundler>().Object;
 
