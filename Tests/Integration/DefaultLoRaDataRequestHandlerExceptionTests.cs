@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
@@ -21,12 +22,20 @@ namespace LoRaWan.Tests.Integration
     {
         private readonly Mock<TestDefaultLoRaRequestHandler> mockTestDefaultLoRaRequestHandler;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
-        private readonly VerifiableLogger<DefaultLoRaDataRequestHandler> verifiableLogger = new();
+        private readonly List<Exception> loggedExceptions = new();
 
         private TestDefaultLoRaRequestHandler Subject => this.mockTestDefaultLoRaRequestHandler.Object;
 
         public DefaultLoRaDataRequestHandlerExceptionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
+            var loggerMock = new Mock<ILogger<DefaultLoRaDataRequestHandler>>();
+            loggerMock.Setup(l => l.Log(It.IsAny<LogLevel>(),
+                                        It.IsAny<EventId>(),
+                                        It.IsAny<It.IsAnyType>(),
+                                        It.IsNotNull<Exception>(),
+                                        (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()))
+                      .Callback((IInvocation invocation) => this.loggedExceptions.Add((Exception)invocation.Arguments[3]));
+
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
             this.mockTestDefaultLoRaRequestHandler = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,
@@ -37,7 +46,7 @@ namespace LoRaWan.Tests.Integration
                 new LoRaADRStrategyProvider(this.testOutputLoggerFactory),
                 new LoRAADRManagerFactory(LoRaDeviceApi.Object, this.testOutputLoggerFactory),
                 new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
-                this.verifiableLogger)
+                loggerMock.Object)
             { CallBase = true };
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .Returns(Task.FromResult<uint>(1));
@@ -94,7 +103,7 @@ namespace LoRaWan.Tests.Integration
 
         private void AssertSecondaryTaskException(Exception expected)
         {
-            var ex = Assert.Single(this.verifiableLogger.Logs.Where(l => l.Exception is not null)).Exception;
+            var ex = Assert.Single(this.loggedExceptions);
             if (ex is AggregateException someAggregateException)
             {
                 var expectedAggregateException = Assert.IsType<AggregateException>(expected);
