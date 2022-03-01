@@ -55,7 +55,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    logger?.LogDebug($"Obtained the lock for LNS: {gatewayId} to execute deduplication");
+                    logger?.LogDebug("Obtained the lock for LNS '{GatewayId}' to execute deduplication.", gatewayId);
 
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
@@ -89,29 +89,30 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 var loraC2DMessage = new LoRaCloudToDeviceMessage()
                                 {
                                     DevEUI = devEUI,
-                                    Fport = FramePort.AppMin
+                                    Fport = FramePort.AppMin,
+                                    MessageId = Guid.NewGuid().ToString()
                                 };
 
-                                logger?.LogDebug($"Invoking direct method on LNS: {previousGateway} to drop connection for device: {devEUI}");
+                                using var scope = logger?.BeginScope(loraC2DMessage.MessageId);
+                                logger?.LogDebug("Invoking direct method on LNS '{PreviousConnectionOwner}' to drop connection for device '{DevEUI}' with message id '{MessageId}'", previousGateway, gatewayId, loraC2DMessage.MessageId);
+
                                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
 
-                                var directMethodErrorMsg = $"Failed to invoke direct method on LNS: {previousGateway} to drop the connection for device: {devEUI}";
                                 try
                                 {
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                                     if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
-                                        logger?.LogError($"{directMethodErrorMsg}, status: {res?.Status}");
+                                        logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}', status '{Status}', message id '{MessageId}'", previousGateway, devEUI, res?.Status, loraC2DMessage.MessageId);
                                     }
                                 }
                                 catch (IotHubException ex)
                                 {
-                                    logger?.LogError(ex, directMethodErrorMsg);
+                                    logger?.LogError(ex, "Exception when invoking direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}', message id '{MessageId}'", previousGateway, devEUI, loraC2DMessage.MessageId);
 
-                                    // The exception is not rethrown.
-                                    // In this case the device connection would stay open
-                                    // on the gateway that lost the race.
+                                    // The exception is not rethrown because closing the connection on the losing gateway
+                                    // is performed on best effort basis.
                                 }
                             }
                         }
