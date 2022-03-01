@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Concurrent;
     using LoRaWan.NetworkServer.Logger;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -131,7 +132,7 @@ namespace LoRaWan.NetworkServer
 
         public async ValueTask DisposeAsync()
         {
-            await Parallel.ForEachAsync(this.clientByDevEui.Values, (client, _) => client.DisposeAsync());
+            await this.clientByDevEui.Values.DisposeAllAsync(20);
         }
 
         public IAsyncDisposable BeginDeviceClientConnectionActivity(LoRaDevice loRaDevice)
