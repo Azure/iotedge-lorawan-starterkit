@@ -31,7 +31,7 @@ IoT Hub and Redis need to be taken into consideration as well. There is document
 the different options for HA and scalability.
 
 With the version 2.1.0 we introduced a major improvement for multi gateway deployments that
-allow the LNS to scale much better when using `DeduplicationMode.None` or
+allows the LNS to scale much better when using `DeduplicationMode.None` or
 `DeduplicationMode.Drop`. All the deployment scenarios are now scaling to similiar levels
 no matter if a multi gateway deployment is used or not.
 
