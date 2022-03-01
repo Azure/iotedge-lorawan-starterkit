@@ -264,7 +264,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = Interlocked.Increment(ref activeDeviceConnections);
             var dc = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
-            dc.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
+            dc.SetRetryPolicy(new ExponentialBackoff(10,
                                                      minBackoff: TimeSpan.FromMilliseconds(100),
                                                      maxBackoff: TimeSpan.FromSeconds(10),
                                                      deltaBackoff: TimeSpan.FromMilliseconds(100)));
