@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
@@ -16,6 +17,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
     {
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly IServiceClient serviceClient;
+
+        private const string MessageIdKey = "MessageId";
 
         public DeduplicationExecutionItem(
             ILoRaDeviceCacheStore cacheStore,
@@ -93,7 +96,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                     MessageId = Guid.NewGuid().ToString()
                                 };
 
-                                using var scope = logger?.BeginScope(loraC2DMessage.MessageId);
+                                using var scope = logger?.BeginScope(new Dictionary<string, object> { [MessageIdKey] = loraC2DMessage.MessageId });
                                 logger?.LogDebug("Invoking direct method on LNS '{PreviousConnectionOwner}' to drop connection for device '{DevEUI}' with message id '{MessageId}'", previousGateway, gatewayId, loraC2DMessage.MessageId);
 
                                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
