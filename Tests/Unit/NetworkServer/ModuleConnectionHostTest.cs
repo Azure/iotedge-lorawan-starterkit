@@ -139,7 +139,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(input), null);
             Assert.Equal(processingDelay, networkServerConfiguration.ProcessingDelayInMilliseconds);
-
         }
 
         [Theory]

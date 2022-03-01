@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer
                     // in the case of resubmissions we need to contact the function to get a valid frame counter down
                     if (CreateBundler(loraPayload, loRaDevice, request) is { } bundler)
                     {
-                        if (loRaDevice.IsConnectionOwner is false && ProcessingDelayEnabled())
+                        if (loRaDevice.IsConnectionOwner is false && IsProcessingDelayEnabled())
                         {
                             await DelayProcessing();
                         }
@@ -175,7 +175,7 @@ namespace LoRaWan.NetworkServer
                     // applying the correct deduplication
                     if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
-                        if (ProcessingDelayEnabled())
+                        if (IsProcessingDelayEnabled())
                         {
                             loRaDevice.IsConnectionOwner = false;
                             await loRaDevice.CloseConnectionAsync(CancellationToken.None);
@@ -837,7 +837,7 @@ namespace LoRaWan.NetworkServer
         protected virtual FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
             => this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
 
-        protected bool ProcessingDelayEnabled() => this.configuration.ProcessingDelayInMilliseconds > 0;
+        internal bool IsProcessingDelayEnabled() => this.configuration.ProcessingDelayInMilliseconds > 0;
 
         protected virtual async Task DelayProcessing() => await Task.Delay(TimeSpan.FromMilliseconds(this.configuration.ProcessingDelayInMilliseconds));
 
