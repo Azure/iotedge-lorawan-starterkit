@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer
                     // in the case of resubmissions we need to contact the function to get a valid frame counter down
                     if (CreateBundler(loraPayload, loRaDevice, request) is { } bundler)
                     {
-                        if (loRaDevice.IsConnectionOwner is false)
+                        if (loRaDevice.IsConnectionOwner is false && ProcessingDelayEnabled())
                         {
                             await DelayProcessing();
                         }
@@ -175,8 +175,11 @@ namespace LoRaWan.NetworkServer
                     // applying the correct deduplication
                     if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
-                        loRaDevice.IsConnectionOwner = false;
-                        await loRaDevice.CloseConnectionAsync(CancellationToken.None);
+                        if (ProcessingDelayEnabled())
+                        {
+                            loRaDevice.IsConnectionOwner = false;
+                            await loRaDevice.CloseConnectionAsync(CancellationToken.None);
+                        }
                         // duplication strategy is indicating that we do not need to continue processing this message
                         this.logger.LogDebug($"duplication strategy indicated to not process message: {payloadFcnt}");
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
@@ -834,16 +837,9 @@ namespace LoRaWan.NetworkServer
         protected virtual FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
             => this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
 
-        protected virtual async Task DelayProcessing()
-        {
-            var processingDelay = this.configuration.ProcessingDelayInMilliseconds;
-            if (processingDelay <= 0)
-            {
-                return;
-            }
+        protected bool ProcessingDelayEnabled() => this.configuration.ProcessingDelayInMilliseconds > 0;
 
-            await Task.Delay(TimeSpan.FromMilliseconds(processingDelay));
-        }
+        protected virtual async Task DelayProcessing() => await Task.Delay(TimeSpan.FromMilliseconds(this.configuration.ProcessingDelayInMilliseconds));
 
         protected virtual async Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
         {

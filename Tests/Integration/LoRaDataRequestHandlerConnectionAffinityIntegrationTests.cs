@@ -64,42 +64,53 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        [InlineData(null)]
-        public async Task When_Gateway_Does_Not_Own_Connection_It_Should_Delay(bool? connectionOwner)
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        [InlineData(null, true)]
+        public async Task When_Gateway_Does_Not_Own_Connection_It_Should_Delay_If_Delay_Enabled(bool? connectionOwner, bool processingDelayEnabled)
         {
             // arrange
             this.deviceMock.Object.IsConnectionOwner = connectionOwner;
+
+            if (!processingDelayEnabled)
+                ServerConfiguration.ProcessingDelayInMilliseconds = 0;
 
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.deviceMock.Object);
 
             // assert
-            this.dataRequestHandlerMock.Verify(x => x.DelayProcessingAssert(), connectionOwner is false ? Times.Once : Times.Never);
+            var shouldDelay = connectionOwner is false && processingDelayEnabled;
+            this.dataRequestHandlerMock.Verify(x => x.DelayProcessingAssert(), shouldDelay ? Times.Once : Times.Never);
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task Connection_Handling_Should_Depend_On_Deduplication_Result(bool keptConnection)
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        public async Task Connection_Handling_Should_Depend_On_Deduplication_Result_And_Processing_Delay(bool canProcess, bool processingDelayEnabled)
         {
             // arrange
             this.deviceMock.Object.IsConnectionOwner = true;
             _ = this.dataRequestHandlerMock.Setup(x => x.TryUseBundlerAssert()).Returns(new FunctionBundlerResult
             {
                 DeduplicationResult = new DeduplicationResult
-                { CanProcess = keptConnection },
+                { CanProcess = canProcess },
                 NextFCntDown = null
             });
+
+            if (!processingDelayEnabled)
+                ServerConfiguration.ProcessingDelayInMilliseconds = 0;
 
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.deviceMock.Object);
 
             // assert
-            Assert.Equal(keptConnection, this.deviceMock.Object.IsConnectionOwner);
+            Assert.Equal(canProcess || !processingDelayEnabled, this.deviceMock.Object.IsConnectionOwner);
 
-            if (keptConnection)
+            if (canProcess)
             {
                 this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, It.IsAny<bool>()), Times.Never);
                 this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
@@ -107,9 +118,18 @@ namespace LoRaWan.Tests.Integration
             }
             else
             {
-                this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
+                if (processingDelayEnabled)
+                {
+                    this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
+                    this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Never);
+                }
+                else
+                {
+                    this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, It.IsAny<bool>()), Times.Never);
+                    this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Once);
+                }
+
                 this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Never);
-                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Never);
             }
         }
 
