@@ -43,17 +43,17 @@ namespace LoRaWan.Tests.Integration
                          .Returns(Task.FromResult<uint>(1));
         }
 
-        public static TheoryData<Exception?, Exception?, Exception> Deferred_Task_Exceptions_TheoryData() =>
+        public static TheoryData<Exception?, Exception?, Exception> Secondary_Task_Exceptions_TheoryData() =>
             TheoryDataFactory.From(new (Exception?, Exception?, Exception)[]
             {
-                (new OperationCanceledException("Deferred task canceled"), null, new OperationCanceledException("Deferred task canceled")),
+                (new OperationCanceledException("Secondary task canceled"), null, new OperationCanceledException("Secondary task canceled")),
                 (null, new LoRaProcessingException(), new LoRaProcessingException()),
                 (new InvalidOperationException("A"), new LoRaProcessingException("B"), new AggregateException(new Exception[] { new InvalidOperationException("A"), new LoRaProcessingException("B") })),
             });
 
         [Theory]
-        [MemberData(nameof(Deferred_Task_Exceptions_TheoryData))]
-        public async Task Logs_Deferred_Task_Exceptions_Even_If_Main_Processing_Fails(Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
+        [MemberData(nameof(Secondary_Task_Exceptions_TheoryData))]
+        public async Task Logs_Secondary_Task_Exceptions_Even_If_Main_Processing_Fails(Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -68,12 +68,12 @@ namespace LoRaWan.Tests.Integration
 
             // act + assert
             _ = await Assert.ThrowsAsync<InvalidOperationException>(() => Subject.ProcessRequestAsync(request, CreateLoRaDevice(simulatedDevice)));
-            AssertDeferredTaskException(expected);
+            AssertSecondaryTaskException(expected);
         }
 
         [Theory]
-        [MemberData(nameof(Deferred_Task_Exceptions_TheoryData))]
-        public async Task Logs_Deferred_Task_Exceptions(Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
+        [MemberData(nameof(Secondary_Task_Exceptions_TheoryData))]
+        public async Task Logs_Secondary_Task_Exceptions(Exception? cloudToDeviceException, Exception? saveChangesException, Exception expected)
         {
             // arrange
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
@@ -89,10 +89,10 @@ namespace LoRaWan.Tests.Integration
             _ = await Subject.ProcessRequestAsync(request, CreateLoRaDevice(simulatedDevice));
 
             // assert
-            AssertDeferredTaskException(expected);
+            AssertSecondaryTaskException(expected);
         }
 
-        private void AssertDeferredTaskException(Exception expected)
+        private void AssertSecondaryTaskException(Exception expected)
         {
             var ex = Assert.Single(this.verifiableLogger.Logs.Where(l => l.Exception is not null)).Exception;
             if (ex is AggregateException someAggregateException)
