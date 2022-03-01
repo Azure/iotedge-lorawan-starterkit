@@ -32,7 +32,7 @@ towards IoT hub.
 
 Should an owning LNS go down and a message for that device is sent,
 another LNS will eventually win the race and take the ownership.
-Guaranteeing seemless failover and message processing.
+This guarantees seemless failover and message processing.
 
 Ownership is tracked both locally on the LNS to determine the connection
 state as well as on the function. The function side is used to send
