@@ -30,9 +30,9 @@ There are multiple strategies that you can take to improve the availability of t
 IoT Hub and Redis need to be taken into consideration as well. There is documentation for all of these services explaining
 the different options for HA and scalability.
 
-With the version 2.1 we introduced a major improvement for multi gateway deployments that
-allow the LNS to scale much better when using `DeduplicationMode.None` or
-`DeduplicationMode.Drop`. All the deployment scenarios are now scaling to similiar levels
+With the version 2.1.0 we introduced a major improvement for multi gateway deployments that
+allows the LNS to scale much better when using `DeduplicationMode.Drop`. 
+All the deployment scenarios are now scaling to similiar levels
 no matter if a multi gateway deployment is used or not.
 
 ### Single concentrator with single LNS

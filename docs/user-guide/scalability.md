@@ -1,7 +1,7 @@
 # Scalability
 
 Different [deployment scenarios](./deployment-scenarios.md) have impact
-on the scalability of your LNS (LoRa network server).
+on the scalability of your LNS (LoRaWAN Network Server).
 
 ## Connection ownership
 
@@ -24,7 +24,7 @@ To facilitate this, we track the last LNS that won the race to process
 a particular message. This LNS is then given an edge for future message
 processing for that device by a configurable amount. This allows
 the owning gateway to keep the connection open and keep processing messages
-without having to fight for the connection from other LNS's. LNS's that do not
+without having to fight for the connection from other LNSes. LNSes that do not
 own the connection, never open it (unless for occasional cache refreshes).
 
 This allows us to have a high percentage of single connection management
@@ -48,7 +48,7 @@ There is a feature built into the LNS to
 [deduplicate messages](./../adr/007_message_deduplication.md), to
 deal with duplicate messages on multiple LNS. This does
 have an effect on scalability. Higher scalability as described above
-can only be achieved with `None` and `Drop`. Any other settings
+can only be achieved with `Drop`. Any other settings
 will require the connection to be opened during message processing
 on multiple gateways and does not allow the ownership of a
 connection on a single LNS.
