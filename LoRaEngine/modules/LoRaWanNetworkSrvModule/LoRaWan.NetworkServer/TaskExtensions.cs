@@ -23,19 +23,14 @@ namespace LoRaWan.NetworkServer
                     throw new InvalidOperationException("All tasks must have completed.");
                 }
 
-                if (task.IsCompletedSuccessfully) continue;
+                if (task.IsCompletedSuccessfully)
+                    continue;
 
                 if (task.IsCanceled && task.TryGetCanceledException(out var ex))
                     result.Add(ex);
 
-                if (task.IsFaulted && task.Exception is { } someException)
-                {
-                    result.Add(someException.InnerExceptions switch
-                    {
-                        { Count: 1 } => someException.InnerExceptions[0],
-                        _ => someException
-                    });
-                }
+                if (task is { IsFaulted: true, Exception: { } aggregateException })
+                    result.Add(aggregateException.InnerExceptions is { Count: 1 } exceptions ? exceptions[0] : aggregateException);
             }
 
             return result;
