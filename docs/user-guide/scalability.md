@@ -1,7 +1,7 @@
 # Scalability
 
 Different [deployment scenarios](./deployment-scenarios.md) have impact
-on the scalability of your LNS (LoRa network server).
+on the scalability of your LNS (LoRaWAN Network Server).
 
 ## Connection ownership
 
