@@ -133,6 +133,20 @@ namespace LoRaWan.Tests.Integration
             }
         }
 
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData(400, true)]
+        [InlineData(1500, true)]
+        [InlineData(0, false)]
+        [InlineData(-1000, false)]
+        public void IsProcessingDelayEnbled(int? processingDelay, bool processingDelayEnabled)
+        {
+            if (processingDelay is { } delay)
+                ServerConfiguration.ProcessingDelayInMilliseconds = delay;
+
+            Assert.Equal(processingDelayEnabled, this.dataRequestHandlerMock.Object.IsProcessingDelayEnabled());
+        }
+
         protected override async ValueTask DisposeAsync(bool disposing)
         {
             if (disposing)
