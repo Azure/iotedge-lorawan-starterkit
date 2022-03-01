@@ -24,7 +24,7 @@ To facilitate this, we track the last LNS that won the race to process
 a particular message. This LNS is then given an edge for future message
 processing for that device by a configurable amount. This allows
 the owning gateway to keep the connection open and keep processing messages
-without having to fight for the connection from other LNS's. LNS's that do not
+without having to fight for the connection from other LNSes. LNSes that do not
 own the connection, never open it (unless for occasional cache refreshes).
 
 This allows us to have a high percentage of single connection management
