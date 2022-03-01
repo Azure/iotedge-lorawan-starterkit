@@ -118,36 +118,43 @@ namespace LoRaWan.NetworkServer
                     };
         }
 
-        private string CreateIoTHubConnectionString()
+        private string CreateIoTHubConnectionString(string deviceId, string primaryKey)
         {
-            var connectionString = string.Empty;
-
             if (string.IsNullOrEmpty(this.configuration.IoTHubHostName))
             {
                 this.logger.LogError("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible");
             }
 
-            connectionString += $"HostName={this.configuration.IoTHubHostName};";
+            var sas = new SharedAccessSignatureBuilder
+            {
+                Key = primaryKey,
+                Target = $"{this.configuration.IoTHubHostName}/devices/{System.Net.WebUtility.UrlEncode(deviceId)}",
+                TimeToLive = TimeSpan.FromDays(30)
+            }.ToSignature();
 
+            IotHubConnectionStringBuilder connectionStringBuilder;
             if (this.configuration.EnableGateway)
             {
-                connectionString += $"GatewayHostName={this.configuration.GatewayHostName};";
+                connectionStringBuilder = IotHubConnectionStringBuilder.Create(this.configuration.IoTHubHostName,
+                                                                               this.configuration.GatewayHostName,
+                                                                               new DeviceAuthenticationWithToken(deviceId, sas));
                 this.logger.LogDebug($"using edgeHub local queue");
             }
             else
             {
+                connectionStringBuilder = IotHubConnectionStringBuilder.Create(this.configuration.IoTHubHostName,
+                                                                               new DeviceAuthenticationWithToken(deviceId, sas));
                 this.logger.LogDebug("using iotHub directly, no edgeHub queue");
             }
 
-            return connectionString;
+            return connectionStringBuilder.ToString();
         }
 
         public virtual ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey)
         {
             try
             {
-                var partConnection = CreateIoTHubConnectionString();
-                var deviceConnectionStr = FormattableString.Invariant($"{partConnection}DeviceId={deviceId};SharedAccessKey={primaryKey}");
+                var deviceConnectionStr = CreateIoTHubConnectionString(deviceId, primaryKey);
 
                 this.logger.LogDebug($"Creating device client for {deviceId}");
 
