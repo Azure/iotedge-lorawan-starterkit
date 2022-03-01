@@ -114,12 +114,12 @@ namespace LoRaWan.Tests.Integration
         private void SetupMainProcessingFailure(Exception exception)
         {
             this.mockTestDefaultLoRaRequestHandler.Setup(c => c.DownlinkMessageBuilderResponse(It.IsAny<LoRaRequest>(),
-                                                                                                   It.IsAny<LoRaDevice>(),
-                                                                                                   It.IsAny<LoRaOperationTimeWatcher>(),
-                                                                                                   It.IsAny<LoRaADRResult>(),
-                                                                                                   It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
-                                                                                                   It.IsAny<uint?>(),
-                                                                                                   It.IsAny<bool>()))
+                                                                                               It.IsAny<LoRaDevice>(),
+                                                                                               It.IsAny<LoRaOperationTimeWatcher>(),
+                                                                                               It.IsAny<LoRaADRResult>(),
+                                                                                               It.IsAny<IReceivedLoRaCloudToDeviceMessage>(),
+                                                                                               It.IsAny<uint?>(),
+                                                                                               It.IsAny<bool>()))
                                                   .Throws(exception);
         }
 
