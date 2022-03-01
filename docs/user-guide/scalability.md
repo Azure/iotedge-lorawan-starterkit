@@ -48,7 +48,7 @@ There is a feature built into the LNS to
 [deduplicate messages](./../adr/007_message_deduplication.md), to
 deal with duplicate messages on multiple LNS. This does
 have an effect on scalability. Higher scalability as described above
-can only be achieved with `None` and `Drop`. Any other settings
+can only be achieved with `Drop`. Any other settings
 will require the connection to be opened during message processing
 on multiple gateways and does not allow the ownership of a
 connection on a single LNS.
