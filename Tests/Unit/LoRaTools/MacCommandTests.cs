@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
             [Fact]
             public void Deserializes_Correctly() =>
-                DeserializationTest<DevStatusRequest>(actual => actual.Cid == Cid, @"{""cid"":6}");
+                DeserializationTest<DevStatusRequest>(actual => actual.Cid == Cid, "{'cid':6}");
         }
 
         public sealed class DutyCycleAnswerTests : MacCommandTests
@@ -121,7 +121,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             public void Deserializes_Correctly() =>
                 DeserializationTest<DutyCycleRequest>(actual => actual.Cid == Cid
                                                              && actual.DutyCyclePL == Subject.DutyCyclePL,
-                                                      @"{""cid"":4,""dutyCyclePL"":3}");
+                                                      "{'cid':4,'dutyCyclePL':3}");
         }
 
         public sealed class LinkAdrAnswerTests : MacCommandTests
@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
             [Fact]
             public void Deserializes_Correctly() =>
-                DeserializationTest(Assert, @"{""cid"":3,""dataRate"":1,""txPower"":2,""chMask"":3,""chMaskCntl"":4,""nbRep"":5}");
+                DeserializationTest(Assert, "{'cid':3,'dataRate':1,'txPower':2,'chMask':3,'chMaskCntl':4,'nbRep':5}");
 
             [Fact]
             public void FromBytes_Success() => FromBytesTest(Assert, bytes => new LinkADRRequest(bytes), DataBytes);
@@ -214,7 +214,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                               && actual.Freq == Subject.Freq
                                                               && actual.MaxDR == Subject.MaxDR
                                                               && actual.MinDR == Subject.MinDR,
-                                                       @"{""cid"":7,""chIndex"":1,""freq"":2,""drRange"":52}");
+                                                       "{'cid':7,'chIndex':1,'freq':2,'drRange':52}");
         }
 
         public sealed class RxParamSetupAnswerTests : MacCommandTests
@@ -246,7 +246,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                                                 && actual.Frequency == Subject.Frequency
                                                                 && actual.RX1DROffset == Subject.RX1DROffset
                                                                 && actual.RX2DataRate == Subject.RX2DataRate,
-                                                         @"{""cid"":5,""frequency"":3,""dlSettings"":18}");
+                                                         "{'cid':5,'frequency':3,'dlSettings':18}");
         }
 
         public sealed class RxTimingSetupAnswerTests : MacCommandTests
@@ -267,7 +267,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
             [Fact]
             public void Deserializes_Correctly() =>
                 DeserializationTest<RXTimingSetupRequest>(actual => actual.Cid == Cid && actual.Settings == Subject.Settings,
-                                                          @"{""cid"":8,""settings"":1}");
+                                                          "{'cid':8,'settings':1}");
         }
 
         [Fact]
@@ -283,7 +283,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public void Cid_Success() => Assert.Equal(Cid, Subject.Cid);
 
         protected static void DeserializationTest<T>(Predicate<T> assert, string json) =>
-            Assert.True(assert(JsonConvert.DeserializeObject<T>(json) ?? throw new InvalidOperationException("JSON was deserialized to null.")));
+            Assert.True(assert(JsonConvert.DeserializeObject<T>(JsonUtil.Strictify(json)) ?? throw new InvalidOperationException("JSON was deserialized to null.")));
 
         protected void FromBytesTest<T>(Predicate<T> assert, Func<byte[], T> subject, IReadOnlyList<byte> dataBytes) =>
             Assert.True(assert(subject(GetFullBytes(dataBytes))));
