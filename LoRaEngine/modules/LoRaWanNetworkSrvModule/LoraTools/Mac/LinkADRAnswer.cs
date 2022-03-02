@@ -32,9 +32,9 @@ namespace LoRaTools
         public LinkADRAnswer(byte powerAck, bool dataRateAck, bool channelMaskAck)
         {
             Cid = Cid.LinkADRCmd;
-            Status |= (byte)((byte)(powerAck & 0b00000011) << 2);
-            Status |= (byte)((dataRateAck ? 1 : 0) << 1);
-            Status |= (byte)(channelMaskAck ? 1 : 0);
+            Status = unchecked((byte)(((powerAck & 0b00000011) << 2)
+                                      | (dataRateAck ? 2 : 0)
+                                      | (channelMaskAck ? 1 : 0)));
         }
 
         /// <summary>
