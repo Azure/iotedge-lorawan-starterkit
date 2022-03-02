@@ -330,6 +330,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
+        [MemberData(nameof(OperationsTestData))]
+        public async Task Unsuccessful_Operation(IOperationTestCase testCase)
+        {
+            var exception = new InvalidOperationException();
+            testCase.Setup(this.originalMock).Fail(exception);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => testCase.InvokeAsync(this.subject));
+
+            Assert.Same(exception, ex);
+            testCase.Verify(this.originalMock, Times.Exactly(1));
+            this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
+            this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Theory]
         [MemberData(nameof(ResiliencyTestData))]
         public async Task Unstable_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
         {
