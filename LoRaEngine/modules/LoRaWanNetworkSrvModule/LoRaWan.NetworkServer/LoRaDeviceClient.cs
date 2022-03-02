@@ -262,7 +262,6 @@ namespace LoRaWan.NetworkServer
 
         private DeviceClient CreateDeviceClient()
         {
-            this.logger.LogDebug("CreatingDeviceClient");
             _ = Interlocked.Increment(ref activeDeviceConnections);
             var dc = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
             dc.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
