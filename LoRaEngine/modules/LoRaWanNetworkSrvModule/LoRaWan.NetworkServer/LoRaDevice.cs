@@ -8,10 +8,10 @@ namespace LoRaWan.NetworkServer
     using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
-    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging.Abstractions;
     using static ReceiveWindowNumber;
 
-    public class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
+    public class LoRaDevice : IAsyncDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>
         /// Defines the maximum amount of times an ack resubmit will be sent.
@@ -89,6 +89,8 @@ namespace LoRaWan.NetworkServer
         public bool IsABPRelaxedFrameCounter { get; set; }
 
         public bool Supports32BitFCnt { get; set; }
+
+        public bool? IsConnectionOwner { get; set; }
 
         private readonly ChangeTrackingProperty<DataRateIndex> dataRate = new(TwinProperty.DataRate);
 
@@ -160,7 +162,9 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Used to synchronize the async save operation to the twins for this particular device.
         /// </summary>
+#pragma warning disable CA2213 // Disposable fields should be disposed (disposed in async)
         private readonly SemaphoreSlim syncSave = new SemaphoreSlim(1, 1);
+#pragma warning restore CA2213 // Disposable fields should be disposed
         private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
@@ -237,7 +241,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            var connection = this.connectionManager.GetClient(this);
+            var connection = Client;
             if (connection == null)
             {
                 throw new LoRaProcessingException("No connection registered.", LoRaProcessingErrorCode.DeviceInitializationFailed);
@@ -925,18 +929,25 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        protected virtual void Dispose(bool dispose)
+        internal virtual async Task CloseConnectionAsync(CancellationToken cancellationToken, bool force = false)
         {
-            if (dispose)
+            if ((force || IsConnectionOwner is null or false)
+                && this.connectionManager is { } someConnectionManager)
             {
-                this.connectionManager?.Release(this);
-                this.syncSave.Dispose();
+                await someConnectionManager.GetClient(this).DisconnectAsync(cancellationToken);
             }
         }
 
-        public void Dispose()
+        protected virtual async ValueTask DisposeAsyncCore()
         {
-            Dispose(true);
+            if (this.connectionManager is { } someConnectionManager)
+                await someConnectionManager.ReleaseAsync(this);
+            this.syncSave.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore();
             GC.SuppressFinalize(this);
         }
 

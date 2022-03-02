@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(Task.CompletedTask);
 
@@ -89,10 +89,10 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -137,7 +137,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -149,10 +149,10 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -204,7 +204,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -216,10 +216,10 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -232,6 +232,8 @@ namespace LoRaWan.Tests.Integration
             Assert.True(request1.ProcessingSucceeded);
 
             await EnsureDisconnectedAsync(disconnectedEvent);
+            LoRaDeviceClient.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(1));
+            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
 
             // sends unconfirmed message #2
             using var request2 = CreateWaitableRequest(simulatedDevice.CreateUnconfirmedDataUpMessage("2"));
@@ -241,7 +243,7 @@ namespace LoRaWan.Tests.Integration
 
             await EnsureDisconnectedAsync(disconnectedEvent);
 
-            LoRaDeviceClient.Verify(x => x.DisconnectAsync(), Times.Exactly(2));
+            LoRaDeviceClient.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(2));
             LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2 * /* send + receive */ 2));
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
@@ -279,14 +281,14 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(Task.CompletedTask);
 
             using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -315,7 +317,7 @@ namespace LoRaWan.Tests.Integration
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            LoRaDeviceClient.Setup(x => x.DisconnectAsync())
+            LoRaDeviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -346,8 +348,8 @@ namespace LoRaWan.Tests.Integration
             cachedDevice.SetLastProcessingStationEui(new StationEui(ulong.MaxValue));
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             var target = new DefaultClassCDevicesMessageSender(
                 ServerConfiguration,

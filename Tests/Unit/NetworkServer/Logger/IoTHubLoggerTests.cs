@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.Logger
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using global::LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.Logger;
     using LoRaWan.Tests.Common;

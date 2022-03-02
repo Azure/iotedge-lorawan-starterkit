@@ -35,6 +35,7 @@ namespace LoRaWan.NetworkServer
         public static readonly CustomMetric DeviceCacheHits = new CustomMetric("DeviceCacheHits", "Number of device cache hits", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric DeviceLoadRequests = new CustomMetric("DeviceLoadRequests", "Number of device load requests issued against an API service", MetricType.Counter, new[] { GatewayIdTagName });
         public static readonly CustomMetric TwinLoadRequests = new CustomMetric("TwinLoadRequests", "Number of device twin load requests issued against RegistryManager and DeviceClient", MetricType.Counter, new[] { GatewayIdTagName });
+        public static readonly CustomMetric ActiveClientConnections = new CustomMetric("ActiveClientConnections", "Number of active client connections", MetricType.ObservableGauge, new[] { GatewayIdTagName });
 
         private static readonly ICollection<CustomMetric> Registry = new[]
         {
@@ -50,7 +51,8 @@ namespace LoRaWan.NetworkServer
             C2DMessageTooLong,
             DeviceCacheHits,
             DeviceLoadRequests,
-            TwinLoadRequests
+            TwinLoadRequests,
+            ActiveClientConnections
         };
 
         public static readonly IDictionary<string, CustomMetric> RegistryLookup =

@@ -6,6 +6,7 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Used for setting up/mocking classes for testing, if intermediate disposables need to be disposed at the end of the test.
@@ -27,5 +28,21 @@ namespace LoRaWan.Tests.Common
         public T Value { get; }
 
         public void Dispose() => this.dispose();
+    }
+
+    public sealed class AsyncDisposableValue<T> : IAsyncDisposable
+    {
+        private readonly Func<ValueTask> dispose;
+
+        public AsyncDisposableValue(T value, IAsyncDisposable disposable)
+            : this(value, () => disposable.DisposeAsync())
+        { }
+
+        public AsyncDisposableValue(T value, Func<ValueTask> dispose) =>
+            (Value, this.dispose) = (value, dispose);
+
+        public T Value { get; }
+
+        public ValueTask DisposeAsync() => dispose();
     }
 }

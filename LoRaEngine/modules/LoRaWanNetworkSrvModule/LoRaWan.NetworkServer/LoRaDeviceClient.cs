@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Interface between IoT Hub and device.
     /// </summary>
-    public sealed class LoRaDeviceClient : ILoRaDeviceClient
+    public sealed class LoRaDeviceClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
     {
         private const string CompleteOperationName = "Complete";
         private const string AbandonOperationName = "Abandon";
@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer
         private static readonly string ReceiveDependencyName = GetSdkDependencyName("Receive");
         private static string GetSdkDependencyName(string dependencyName) => $"SDK {dependencyName}";
         private static readonly TimeSpan TwinUpdateTimeout = TimeSpan.FromSeconds(10);
+        private static int activeDeviceConnections;
 
         private readonly string deviceIdTracingData;
         private readonly string connectionString;
@@ -54,6 +55,7 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
             this.tracing = tracing;
             this.twinLoadRequests = meter.CreateCounter<int>(MetricRegistry.TwinLoadRequests);
+            _ = meter.CreateObservableGauge(MetricRegistry.ActiveClientConnections, () => activeDeviceConnections);
             this.deviceClient = CreateDeviceClient();
         }
 
@@ -74,7 +76,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (OperationCanceledException ex)
             {
-                this.logger.LogError($"could not retrieve device twin with error: {ex.Message}");
+                this.logger.LogError(ex, $"could not retrieve device twin with error: {ex.Message}");
                 return null;
             }
             catch (IotHubCommunicationException ex)
@@ -108,7 +110,7 @@ namespace LoRaWan.NetworkServer
                 return true;
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException &&
-                                                          ExceptionFilterUtility.True(() => this.logger.LogError($"could not update twin with error: {ex.Message}")))
+                                                          ExceptionFilterUtility.True(() => this.logger.LogError(ex, $"could not update twin with error: {ex.Message}")))
             {
                 return false;
             }
@@ -143,7 +145,7 @@ namespace LoRaWan.NetworkServer
 
                     return true;
                 }
-                catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not send message to IoTHub/Edge with error: {ex.Message}")))
+                catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "could not send message to IoTHub/Edge due to timeout.")))
                 {
                     // continue
                 }
@@ -171,7 +173,7 @@ namespace LoRaWan.NetworkServer
 
                 return msg;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not retrieve cloud to device message with error: {ex.Message}")))
+            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "could not retrieve cloud to device message due to timeout.")))
             {
                 return null;
             }
@@ -201,29 +203,41 @@ namespace LoRaWan.NetworkServer
                 this.logger.LogDebug("done processing '{OperationName}' on cloud to device message, id: '{MessageId}'.", operationName, messageId);
                 return true;
             }
-            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "'{OperationName}' failed on cloud to device message (id: {MessageId}) with error: '{ExceptionMessage}'.", operationName, messageId, ex.Message)))
+            catch (OperationCanceledException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "'{OperationName}' timed out on cloud to device message (id: {MessageId}).", operationName, messageId)))
             {
                 return false;
             }
         }
 
-        /// <summary>
-        /// Disconnects device client.
-        /// </summary>
-        public async Task DisconnectAsync()
+        public async Task DisconnectAsync(CancellationToken cancellationToken)
         {
             if (this.deviceClient != null)
             {
-                await this.deviceClient.DisposeAsync();
-                this.deviceClient = null;
+                _ = Interlocked.Decrement(ref activeDeviceConnections);
 
-                this.logger.LogDebug("device client disconnected");
-            }
-            else
-            {
-                this.logger.LogDebug("device client was already disconnected");
+                try
+                {
+                    await this.deviceClient.CloseAsync(cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "failed to close device client.")))
+                {
+                }
+                finally
+                {
+#pragma warning disable CA1849 // Calling DisposeAsync after CloseAsync throws an error
+                    this.deviceClient.Dispose();
+#pragma warning restore CA1849 // Call async methods when in an async method
+                    this.deviceClient = null;
+
+                    this.logger.LogDebug("device client disconnected");
+                }
             }
         }
+
 
         /// <summary>
         /// Ensures that the connection is open.
@@ -237,7 +251,7 @@ namespace LoRaWan.NetworkServer
                     this.deviceClient = CreateDeviceClient();
                     this.logger.LogDebug("device client reconnected");
                 }
-                catch (ArgumentException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError($"could not connect device client with error: {ex.Message}")))
+                catch (ArgumentException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, $"could not connect device client with error: {ex.Message}")))
                 {
                     return false;
                 }
@@ -248,6 +262,7 @@ namespace LoRaWan.NetworkServer
 
         private DeviceClient CreateDeviceClient()
         {
+            _ = Interlocked.Increment(ref activeDeviceConnections);
             var dc = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
             dc.SetRetryPolicy(new ExponentialBackoff(int.MaxValue,
                                                      minBackoff: TimeSpan.FromMilliseconds(100),
@@ -256,12 +271,11 @@ namespace LoRaWan.NetworkServer
             return dc;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.deviceClient?.Dispose();
-            this.deviceClient = null;
-
-            GC.SuppressFinalize(this);
+            await DisconnectAsync(CancellationToken.None);
         }
+
+        ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this;
     }
 }

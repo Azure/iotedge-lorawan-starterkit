@@ -10,7 +10,9 @@ namespace LoRaWan.Tests.Integration
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
     using Xunit.Abstractions;
 
     internal class TestDefaultLoRaRequestHandler : DefaultLoRaDataRequestHandler
@@ -28,7 +30,7 @@ namespace LoRaWan.Tests.Integration
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
             IFunctionBundlerProvider functionBundlerProvider,
-            ITestOutputHelper testOutputHelper) : base(
+            ITestOutputHelper testOutputHelper) : this(
                 configuration,
                 frameCounterUpdateStrategyProvider,
                 concentratorDeduplication,
@@ -37,25 +39,52 @@ namespace LoRaWan.Tests.Integration
                 loRaADRStrategyProvider,
                 loRaADRManagerFactory,
                 functionBundlerProvider,
-                new TestOutputLogger<DefaultLoRaDataRequestHandler>(testOutputHelper),
+                new TestOutputLogger<DefaultLoRaDataRequestHandler>(testOutputHelper))
+        { }
+
+        public TestDefaultLoRaRequestHandler(
+            NetworkServerConfiguration configuration,
+            ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
+            IConcentratorDeduplication concentratorDeduplication,
+            ILoRaPayloadDecoder payloadDecoder,
+            IDeduplicationStrategyFactory deduplicationFactory,
+            ILoRaADRStrategyProvider loRaADRStrategyProvider,
+            ILoRAADRManagerFactory loRaADRManagerFactory,
+            IFunctionBundlerProvider functionBundlerProvider,
+            ILogger<DefaultLoRaDataRequestHandler> logger) : base(
+                configuration,
+                frameCounterUpdateStrategyProvider,
+                concentratorDeduplication,
+                payloadDecoder,
+                deduplicationFactory,
+                loRaADRStrategyProvider,
+                loRaADRManagerFactory,
+                functionBundlerProvider,
+                logger,
                 TestMeter.Instance)
         {
             this.configuration = configuration;
         }
 
-        protected override Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
+        protected override FunctionBundler CreateBundler(LoRaPayloadData loraPayload, LoRaDevice loRaDevice, LoRaRequest request)
+            => new Mock<FunctionBundler>().Object;
+
+        protected override Task DelayProcessing()
+            => DelayProcessingAssert();
+
+        protected override Task<FunctionBundlerResult> TryUseBundler(FunctionBundler bundler, LoRaDevice loRaDevice)
             => Task.FromResult(TryUseBundlerAssert());
 
         protected override Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
             => Task.FromResult(PerformADRAssert());
 
-        protected override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        internal override Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
             => Task.FromResult<IReceivedLoRaCloudToDeviceMessage>(null);
 
-        protected override Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
+        internal override Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, bool isDuplicate, byte[] decryptedPayloadData)
             => Task.FromResult(SendDeviceAsyncAssert());
 
-        protected override DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request,
+        internal override DownlinkMessageBuilderResponse DownlinkMessageBuilderResponse(LoRaRequest request,
                                                                                          LoRaDevice loRaDevice,
                                                                                          LoRaOperationTimeWatcher timeWatcher,
                                                                                          LoRaADRResult loRaADRResult,
@@ -67,10 +96,12 @@ namespace LoRaWan.Tests.Integration
         protected override Task SendMessageDownstreamAsync(LoRaRequest request, DownlinkMessageBuilderResponse confirmDownlinkMessageBuilderResp)
             => Task.FromResult(SendMessageDownstreamAsyncAssert(confirmDownlinkMessageBuilderResp));
 
-        protected override Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
+        internal override Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
             => Task.FromResult(SaveChangesToDeviceAsyncAssert());
 
         public virtual LoRaADRResult PerformADRAssert() => null;
+
+        public virtual Task DelayProcessingAssert() => Task.CompletedTask;
 
         public virtual FunctionBundlerResult TryUseBundlerAssert() => null;
 

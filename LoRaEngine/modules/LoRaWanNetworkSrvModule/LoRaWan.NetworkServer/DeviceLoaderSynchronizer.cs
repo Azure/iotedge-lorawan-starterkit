@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServer.Logger;
+    using LoRaTools;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -106,9 +106,10 @@ namespace LoRaWan.NetworkServer
                     SetState(LoaderState.Finished);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason.ApplicationError);
+                this.logger.LogError(ex, "Failed to load devices");
                 throw;
             }
             finally
@@ -119,13 +120,12 @@ namespace LoRaWan.NetworkServer
 
         protected async Task CreateDevicesAsync(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
-            List<Task<LoRaDevice>> initTasks = null;
-            List<Task<bool>> refreshTasks = null;
-            var deviceCreated = 0;
-
             if (devices?.Count > 0)
             {
-                initTasks = new List<Task<LoRaDevice>>(devices.Count);
+                var deviceCreated = 0;
+                var initTasks = new List<Task<LoRaDevice>>(devices.Count);
+                List<Task> refreshTasks = null;
+                List<Exception> deviceInitExceptionList = null;
 
                 foreach (var foundDevice in devices)
                 {
@@ -142,10 +142,37 @@ namespace LoRaWan.NetworkServer
                             // device in cache from a previous join that we didn't complete
                             // (lost race with another gw) - refresh the twins now and keep it
                             // in the cache
-                            refreshTasks ??= new List<Task<bool>>();
-                            refreshTasks.Add(cachedDevice.InitializeAsync(this.configuration, CancellationToken.None));
+                            refreshTasks ??= new List<Task>();
+                            refreshTasks.Add(RefreshDeviceAsync(cachedDevice));
                             this.logger.LogDebug("refreshing device to fetch DevAddr");
                         }
+                        else
+                        {
+                            // this case covers a cached device with a potentially outdated DevAddr.
+                            // we want to disconnect it.
+                            // if the device rejoined, a new DevAddr should have been
+                            // generated, therefore we don't need this stale connection anymore.
+                            // If instead it is all up to date, the connection will be re-established
+                            // as soon as the data message is processed.
+                            if (cachedDevice.IsConnectionOwner is true)
+                            {
+                                this.logger.LogDebug("stale connection owner, releasing the connection.");
+                                cachedDevice.IsConnectionOwner = false;
+                            }
+                            await cachedDevice.CloseConnectionAsync(CancellationToken.None);
+                        }
+                    }
+                }
+
+                async Task RefreshDeviceAsync(LoRaDevice device)
+                {
+                    try
+                    {
+                        _ = await device.InitializeAsync(this.configuration, CancellationToken.None);
+                    }
+                    finally
+                    {
+                        await device.CloseConnectionAsync(CancellationToken.None);
                     }
                 }
 
@@ -154,7 +181,7 @@ namespace LoRaWan.NetworkServer
                     _ = await Task.WhenAll(initTasks);
                     if (refreshTasks != null)
                     {
-                        _ = await Task.WhenAll(refreshTasks);
+                        await Task.WhenAll(refreshTasks);
                     }
                 }
                 catch (LoRaProcessingException ex) when (ex.ErrorCode == LoRaProcessingErrorCode.DeviceInitializationFailed
@@ -172,14 +199,37 @@ namespace LoRaWan.NetworkServer
                         {
                             var device = await deviceTask;
                             // run initializers
-                            InitializeDevice(device);
-                            deviceCreated++;
+                            try
+                            {
+                                InitializeDevice(device);
+                                deviceCreated++;
+                            }
+#pragma warning disable CA1031 // Do not catch general exception types (captured and thrown later)
+                            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                            {
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                                deviceInitExceptionList ??= new List<Exception>();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                                deviceInitExceptionList.Add(ex);
+                            }
+                            finally
+                            {
+                                await device.CloseConnectionAsync(CancellationToken.None);
+                            }
                         }
                     }
                 }
-            }
 
-            CreatedDevicesCount = deviceCreated;
+                CreatedDevicesCount = deviceCreated;
+
+                if (deviceInitExceptionList is { Count: > 0 } someExceptions)
+                    throw new AggregateException(someExceptions);
+            }
+            else
+            {
+                CreatedDevicesCount = 0;
+            }
         }
 
         private void NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason loRaDeviceRequestFailedReason = LoRaDeviceRequestFailedReason.ApplicationError)

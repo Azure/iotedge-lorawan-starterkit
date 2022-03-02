@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Threading.Tasks;
 
-    public interface ILoRaDeviceRegistry : IDisposable
+    public interface ILoRaDeviceRegistry : IAsyncDisposable
     {
         /// <summary>
         /// Gets devices that matches an OTAA join request.
@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Resets the device cache.
         /// </summary>
-        void ResetDeviceCache();
+        Task ResetDeviceCacheAsync();
 
         /// <summary>
         /// Gets a <see cref="ILoRaDeviceRequestQueue"/> where requests can be queued.

@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -88,18 +87,9 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var cachedDevice = CreateLoRaDevice(simulatedDevice);
-
-            DeviceCache.Register(cachedDevice);
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var cachedDevice = CreateLoRaDevice(simulatedDevice);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(cachedDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
@@ -142,7 +132,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
 
-            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
+            LoRaDeviceClient.Setup(ldc => ldc.DisposeAsync());
         }
 
         [Theory]
@@ -172,17 +162,9 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            // add device to cache already
-            DeviceCache.Register(loRaDevice);
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -216,16 +198,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed mac LinkCheckCmd
             var msgPayload = "02";
@@ -269,33 +244,11 @@ namespace LoRaWan.Tests.Integration
                 })
                 .ReturnsAsync(true);
 
-            var c2d = new ReceivedLoRaCloudToDeviceMessage()
-            {
-                Payload = "Hello",
-                Fport = FramePorts.App1,
-            };
-
-            using var cloudToDeviceMessage = c2d.CreateMessage();
-
-            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync(cloudToDeviceMessage)
-                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
-
-            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
-                .ReturnsAsync(true);
-
-            // add device to cache already
-            DeviceCache.Register(loRaDevice);
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
+            using var cloudToDeviceMessageSetup = UsePendingCloudToDeviceMessage();
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed mac LinkCheckCmd
             var msgPayload = "Hello World";
@@ -344,27 +297,15 @@ namespace LoRaWan.Tests.Integration
                 })
                 .ReturnsAsync(true);
 
-            var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
-            {
-                Payload = "Hello",
-                Fport = FramePorts.App1,
-            };
-
-            using var cloudToDeviceMessage = c2dMessage.CreateMessage();
-
-            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync(cloudToDeviceMessage)
-                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
-
-            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
-                .ReturnsAsync(true);
+            var cloudToDeviceMessagePayload = "C2DMessagePayload";
+            using var cloudToDeviceMessageSetup = UsePendingCloudToDeviceMessage(cloudToDeviceMessagePayload);
 
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(loRaDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -385,12 +326,39 @@ namespace LoRaWan.Tests.Integration
             // FOpts are not encrypted
             var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey.Value);
             var c2dreceivedPayload = Encoding.UTF8.GetString(payload);
-            Assert.Equal(c2dMessage.Payload, c2dreceivedPayload);
+            Assert.Equal(cloudToDeviceMessagePayload, c2dreceivedPayload);
             // Nothing should be sent to IoT Hub
             Assert.NotNull(loRaDeviceTelemetry);
 
             LoRaDeviceClient.VerifyAll();
             LoRaDeviceApi.VerifyAll();
+        }
+
+        [Fact]
+        // https://github.com/Azure/iotedge-lorawan-starterkit/issues/1540.
+        public async Task Secondary_Tasks_Do_Not_Impact_Downstream_Message_Delivery_And_Do_Not_Cause_Processing_Failure()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
+            var loRaDevice = CreateLoRaDevice(simulatedDevice);
+
+            LoRaDeviceClient.Setup(c => c.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
+                            .ReturnsAsync(true);
+
+            using var cloudToDeviceMessage = UsePendingCloudToDeviceMessage(completeOperationException: new OperationCanceledException("Operation timed out."));
+
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
+
+            var payload = simulatedDevice.CreateConfirmedDataUpMessage("foo", fcnt: 1);
+            using var request = CreateWaitableRequest(payload);
+
+            // act
+            messageDispatcher.DispatchRequest(request);
+            await request.WaitCompleteAsync();
+
+            // assert
+            Assert.Single(DownstreamMessageSender.DownlinkMessages);
+            Assert.True(request.ProcessingSucceeded);
         }
 
         [Theory]
@@ -410,18 +378,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            // add device to cache already
-            DeviceCache.Register(loRaDevice);
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed mac LinkCheckCmd
             var msgPayload = macCommand;
@@ -469,19 +428,11 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
             }
 
-            // add device to cache already
-            DeviceCache.Register(loRaDevice);
-
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             ServerConfiguration.NetId = new NetId(serverNetId);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -525,11 +476,6 @@ namespace LoRaWan.Tests.Integration
             if (msgId != null)
                 loRaDevice.LastConfirmedC2DMessageID = msgId;
 
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            DeviceCache.Register(loRaDevice);
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             Dictionary<string, string> actualProperties = null;
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => actualProperties = d)
@@ -539,11 +485,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
-               memoryCache,
-               ServerConfiguration,
-               deviceRegistry,
-               FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrlFlags: FrameControlFlags.Ack);
             using var ackRequest = CreateWaitableRequest(ackMessage);
@@ -614,18 +557,9 @@ namespace LoRaWan.Tests.Integration
                     });
             }
 
-            // add device to cache already
-            DeviceCache.Register(loRaDevice);
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: 100);
@@ -711,7 +645,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
 
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(
+            await using var deviceRegistry = new LoRaDeviceRegistry(
                 ServerConfiguration,
                 cache,
                 LoRaDeviceApi.Object,
@@ -721,7 +655,7 @@ namespace LoRaWan.Tests.Integration
             // Making the reload interval zero
             deviceRegistry.DevAddrReloadInterval = TimeSpan.Zero;
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                cache,
                ServerConfiguration,
                deviceRegistry,
@@ -789,19 +723,10 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var cachedDevice = CreateLoRaDevice(simulatedDevice);
-
-            DeviceCache.Register(cachedDevice);
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            var cachedDevice = CreateLoRaDevice(simulatedDevice);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(cachedDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var messagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
@@ -844,19 +769,10 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var cachedDevice = CreateLoRaDevice(simulatedDevice);
-
-            DeviceCache.Register(cachedDevice);
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            var cachedDevice = CreateLoRaDevice(simulatedDevice);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(cachedDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
@@ -903,19 +819,19 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((Message)null);
 
             // first device client will be disposed
-            LoRaDeviceClient.Setup(x => x.Dispose());
+            LoRaDeviceClient.Setup(x => x.DisposeAsync());
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
 
             using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
 
             // Setting the interval in which we search for devices with same devAddr on server
             deviceRegistry.DevAddrReloadInterval = TimeSpan.Zero;
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
+            await using var messageDispatcher = TestMessageDispatcher.Create(
                 cache,
                 ServerConfiguration,
                 deviceRegistry,
@@ -967,7 +883,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
-            using var loRaDevice = CreateLoRaDevice(simulatedDevice, isAlreadyInDeviceRegistryCache);
+            await using var loRaDevice = CreateLoRaDevice(simulatedDevice, isAlreadyInDeviceRegistryCache);
             loRaDevice.SensorDecoder = "DecoderValueSensor";
 
             // message will be sent
@@ -990,21 +906,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
 
-            // add device to cache already
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            if (isAlreadyInDeviceRegistryCache)
-            {
-                DeviceCache.Register(loRaDevice);
-            }
-
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(isAlreadyInDeviceRegistryCache ? loRaDevice : null);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // first message should fail
             const int firstMessageFcnt = 3;
@@ -1036,7 +940,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.VerifyAll();
             LoRaDeviceClient.VerifyAll();
 
-            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
+            LoRaDeviceClient.Setup(ldc => ldc.DisposeAsync());
         }
 
         /// <summary>
@@ -1050,7 +954,7 @@ namespace LoRaWan.Tests.Integration
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
-            using var loRaDevice = CreateLoRaDevice(simulatedDevice, false);
+            await using var loRaDevice = CreateLoRaDevice(simulatedDevice, false);
             loRaDevice.SensorDecoder = "DecoderValueSensor";
 
             // will get the device twin without AppSKey
@@ -1058,22 +962,16 @@ namespace LoRaWan.Tests.Integration
             twin.Properties.Desired[missingProperty] = null;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                     .ReturnsAsync(twin);
-            LoRaDeviceClient.Setup(x => x.Dispose());
+            LoRaDeviceClient.Setup(x => x.DisposeAsync());
             // Lora device api
 
             // will search for the device twice
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
 
-            using var cache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // message should not be processed
             using var request = CreateWaitableRequest(simulatedDevice.CreateUnconfirmedDataUpMessage("1234"));
@@ -1142,19 +1040,10 @@ namespace LoRaWan.Tests.Integration
                             .ReturnsAsync((DevEui _, FunctionBundlerRequest _) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, NbRepetition = 1, TxPower = 0, FCntDown = deviceInitialFcntDown + 8 }, NextFCntDown = deviceInitialFcntDown + 8 });
             }
 
-            // add device to cache already
-            var loRaDevice = CreateLoRaDevice(simulatedDevice);
-            DeviceCache.Register(loRaDevice);
-
-            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                memoryCache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            var loRaDevice = CreateLoRaDevice(simulatedDevice);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends confirmed message
             var firstMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: deviceInitialFcntUp + 1);
@@ -1215,15 +1104,9 @@ namespace LoRaWan.Tests.Integration
             var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0));
 
-            using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message #1
             var unconfirmedMessagePayload1 = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -1252,7 +1135,7 @@ namespace LoRaWan.Tests.Integration
         {
             var msgPayload = "1234";
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            deviceClient.Setup(dc => dc.Dispose());
+            deviceClient.Setup(dc => dc.DisposeAsync()).Returns(ValueTask.CompletedTask);
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
 
             var devAddr = simulatedDevice.LoRaDevice.DevAddr.Value;
@@ -1263,15 +1146,9 @@ namespace LoRaWan.Tests.Integration
                 simulatedDevice.DevAddr.Value
             };
 
-            using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // device api will be searched for payload
             var searchDevicesResult = new SearchDevicesResult(new[]
@@ -1287,8 +1164,11 @@ namespace LoRaWan.Tests.Integration
 
             deviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None)).ReturnsAsync(simulatedDevice.GetDefaultAbpTwin());
 
-            deviceClient.Setup(x => x.DisconnectAsync())
+            deviceClient.Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
                .Returns(Task.CompletedTask);
+
+            deviceClient.Setup(x => x.EnsureConnected())
+               .Returns(true);
 
             deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                .ReturnsAsync((Message)null);
@@ -1382,15 +1262,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceFactory.SetClient(simulatedDevice1.DevEUI, deviceClient1.Object);
             LoRaDeviceFactory.SetClient(simulatedDevice2.DevEUI, deviceClient2.Object);
 
-            using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message #1
             var unconfirmedMessagePayload1 = simulatedDevice1.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcntUp);
@@ -1498,15 +1372,9 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceFactory.SetClient(simulatedDevice1.DevEUI, deviceClient1.Object);
             LoRaDeviceFactory.SetClient(simulatedDevice2.DevEUI, deviceClient2.Object);
 
-            using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message #1
             var unconfirmedMessagePayload1 = simulatedDevice1.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcntUp);
@@ -1576,16 +1444,9 @@ namespace LoRaWan.Tests.Integration
                 .Callback((DevEui _, byte[] data, FramePort fport, string decoder) => receivedDecodeCalls.Add((fport, data)));
             PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
-            using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(loRaDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
-
             // Send to message processor
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(loRaDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var unconfirmedMessagePayload1 = simDevice.CreateUnconfirmedDataUpMessage(null, fcnt: 4);
@@ -1625,14 +1486,11 @@ namespace LoRaWan.Tests.Integration
 
             var cachedDevice = CreateLoRaDevice(simulatedDevice, false);
             using var cache = EmptyMemoryCache();
-            using var loraDeviceCache = CreateDeviceCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
+            await using var loraDeviceCache = CreateDeviceCache(cachedDevice);
+            await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, loraDeviceCache);
 
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync(cachedDevice);
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcnt);
@@ -1678,14 +1536,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             using var request1 = CreateWaitableRequest(simDevice.CreateUnconfirmedDataUpMessage("1"));
             messageDispatcher.DispatchRequest(request1);
@@ -1732,14 +1584,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
-
-            using var messageDispatcher = TestMessageDispatcher.Create(
-                cache,
-                ServerConfiguration,
-                deviceRegistry,
-                FrameCounterUpdateStrategyProvider);
+            await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
+            var messageDispatcher = messageDispatcherDisposableValue.Value;
 
             using var request1 = CreateWaitableRequest(simDevice.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcnt));
             messageDispatcher.DispatchRequest(request1);
@@ -1750,6 +1596,51 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.VerifyAll();
 
             LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        private IDisposable UsePendingCloudToDeviceMessage(Exception completeOperationException = null) => UsePendingCloudToDeviceMessage(Guid.NewGuid().ToString(), completeOperationException);
+
+        private IDisposable UsePendingCloudToDeviceMessage(string payload, Exception completeOperationException = null)
+        {
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage { Payload = payload, Fport = FramePorts.App1 }.CreateMessage();
+            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                            .ReturnsAsync(cloudToDeviceMessage)
+                            .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            if (completeOperationException is { } someCompleteOperationException)
+            {
+                LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                                .ThrowsAsync(someCompleteOperationException);
+            }
+            else
+            {
+                LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                                .ReturnsAsync(true);
+            }
+
+            return cloudToDeviceMessage;
+        }
+
+        private AsyncDisposableValue<MessageDispatcher> SetupMessageDispatcherAsync() => SetupMessageDispatcherAsync(null);
+
+        private AsyncDisposableValue<MessageDispatcher> SetupMessageDispatcherAsync(LoRaDevice loRaDevice)
+        {
+            var cache = EmptyMemoryCache();
+
+            if (loRaDevice is { } someLoRaDevice)
+            {
+                DeviceCache.Register(someLoRaDevice);
+            }
+#pragma warning disable CA2000 // Dispose objects before losing scope (ownership transferred to caller)
+            var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
+            var messageDispatcher = TestMessageDispatcher.Create(cache, ServerConfiguration, deviceRegistry, FrameCounterUpdateStrategyProvider);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            return new AsyncDisposableValue<MessageDispatcher>(messageDispatcher, async () =>
+            {
+                cache.Dispose();
+                await deviceRegistry.DisposeAsync();
+                await messageDispatcher.DisposeAsync();
+            });
         }
     }
 }

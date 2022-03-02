@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class LoRaDeviceCache : IDisposable
+    public class LoRaDeviceCache : IAsyncDisposable
     {
         private readonly LoRaDeviceCacheOptions options;
         private readonly ConcurrentDictionary<DevAddr, ConcurrentDictionary<DevEui, LoRaDevice>> devAddrCache = new();
@@ -24,7 +24,9 @@ namespace LoRaWan.NetworkServer
         private readonly object syncLock = new object();
         private readonly NetworkServerConfiguration configuration;
         private readonly ILogger<LoRaDeviceCache> logger;
+#pragma warning disable CA2213 // Disposable fields should be disposed (false positive)
         private CancellationTokenSource? ctsDispose;
+#pragma warning restore CA2213 // Disposable fields should be disposed
         private readonly StatisticsTracker statisticsTracker = new StatisticsTracker();
         private readonly Counter<int>? deviceCacheHits;
 
@@ -65,13 +67,10 @@ namespace LoRaWan.NetworkServer
 
                     var now = DateTimeOffset.UtcNow;
 
-                    lock (this.syncLock)
+                    var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
+                    foreach (var expiredDevice in itemsToRemove)
                     {
-                        var itemsToRemove = this.euiCache.Values.Where(x => now - x.LastSeen > this.options.MaxUnobservedLifetime);
-                        foreach (var expiredDevice in itemsToRemove)
-                        {
-                            _ = Remove(expiredDevice);
-                        }
+                        _ = await RemoveAsync(expiredDevice);
                     }
 
                     // refresh the devices that were not refreshed within the configured time window
@@ -117,7 +116,7 @@ namespace LoRaWan.NetworkServer
                 _ = await device.InitializeAsync(this.configuration, cancellationToken);
         }
 
-        public virtual bool Remove(LoRaDevice device, bool dispose = true)
+        public virtual async Task<bool> RemoveAsync(LoRaDevice device)
         {
             _ = device ?? throw new ArgumentNullException(nameof(device));
 
@@ -136,12 +135,10 @@ namespace LoRaWan.NetworkServer
                         result &= this.devAddrCache.Remove(someDevAddr, out _);
                     }
                 }
-
-                if (dispose)
-                {
-                    device.Dispose();
-                }
             }
+
+            await device.DisposeAsync();
+
             return result;
         }
 
@@ -218,9 +215,9 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public void Reset()
+        public Task ResetAsync()
         {
-            CleanupAllDevices();
+            return CleanupAllDevicesAsync();
         }
 
         public virtual bool TryGetForPayload(LoRaPayload payload, [MaybeNullWhen(returnValue: false)] out LoRaDevice device)
@@ -275,18 +272,19 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void CleanupAllDevices()
+        private async Task CleanupAllDevicesAsync()
         {
+            var devices = this.euiCache.Values;
+
             lock (this.syncLock)
             {
-                foreach (var device in this.euiCache.Values)
-                {
-                    device.Dispose();
-                }
                 this.euiCache.Clear();
                 this.devAddrCache.Clear();
-                this.logger.LogInformation($"{nameof(LoRaDeviceCache)} cleared.");
             }
+
+            this.logger.LogInformation($"{nameof(LoRaDeviceCache)} cleared.");
+
+            await devices.DisposeAllAsync(20);
         }
 
         private class StatisticsTracker
@@ -301,13 +299,13 @@ namespace LoRaWan.NetworkServer
             internal void IncrementMiss() => Interlocked.Increment(ref miss);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await DisposeAsync(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool dispose)
+        protected virtual async ValueTask DisposeAsync(bool dispose)
         {
             if (dispose)
             {
@@ -316,8 +314,9 @@ namespace LoRaWan.NetworkServer
                     this.ctsDispose?.Cancel();
                     this.ctsDispose?.Dispose();
                     this.ctsDispose = null;
-                    CleanupAllDevices();
                 }
+
+                await CleanupAllDevicesAsync();
             }
         }
     }

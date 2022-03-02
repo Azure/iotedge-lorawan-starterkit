@@ -3,8 +3,8 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 {
+    using LoRaTools;
     using LoRaTools.Utils;
-    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await ClearCache();
+                    return await ClearCacheAsync();
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -143,11 +143,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
-        private Task<MethodResponse> ClearCache()
+        private async Task<MethodResponse> ClearCacheAsync()
         {
-            this.loRaDeviceRegistry.ResetDeviceCache();
-
-            return Task.FromResult(new MethodResponse((int)HttpStatusCode.OK));
+            await this.loRaDeviceRegistry.ResetDeviceCacheAsync();
+            return new MethodResponse((int)HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -182,6 +181,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
 
             var reader = new TwinCollectionReader(desiredProperties, this.logger);
+
+            if (reader.TryRead<int>(Constants.ProcessingDelayKey, out var processingDelay))
+            {
+                if (processingDelay >= 0)
+                {
+                    this.logger.LogDebug("Updating processing delay for LNS to {ProcessingDelay} from desired properties of the module twin", processingDelay);
+                    this.networkServerConfiguration.ProcessingDelayInMilliseconds = processingDelay;
+                }
+                else
+                {
+                    this.logger.LogError("Processing delay for LNS was set to an invalid value {ProcessingDelay}, " +
+                        "using default delay of {DefaultDelay} ms", processingDelay, Constants.DefaultProcessingDelayInMilliseconds);
+                }
+            }
+
             if (reader.TryRead<string>(Constants.FacadeServerUrlKey, out var faceServerUrl))
             {
                 if (Uri.TryCreate(faceServerUrl, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))

@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             const string gatewayId = "foo";
             const double rssi = 2.3;
             var device = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(0));
-            using var loRaDevice = TestUtils.CreateFromSimulatedDevice(device, new Mock<ILoRaDeviceClientConnectionManager>().Object);
+            await using var loRaDevice = TestUtils.CreateFromSimulatedDevice(device, new Mock<ILoRaDeviceClientConnectionManager>().Object);
             var payload = device.CreateConfirmedDataUpMessage("foo");
             using var request = WaitableLoRaRequest.Create(TestUtils.GenerateTestRadioMetadata(rssi: rssi), payload);
             var deviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
