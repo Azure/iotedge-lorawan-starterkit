@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [MemberData(nameof(RetriedExceptionsData))]
+        [MemberData(nameof(GetRetriedExceptionsTestData))]
         public void EnsureConnected_Is_Not_Resilient(Exception exception)
         {
             this.originalMock.Setup(x => x.EnsureConnected()).Throws(exception);
@@ -91,17 +91,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken), Times.Once);
         }
 
-        private static IEnumerable<Exception> RetriedExceptions() => new[]
+        private static IEnumerable<Exception> GetRetriedExceptions() => new[]
         {
             new InvalidOperationException("This operation is only allowed using a successfully authenticated context. " + "" +
                                           "This sentence in the error message shouldn't matter."),
             new ObjectDisposedException("<object>")
         };
 
-        public static TheoryData<Exception> RetriedExceptionsData() => TheoryDataFactory.From(RetriedExceptions());
+        public static TheoryData<Exception> GetRetriedExceptionsTestData() => TheoryDataFactory.From(GetRetriedExceptions());
 
         [Theory]
-        [MemberData(nameof(RetriedExceptionsData))]
+        [MemberData(nameof(GetRetriedExceptionsTestData))]
         public async Task DisconnectAsync_Is_Not_Resilient(Exception exception)
         {
             this.originalMock.Setup(x => x.DisconnectAsync(CancellationToken)).Throws(exception);
@@ -121,7 +121,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [MemberData(nameof(RetriedExceptionsData))]
+        [MemberData(nameof(GetRetriedExceptionsTestData))]
         public async Task DisposeAsync_Is_Not_Resilient(Exception exception)
         {
             this.originalMock.Setup(x => x.DisposeAsync()).Throws(exception);
@@ -279,7 +279,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.RejectAsync(this.message), times);
         }
 
-        private static IEnumerable<IOperationTestCase> OperationTestCases()
+        private static IEnumerable<IOperationTestCase> GetOperationTestCases()
         {
             using var message = new Message();
             yield return new GetTwinAsyncTestCase(new Twin());
@@ -291,16 +291,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             yield return new RejectTestCase(message, true);
         }
 
-        public static TheoryData<IOperationTestCase> OperationsTestData() =>
-            TheoryDataFactory.From(OperationTestCases());
+        public static TheoryData<IOperationTestCase> GetOperationsTestData() =>
+            TheoryDataFactory.From(GetOperationTestCases());
 
-        public static TheoryData<IOperationTestCase, Exception> ResiliencyTestData() =>
-            TheoryDataFactory.From(from re in RetriedExceptions()
-                                   from tc in OperationTestCases()
+        public static TheoryData<IOperationTestCase, Exception> GetResiliencyTestData() =>
+            TheoryDataFactory.From(from re in GetRetriedExceptions()
+                                   from tc in GetOperationTestCases()
                                    select (tc, re));
 
         [Theory]
-        [MemberData(nameof(OperationsTestData))]
+        [MemberData(nameof(GetOperationsTestData))]
         public async Task Successful_Operation(IOperationTestCase testCase)
         {
             testCase.Setup(this.originalMock).Succeed();
@@ -313,7 +313,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [MemberData(nameof(ResiliencyTestData))]
+        [MemberData(nameof(GetResiliencyTestData))]
         public async Task Unsuccessful_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
         {
             testCase.Setup(this.originalMock)
@@ -330,7 +330,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [MemberData(nameof(OperationsTestData))]
+        [MemberData(nameof(GetOperationsTestData))]
         public async Task Unsuccessful_Operation(IOperationTestCase testCase)
         {
             var exception = new InvalidOperationException();
@@ -345,7 +345,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [MemberData(nameof(ResiliencyTestData))]
+        [MemberData(nameof(GetResiliencyTestData))]
         public async Task Unstable_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
         {
             testCase.Setup(this.originalMock)
