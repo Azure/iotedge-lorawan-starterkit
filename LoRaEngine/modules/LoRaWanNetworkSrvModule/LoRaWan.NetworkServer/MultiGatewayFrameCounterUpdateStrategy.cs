@@ -24,12 +24,7 @@ namespace LoRaWan.NetworkServer
 
             loRaDevice.ResetFcnt();
 
-            if (await InternalSaveChangesAsync(loRaDevice, force: true))
-            {
-                return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI, fcntUp, gatewayId);
-            }
-
-            return false;
+            return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI, fcntUp, gatewayId);
         }
 
         public async ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)

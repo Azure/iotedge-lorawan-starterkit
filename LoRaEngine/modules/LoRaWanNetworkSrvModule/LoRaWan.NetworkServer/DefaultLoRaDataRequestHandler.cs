@@ -178,7 +178,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
-            var stationEuiChanged = false;
+            var fcntResetSaved = false;
 
             try
             {
@@ -251,6 +251,13 @@ namespace LoRaWan.NetworkServer
                 if (!state.BeginDeviceClientConnectionActivity())
                 {
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
+                }
+
+                // saving fcnt reset changes
+                if (isFrameCounterFromNewlyStartedDevice)
+                {
+                    await SaveChangesToDeviceAsync(loRaDevice, isFrameCounterFromNewlyStartedDevice);
+                    fcntResetSaved = true;
                 }
 
                 #region FrameCounterDown
@@ -546,7 +553,6 @@ namespace LoRaWan.NetworkServer
                     && loRaDevice.LastProcessingStationEui != request.StationEui)
                 {
                     loRaDevice.SetLastProcessingStationEui(request.StationEui);
-                    stationEuiChanged = true;
                 }
 
                 // No C2D message and request was not confirmed, return nothing
@@ -590,7 +596,7 @@ namespace LoRaWan.NetworkServer
             finally
             {
                 if (loRaDevice.IsConnectionOwner is true)
-                    state.Track(SaveChangesToDeviceAsync(loRaDevice, stationEuiChanged));
+                    state.Track(SaveChangesToDeviceAsync(loRaDevice, isFrameCounterFromNewlyStartedDevice && !fcntResetSaved));
             }
         }
 
@@ -620,11 +626,11 @@ namespace LoRaWan.NetworkServer
             return request.DownstreamMessageSender.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkMessage);
         }
 
-        internal virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool stationEuiChanged)
+        internal virtual async Task SaveChangesToDeviceAsync(LoRaDevice loRaDevice, bool force)
         {
             _ = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
 
-            _ = await loRaDevice.SaveChangesAsync(force: stationEuiChanged);
+            _ = await loRaDevice.SaveChangesAsync(force: force);
         }
 
         private void HandlePreferredGatewayChanges(

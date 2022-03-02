@@ -48,8 +48,10 @@ namespace LoRaWan.Tests.Integration
                 new FunctionBundlerProvider(LoRaDeviceApi.Object, this.testOutputLoggerFactory, this.testOutputLoggerFactory.CreateLogger<FunctionBundlerProvider>()),
                 loggerMock.Object)
             { CallBase = true };
+            LoRaDeviceApi.Setup(api => api.ABPFcntCacheResetAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<string>()))
+                         .ReturnsAsync(true);
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
-                         .Returns(Task.FromResult<uint>(1));
+                         .ReturnsAsync(1U);
         }
 
         public static TheoryData<Exception?, Exception?, Exception> Secondary_Task_Exceptions_TheoryData() =>
@@ -143,7 +145,7 @@ namespace LoRaWan.Tests.Integration
 
         private void SetupSaveDeviceChangeFailure(Exception exception)
         {
-            this.mockTestDefaultLoRaRequestHandler.Setup(h => h.SaveChangesToDeviceAsync(It.IsAny<LoRaDevice>(), It.IsAny<bool>()))
+            this.mockTestDefaultLoRaRequestHandler.Setup(h => h.SaveChangesToDeviceAsync(It.IsAny<LoRaDevice>(), false))
                                                   .ThrowsAsync(exception);
         }
 
