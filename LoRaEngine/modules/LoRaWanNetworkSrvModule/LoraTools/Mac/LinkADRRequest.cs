@@ -47,7 +47,6 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class. For tests to serialize from byte.
-        /// Intended for test use only.
         /// </summary>
         internal LinkADRRequest(byte[] input)
         {
