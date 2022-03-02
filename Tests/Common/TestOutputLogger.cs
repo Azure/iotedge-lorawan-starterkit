@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Collections.Concurrent;
-    using LoRaWan.NetworkServer;
+    using LoRaTools;
     using Microsoft.Extensions.Logging;
     using Xunit.Abstractions;
 

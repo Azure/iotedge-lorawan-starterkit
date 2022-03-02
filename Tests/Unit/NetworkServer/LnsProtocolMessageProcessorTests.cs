@@ -23,7 +23,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
-    using Org.BouncyCastle.Asn1.IsisMtt.X509;
     using Xunit;
 
     public class LnsProtocolMessageProcessorTests
