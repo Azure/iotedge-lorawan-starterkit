@@ -301,7 +301,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(GetOperationsTestData))]
-        public async Task Successful_Operation(IOperationTestHelper operation)
+        public async Task Operation_Is_Not_Retried_When_Successful(IOperationTestHelper operation)
         {
             operation.SetupSequence(this.originalMock).Succeed();
 
@@ -314,7 +314,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(GetResiliencyTestData))]
-        public async Task Unsuccessful_Operation_Retries_On_Expected_Errors(IOperationTestHelper operation, Exception exception)
+        public async Task Operation_Is_Retried_On_Expected_Errors_Until_Retry_Limit_Is_Exhausted(IOperationTestHelper operation, Exception exception)
         {
             operation.SetupSequence(this.originalMock)
                      .Fail(exception)
@@ -331,7 +331,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(GetOperationsTestData))]
-        public async Task Unsuccessful_Operation(IOperationTestHelper operation)
+        public async Task Operation_Is_Not_Retried_On_Unexpected_Errors(IOperationTestHelper operation)
         {
             var exception = new InvalidOperationException();
             operation.SetupSequence(this.originalMock).Fail(exception);
@@ -346,7 +346,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         [Theory]
         [MemberData(nameof(GetResiliencyTestData))]
-        public async Task Unstable_Operation_Retries_On_Expected_Errors(IOperationTestHelper operation, Exception exception)
+        public async Task Operation_Succeeds_Eventually_If_Retried_Within_Retry_Limit(IOperationTestHelper operation, Exception exception)
         {
             operation.SetupSequence(this.originalMock)
                      .Fail(exception)
