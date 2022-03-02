@@ -339,7 +339,7 @@ namespace LoRaWan.NetworkServer
                               && (ex is ObjectDisposedException
                                   || (ex is InvalidOperationException ioe
                                       && ioe.Message.StartsWith("This operation is only allowed using a successfully authenticated context.", StringComparison.OrdinalIgnoreCase)))
-                              && ExceptionFilterUtility.True(() => this?.logger.LogError(ex, @"Device client operation ""{Operation}"" failed due to: {Error}", operationName, ex.GetBaseException().Message)))
+                              && ExceptionFilterUtility.True(() => this?.logger.LogWarning(ex, @"Device client operation ""{Operation}"" failed due to: {Error}", operationName, ex.GetBaseException().Message)))
                     {
                         // disconnect, re-connect and then retry...
                         await this.client.DisconnectAsync(CancellationToken.None);
