@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
@@ -39,6 +40,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         private CancellationToken CancellationToken => this.cancellationTokenSource.Token;
+
+        public static readonly TheoryData<Exception> RetriedExceptions =
+            TheoryDataFactory.From<Exception>(new InvalidOperationException("This operation is only allowed using a successfully authenticated context. " + "" +
+                                                                            "This sentence in the error message shouldn't matter."),
+                                              new ObjectDisposedException("<object>"));
 
         [Fact]
         public async Task GetTwinAsync_Invokes_Original_Client()
@@ -129,6 +135,18 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(result);
         }
 
+        [Theory]
+        [MemberData(nameof(RetriedExceptions))]
+        public void EnsureConnected_Is_Not_Resilient(Exception exception)
+        {
+            this.originalMock.Setup(x => x.EnsureConnected()).Throws(exception);
+
+            var ex = Assert.Throws(exception.GetType(), () => _ = this.subject.EnsureConnected());
+
+            Assert.Same(exception, ex);
+            this.originalMock.Verify(x => x.EnsureConnected(), Times.Once);
+        }
+
         [Fact]
         public async Task DisconnectAsync_Invokes_Original_Client()
         {
@@ -137,11 +155,35 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken), Times.Once);
         }
 
+        [Theory]
+        [MemberData(nameof(RetriedExceptions))]
+        public async Task DisconnectAsync_Is_Not_Resilient(Exception exception)
+        {
+            this.originalMock.Setup(x => x.DisconnectAsync(CancellationToken)).Throws(exception);
+
+            var ex = await Assert.ThrowsAsync(exception.GetType(), () => this.subject.DisconnectAsync(CancellationToken));
+
+            Assert.Same(exception, ex);
+            this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken), Times.Once);
+        }
+
         [Fact]
         public async Task DisposeAsync_Invokes_Original_Client()
         {
             await this.subject.DisposeAsync();
 
+            this.originalMock.Verify(x => x.DisposeAsync(), Times.Once);
+        }
+
+        [Theory]
+        [MemberData(nameof(RetriedExceptions))]
+        public async Task DisposeAsync_Is_Not_Resilient(Exception exception)
+        {
+            this.originalMock.Setup(x => x.DisposeAsync()).Throws(exception);
+
+            var ex = await Assert.ThrowsAsync(exception.GetType(), () => this.subject.DisposeAsync().AsTask());
+
+            Assert.Same(exception, ex);
             this.originalMock.Verify(x => x.DisposeAsync(), Times.Once);
         }
     }
