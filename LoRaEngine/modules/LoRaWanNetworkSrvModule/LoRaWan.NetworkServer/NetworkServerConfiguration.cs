@@ -135,6 +135,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public uint IotHubConnectionPoolSize { get; internal set; } = 1;
 
+        public int ProcessingDelayInMilliseconds { get; set; } = Constants.DefaultProcessingDelayInMilliseconds;
+
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
