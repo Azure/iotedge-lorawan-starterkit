@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
-        public const string DroppedConnectionLog = "device connection was dropped ";
+        public const string DroppedConnectionLog = "Device connection was dropped ";
 
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
@@ -190,13 +190,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
             if (loRaDevice == null)
             {
-                this.logger.LogError("Could not retrieve LoRa device with DevEui '{DevEui}'; message id '{MessageId}'", c2d.DevEUI.Value, c2d.MessageId);
+                this.logger.LogError("Could not retrieve LoRa device; message id '{MessageId}'", c2d.MessageId);
                 return new MethodResponse((int)HttpStatusCode.NotFound);
             }
 
             loRaDevice.IsConnectionOwner = false;
             await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
-            this.logger.LogInformation(DroppedConnectionLog + "from gateway id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
+            this.logger.LogInformation(DroppedConnectionLog + "from gateway with id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
 
             return new MethodResponse((int)HttpStatusCode.OK);
         }
