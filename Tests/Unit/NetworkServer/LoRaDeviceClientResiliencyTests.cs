@@ -291,10 +291,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             yield return new RejectTestCase(message, true);
         }
 
-        public static readonly TheoryData<IOperationTestCase> OperationsTestData =
+        public static TheoryData<IOperationTestCase> OperationsTestData() =>
             TheoryDataFactory.From(OperationTestCases());
 
-        public static readonly TheoryData<IOperationTestCase, Exception> ResiliencyTestData =
+        public static TheoryData<IOperationTestCase, Exception> ResiliencyTestData() =>
             TheoryDataFactory.From(from re in RetriedExceptions
                                    from tc in OperationTestCases()
                                    select (tc, re));
@@ -327,6 +327,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             testCase.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(3));
+        }
+
+        [Theory]
+        [MemberData(nameof(ResiliencyTestData))]
+        public async Task Unstable_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
+        {
+            testCase.Setup(this.originalMock)
+                    .Fail(exception)
+                    .Fail(exception)
+                    .Succeed();
+
+            await testCase.InvokeAsync(this.subject);
+
+            testCase.Verify(this.originalMock, Times.Exactly(3));
+            this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
+            this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(2));
         }
     }
 }
