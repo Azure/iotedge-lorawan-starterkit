@@ -313,6 +313,7 @@ namespace LoRaWan.NetworkServer
                 {
                     try
                     {
+                        _ = this.client.EnsureConnected();
                         return await function(this.client, arg1, arg2);
                     }
                     catch (Exception ex)
@@ -322,7 +323,8 @@ namespace LoRaWan.NetworkServer
                                       && ioe.Message.StartsWith("This operation is only allowed using a successfully authenticated context.", StringComparison.OrdinalIgnoreCase)))
                               && ExceptionFilterUtility.True(() => this?.logger.LogError(ex, ex.Message)))
                     {
-                        // retry...
+                        // disconnect, re-connect and then retry...
+                        await this.client.DisconnectAsync(CancellationToken.None);
                     }
                 }
             }
