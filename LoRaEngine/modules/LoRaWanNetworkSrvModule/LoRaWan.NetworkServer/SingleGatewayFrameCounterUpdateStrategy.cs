@@ -8,12 +8,12 @@ namespace LoRaWan.NetworkServer
 
     public sealed class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
     {
-        public async Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
+        public Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             loRaDevice.ResetFcnt();
-            return await InternalSaveChangesAsync(loRaDevice, force: true);
+            return Task.FromResult(true); // always able to reset locally
         }
 
         public ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
