@@ -115,7 +115,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData(-100)]
         [InlineData(0)]
         [InlineData(5)]
         [InlineData(400)]
@@ -141,6 +140,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
+        [InlineData("{ ProcessingDelayInMilliseconds: -400 }")]
         [InlineData("{ ProcessingDelayInMilliseconds: '' }")]
         [InlineData("{ ProcessingDelay: 200 }")]
         public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update_Processing_Delay(string twinUpdate)
@@ -215,6 +215,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         [InlineData("")]
         [InlineData("500 ms")]
+        [InlineData("-200")]
         [InlineData("invalidDelay")]
         public async Task InitModuleAsync_Does_Not_Fail_When_Processing_Delay_Missing_Or_Incorrect(string processingDelay)
         {
