@@ -82,8 +82,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 throw new ConfigurationErrorsException("Could not get Facade information from module twin");
             }
 
-            UpdateProcessingDelayWithDesiredProperties(moduleTwinCollection);
-
             await this.loRaModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
 
             await this.loRaModuleClient.SetMethodDefaultHandlerAsync(OnDirectMethodCalled, null);
@@ -158,7 +156,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         /// </summary>
         internal Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            UpdateProcessingDelayWithDesiredProperties(desiredProperties);
             try
             {
                 _ = TryUpdateConfigurationWithDesiredProperties(desiredProperties);
@@ -184,6 +181,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
 
             var reader = new TwinCollectionReader(desiredProperties, this.logger);
+
+            if (reader.TryRead<int>(Constants.ProcessingDelayKey, out var processingDelay))
+            {
+                this.logger.LogDebug($"Updating processing delay for LNS to {processingDelay} from desired properties of the module twin");
+                this.networkServerConfiguration.ProcessingDelayInMilliseconds = processingDelay;
+            }
+
             if (reader.TryRead<string>(Constants.FacadeServerUrlKey, out var faceServerUrl))
             {
                 if (Uri.TryCreate(faceServerUrl, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
@@ -205,22 +209,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             this.logger.LogDebug("no desired property changed");
             return false;
-        }
-
-        private void UpdateProcessingDelayWithDesiredProperties(TwinCollection desiredProperties)
-        {
-            if (desiredProperties is null)
-            {
-                return;
-            }
-
-            var reader = new TwinCollectionReader(desiredProperties, this.logger);
-            if (reader.TryRead<int>(Constants.ProcessingDelayKey, out var processingDelay))
-            {
-                this.logger.LogDebug($"Updating processing delay for LNS {this.networkServerConfiguration.GatewayID} " +
-                    $"to {processingDelay} from desired properties of the module twin");
-                this.networkServerConfiguration.ProcessingDelayInMilliseconds = processingDelay;
-            }
         }
 
         public async ValueTask DisposeAsync()
