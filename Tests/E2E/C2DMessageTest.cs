@@ -301,7 +301,6 @@ namespace LoRaWan.Tests.E2E
             return Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(device);
         }
 
-        /* Commented multi gateway tests as they make C2D tests flaky for now
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_MultiGw()
         {
@@ -309,7 +308,6 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
             return Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(device);
         }
-        */
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
@@ -439,7 +437,6 @@ namespace LoRaWan.Tests.E2E
             return Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(device);
         }
 
-        /* Commented multi gateway tests as they make C2D tests flaky for now
         [RetryFact]
         public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_MultiGw()
         {
@@ -447,7 +444,7 @@ namespace LoRaWan.Tests.E2E
             LogTestStart(device);
             return Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(device);
         }
-        */
+
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
