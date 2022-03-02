@@ -370,7 +370,6 @@ namespace LoRaWan.NetworkServer
                     switch (requestedMacCommand.Cid)
                     {
                         case Cid.LinkCheckCmd:
-                        case Cid.None:
                         case Cid.LinkADRCmd:
                             if (loRaRequest != null)
                             {
@@ -382,6 +381,7 @@ namespace LoRaWan.NetworkServer
                                 }
                             }
                             break;
+                        case Cid.None:
                         case Cid.DutyCycleCmd:
                         case Cid.RXParamCmd:
                         case Cid.DevStatusCmd:
