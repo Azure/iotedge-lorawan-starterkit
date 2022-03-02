@@ -184,7 +184,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             if (reader.TryRead<int>(Constants.ProcessingDelayKey, out var processingDelay))
             {
-                this.logger.LogDebug($"Updating processing delay for LNS to {processingDelay} from desired properties of the module twin");
+                this.logger.LogDebug("Updating processing delay for LNS to {ProcessingDelay} from desired properties of the module twin", processingDelay);
                 this.networkServerConfiguration.ProcessingDelayInMilliseconds = processingDelay;
             }
 
