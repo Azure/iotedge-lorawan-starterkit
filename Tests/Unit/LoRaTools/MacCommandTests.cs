@@ -114,7 +114,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         { }
 
         [Fact]
-        public void FromBytes_Success() => FromBytesTest(actual => new { actual.Cid, actual.Battery, actual.Margin },
+        public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.Battery, command.Margin },
                                                          bytes => new DevStatusAnswer(new ReadOnlySpan<byte>(bytes)));
     }
 
@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(actual => new { actual.Cid }, "{cid:6}");
+            DeserializationTest(command => new { command.Cid }, "{cid:6}");
     }
 
     public sealed class DutyCycleAnswerTests : MacCommandTests<DutyCycleAnswer>
@@ -150,7 +150,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(actual => new { actual.Cid, actual.DutyCyclePL }, "{cid:4,dutyCyclePL:3}");
+            DeserializationTest(command => new { command.Cid, command.DutyCyclePL }, "{cid:4,dutyCyclePL:3}");
     }
 
     public sealed class LinkAdrAnswerTests : MacCommandTests<LinkADRAnswer>
@@ -162,20 +162,20 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         { }
 
         [Fact]
-        public void FromBytes_Success() => FromBytesTest(actual => new { actual.Cid, actual.PowerAck, actual.DRAck, actual.CHMaskAck },
+        public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.PowerAck, command.DRAck, command.CHMaskAck },
                                                          bytes => new LinkADRAnswer(new ReadOnlySpan<byte>(bytes)));
     }
 
     public sealed class LinkAdrRequestTests : MacCommandTests<LinkADRRequest>
     {
-        private static object Transform(LinkADRRequest actual) => new
+        private static object Transform(LinkADRRequest command) => new
         {
-            actual.Cid,
-            actual.DataRate,
-            actual.TxPower,
-            actual.ChMask,
-            actual.ChMaskCntl,
-            actual.NbRep
+            command.Cid,
+            command.DataRate,
+            command.TxPower,
+            command.ChMask,
+            command.ChMaskCntl,
+            command.NbRep
         };
 
         public LinkAdrRequestTests() :
@@ -201,7 +201,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         { }
 
         [Fact]
-        public void FromBytes_Success() => FromBytesTest(actual => new { actual.Cid, actual.Margin, actual.GwCnt },
+        public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.Margin, command.GwCnt },
                                                          bytes => new LinkCheckAnswer(new ReadOnlySpan<byte>(bytes)));
     }
 
@@ -223,7 +223,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         { }
 
         [Fact]
-        public void FromBytes_Success() => FromBytesTest(actual => new { actual.Cid, actual.DataRangeOk, actual.ChannelFreqOk },
+        public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.DataRangeOk, command.ChannelFreqOk },
                                                          bytes => new NewChannelAnswer(new ReadOnlySpan<byte>(bytes)));
     }
 
@@ -237,7 +237,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(actual => new { actual.Cid, actual.ChIndex, actual.Freq, actual.MaxDR, actual.MinDR }, "{cid:7,chIndex:1,freq:2,drRange:52}");
+            DeserializationTest(command => new { command.Cid, command.ChIndex, command.Freq, command.MaxDR, command.MinDR },
+                                "{cid:7,chIndex:1,freq:2,drRange:52}");
     }
 
     public sealed class RxParamSetupAnswerTests : MacCommandTests<RXParamSetupAnswer>
@@ -249,7 +250,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         { }
 
         [Fact]
-        public void FromBytes_Success() => FromBytesTest(actual => new { actual.Cid, actual.Rx1DROffsetAck, actual.Rx2DROffsetAck, actual.ChannelAck },
+        public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.Rx1DROffsetAck, command.Rx2DROffsetAck, command.ChannelAck },
                                                          bytes => new RXParamSetupAnswer(new ReadOnlySpan<byte>(bytes)));
     }
 
@@ -263,7 +264,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(actual => new { actual.Cid, actual.Frequency, actual.RX1DROffset, actual.RX2DataRate },
+            DeserializationTest(command => new { command.Cid, command.Frequency, command.RX1DROffset, command.RX2DataRate },
                                 "{cid:5,frequency:3,dlSettings:18}");
     }
 
@@ -286,7 +287,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(actual => new { actual.Cid, actual.Settings },
+            DeserializationTest(command => new { command.Cid, command.Settings },
                                 "{cid:8,settings:1}");
     }
 }
