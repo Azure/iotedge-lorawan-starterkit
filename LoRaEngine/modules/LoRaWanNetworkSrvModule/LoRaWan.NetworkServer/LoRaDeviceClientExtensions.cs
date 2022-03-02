@@ -24,6 +24,8 @@ namespace LoRaWan.NetworkServer
 
         private sealed class ResilientClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
         {
+            private const int MaxAttempts = 3;
+
             private readonly ILoRaDeviceClient client;
             private readonly ILogger? logger;
 
@@ -65,7 +67,7 @@ namespace LoRaWan.NetworkServer
                         return await operation(this.client, arg1, arg2, cancellationToken);
                     }
                     catch (Exception ex)
-                        when (attempt < 3
+                        when (attempt < MaxAttempts
                               && (ex is ObjectDisposedException
                                   || (ex is InvalidOperationException ioe
                                       && ioe.Message.StartsWith("This operation is only allowed using a successfully authenticated context.", StringComparison.OrdinalIgnoreCase)))
