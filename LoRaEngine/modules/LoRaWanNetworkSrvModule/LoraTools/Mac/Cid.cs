@@ -5,15 +5,14 @@ namespace LoRaTools
 {
     public enum Cid
     {
-        Zero,
-        One,
-        LinkCheckCmd,
-        LinkADRCmd,
-        DutyCycleCmd,
-        RXParamCmd,
-        DevStatusCmd,
-        NewChannelCmd,
-        RXTimingCmd,
-        TxParamSetupCmd = 0x09
+        None,
+        LinkCheckCmd = 2,
+        LinkADRCmd = 3,
+        DutyCycleCmd = 4,
+        RXParamCmd = 5,
+        DevStatusCmd = 6,
+        NewChannelCmd = 7,
+        RXTimingCmd = 8,
+        TxParamSetupCmd = 9
     }
 }
