@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using Newtonsoft.Json;
     using Xunit;
 
-    public class MacCommandTest
+    public class MacCommandJsonConverterTest
     {
         [Fact]
         public void When_Serializing_List_Should_Create_Correct_Items()
