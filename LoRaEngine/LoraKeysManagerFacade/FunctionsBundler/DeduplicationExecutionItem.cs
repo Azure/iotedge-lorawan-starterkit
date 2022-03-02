@@ -58,7 +58,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    logger?.LogDebug("Obtained the lock for LNS '{GatewayId}' to execute deduplication for device '{DevEui}' and frame counter up '{FrameCounterUp}'.", gatewayId, devEUI, clientFCntUp);
+                    logger?.LogDebug("Obtained the lock to execute deduplication for device '{DevEui}' and frame counter up '{FrameCounterUp}'.", devEUI, clientFCntUp);
 
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
@@ -87,6 +87,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             cachedDeviceState.GatewayId = gatewayId;
                             _ = deviceCache.StoreInfo(cachedDeviceState);
 
+                            logger?.LogDebug("Previous connection owner was '{PreviousConnectionOwner}', current message was received from '{Gateway}'", previousGateway, gatewayId);
                             if (previousGateway != gatewayId)
                             {
                                 var loraC2DMessage = new LoRaCloudToDeviceMessage()

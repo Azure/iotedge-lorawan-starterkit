@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         internal async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
             if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
-            this.logger.LogDebug("Direct method '{MethodName}' invoked on LNS '{Gateway}' with data '{JsonData}'.", methodRequest.Name, this.networkServerConfiguration.GatewayID, methodRequest.DataAsJson);
+            this.logger.LogDebug("Direct method '{MethodName}' invoked with data '{JsonData}'.", methodRequest.Name, methodRequest.DataAsJson);
 
             try
             {
@@ -105,7 +105,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 }
                 else if (string.Equals(Constants.CloudToDeviceDropConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    this.logger.LogDebug("LNS '{Gateway}' will drop connection with data '{JsonData}'", this.networkServerConfiguration.GatewayID, methodRequest.DataAsJson);
+                    this.logger.LogDebug("Will drop connection with data '{JsonData}'", methodRequest.DataAsJson);
                     return await DropConnectionAsync(methodRequest);
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
@@ -165,7 +165,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             this.forceClosedConnections.Add(1);
             ReceivedLoRaCloudToDeviceMessage c2d = null;
 
-            this.logger.LogDebug("LNS '{Gateway}' will deserialize '{JsonData}'.", this.networkServerConfiguration.GatewayID, methodRequest.DataAsJson);
+            this.logger.LogDebug("Will deserialize '{JsonData}'.", methodRequest.DataAsJson);
 
             try
             {
