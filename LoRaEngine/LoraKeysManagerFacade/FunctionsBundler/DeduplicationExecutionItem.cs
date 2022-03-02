@@ -58,7 +58,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    logger?.LogDebug("Obtained the lock for LNS '{GatewayId}' to execute deduplication.", gatewayId);
+                    logger?.LogDebug("Obtained the lock for LNS '{GatewayId}' to execute deduplication for device '{DevEui}' and frame counter up '{FrameCounterUp}'.", gatewayId, devEUI, clientFCntUp);
 
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
@@ -102,9 +102,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
 
+                                logger?.LogDebug("Payload constructed with device '{DevEui}' and message id '{MessageId}' for LNS '{PreviousConnectionOwner}'", loraC2DMessage.DevEUI, loraC2DMessage.MessageId, previousGateway);
+
                                 try
                                 {
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                                    logger?.LogDebug("Invoked direct method on LNS '{PreviousConnectionOwner}' with message id '{MessageId}' and status '{Status}'", previousGateway, loraC2DMessage.MessageId, res?.Status);
+
                                     if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
                                         logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}', status '{Status}', message id '{MessageId}'", previousGateway, devEUI, res?.Status, loraC2DMessage.MessageId);
