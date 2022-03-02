@@ -83,11 +83,11 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         public static TheoryData<DwellTimeSetting, byte> ToBytes_Theory_Data() => TheoryDataFactory.From(new (DwellTimeSetting, byte)[]
         {
-                (new DwellTimeSetting(false, false, 0), 0b0000_0000),
-                (new DwellTimeSetting(true, false, 0), 0b0010_0000),
-                (new DwellTimeSetting(false, true, 0), 0b0001_0000),
-                (new DwellTimeSetting(false, false, 13), 0b0000_1101),
-                (new DwellTimeSetting(true, true, 15), 0b0011_1111),
+            (new DwellTimeSetting(false, false, 0), 0b0000_0000),
+            (new DwellTimeSetting(true, false, 0), 0b0010_0000),
+            (new DwellTimeSetting(false, true, 0), 0b0001_0000),
+            (new DwellTimeSetting(false, false, 13), 0b0000_1101),
+            (new DwellTimeSetting(true, true, 15), 0b0011_1111),
         });
 
         [Theory]
