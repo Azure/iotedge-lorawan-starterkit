@@ -55,6 +55,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
+        public void Client_Provides_Identity()
+        {
+            var identityProvider = Assert.IsAssignableFrom<IIdentityProvider<ILoRaDeviceClient>>(this.subject);
+
+            Assert.Same(this.originalMock.Object, identityProvider.Identity);
+        }
+
+        [Fact]
         public async Task GetTwinAsync_Invokes_Original_Client()
         {
             var twin = new Twin();
