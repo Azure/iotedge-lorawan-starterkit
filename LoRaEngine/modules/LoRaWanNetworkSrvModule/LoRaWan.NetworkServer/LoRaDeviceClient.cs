@@ -307,7 +307,7 @@ namespace LoRaWan.NetworkServer
             public Task DisconnectAsync(CancellationToken cancellationToken) => this.client.DisconnectAsync(cancellationToken);
             ValueTask IAsyncDisposable.DisposeAsync() => this.client.DisposeAsync();
 
-            private async Task<TResult> WithRetryAsync<T1, T2, TResult>(T1 arg1, T2 arg2, Func<ILoRaDeviceClient, T1, T2, Task<TResult>> function)
+            private async Task<TResult> RetryAsync<T1, T2, TResult>(T1 arg1, T2 arg2, Func<ILoRaDeviceClient, T1, T2, Task<TResult>> function)
             {
                 for (var attempt = 1; ; attempt++)
                 {
@@ -328,25 +328,25 @@ namespace LoRaWan.NetworkServer
             }
 
             public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) =>
-                WithRetryAsync(cancellationToken, Missing.Value, static (client, cancellationToken, _) => client.GetTwinAsync(cancellationToken));
+                RetryAsync(cancellationToken, Missing.Value, static (client, cancellationToken, _) => client.GetTwinAsync(cancellationToken));
 
             public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties) =>
-                WithRetryAsync(telemetry, properties, static (client, telemetry, properties) => client.SendEventAsync(telemetry, properties));
+                RetryAsync(telemetry, properties, static (client, telemetry, properties) => client.SendEventAsync(telemetry, properties));
 
             public Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
-                WithRetryAsync(reportedProperties, cancellationToken, static (client, reportedProperties, cancellationToken) => client.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
+                RetryAsync(reportedProperties, cancellationToken, static (client, reportedProperties, cancellationToken) => client.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
 
             public Task<Message> ReceiveAsync(TimeSpan timeout) =>
-                WithRetryAsync(timeout, Missing.Value, static (client, timeout, _) => client.ReceiveAsync(timeout));
+                RetryAsync(timeout, Missing.Value, static (client, timeout, _) => client.ReceiveAsync(timeout));
 
             public Task<bool> CompleteAsync(Message cloudToDeviceMessage) =>
-                WithRetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.CompleteAsync(message));
+                RetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.CompleteAsync(message));
 
             public Task<bool> AbandonAsync(Message cloudToDeviceMessage) =>
-                WithRetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.AbandonAsync(message));
+                RetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.AbandonAsync(message));
 
             public Task<bool> RejectAsync(Message cloudToDeviceMessage) =>
-                WithRetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.RejectAsync(message));
+                RetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.RejectAsync(message));
 
             ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this.client;
         }
