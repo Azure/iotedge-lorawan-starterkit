@@ -132,9 +132,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.originalMock.Verify(x => x.DisposeAsync(), Times.Once);
         }
 
-        public interface IOperationTestCase
+        public interface IOperationTestHelper
         {
-            IOperationSequentialResultSetup Setup(Mock<ILoRaDeviceClient> mock);
+            IOperationSequentialResultSetup SetupSequence(Mock<ILoRaDeviceClient> mock);
             Task InvokeAsync(ILoRaDeviceClient subject);
             void Verify(Mock<ILoRaDeviceClient> mock, Times times);
         }
@@ -145,23 +145,23 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             IOperationSequentialResultSetup Fail(Exception exception);
         }
 
-        private abstract class OperationTestCase<T> : IOperationTestCase, IOperationSequentialResultSetup, IDisposable
+        private abstract class OperationTestHelper<T> : IOperationTestHelper, IOperationSequentialResultSetup, IDisposable
         {
             private readonly T result;
             private readonly CancellationTokenSource cancellationTokenSource = new();
             private ISetupSequentialResult<Task<T>>? setupSequentialResult;
 
-            protected OperationTestCase(T result) => this.result = result;
+            protected OperationTestHelper(T result) => this.result = result;
 
             protected CancellationToken CancellationToken => this.cancellationTokenSource.Token;
 
             private ISetupSequentialResult<Task<T>> SetupSequentialResult => this.setupSequentialResult ?? throw new InvalidOperationException();
 
-            protected abstract ISetupSequentialResult<Task<T>> SetupCore(Mock<ILoRaDeviceClient> mock);
+            protected abstract ISetupSequentialResult<Task<T>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock);
 
-            public virtual IOperationSequentialResultSetup Setup(Mock<ILoRaDeviceClient> mock)
+            public virtual IOperationSequentialResultSetup SetupSequence(Mock<ILoRaDeviceClient> mock)
             {
-                this.setupSequentialResult = SetupCore(mock);
+                this.setupSequentialResult = SetupSequenceCore(mock);
                 return this;
             }
 
@@ -197,165 +197,165 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
 
-        private sealed class GetTwinAsyncTestCase : OperationTestCase<Twin>
+        private sealed class GetTwinAsyncTestHelper : OperationTestHelper<Twin>
         {
-            public GetTwinAsyncTestCase(Twin result) : base(result) { }
+            public GetTwinAsyncTestHelper(Twin result) : base(result) { }
 
-            protected override ISetupSequentialResult<Task<Twin>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.GetTwinAsync(CancellationToken));
+            protected override ISetupSequentialResult<Task<Twin>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.GetTwinAsync(CancellationToken));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.GetTwinAsync(CancellationToken);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.GetTwinAsync(CancellationToken), times);
         }
 
-        private sealed class SendEventAsyncTestCase : OperationTestCase<bool>
+        private sealed class SendEventAsyncTestHelper : OperationTestHelper<bool>
         {
             private readonly LoRaDeviceTelemetry telemetry;
             private readonly Dictionary<string, string> properties;
 
-            public SendEventAsyncTestCase(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties, bool result) : base(result)
+            public SendEventAsyncTestHelper(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties, bool result) : base(result)
             {
                 this.telemetry = telemetry;
                 this.properties = properties;
             }
 
-            protected override ISetupSequentialResult<Task<bool>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.SendEventAsync(this.telemetry, this.properties));
+            protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.SendEventAsync(this.telemetry, this.properties));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.SendEventAsync(this.telemetry, this.properties);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.SendEventAsync(this.telemetry, this.properties), times);
         }
 
-        private sealed class UpdateReportedPropertiesTestCase : OperationTestCase<bool>
+        private sealed class UpdateReportedPropertiesTestHelper : OperationTestHelper<bool>
         {
             private readonly TwinCollection twinCollection;
 
-            public UpdateReportedPropertiesTestCase(TwinCollection twinCollection, bool result) : base(result) =>
+            public UpdateReportedPropertiesTestHelper(TwinCollection twinCollection, bool result) : base(result) =>
                 this.twinCollection = twinCollection;
 
-            protected override ISetupSequentialResult<Task<bool>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.UpdateReportedPropertiesAsync(this.twinCollection, CancellationToken));
+            protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.UpdateReportedPropertiesAsync(this.twinCollection, CancellationToken));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.UpdateReportedPropertiesAsync(this.twinCollection, CancellationToken);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.UpdateReportedPropertiesAsync(this.twinCollection, CancellationToken), times);
         }
 
-        private sealed class ReceiveTestCase : OperationTestCase<Message>
+        private sealed class ReceiveTestHelper : OperationTestHelper<Message>
         {
             private readonly TimeSpan timeout;
 
-            public ReceiveTestCase(TimeSpan timeout, Message result) : base(result) =>
+            public ReceiveTestHelper(TimeSpan timeout, Message result) : base(result) =>
                 this.timeout = timeout;
 
-            protected override ISetupSequentialResult<Task<Message>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.ReceiveAsync(this.timeout));
+            protected override ISetupSequentialResult<Task<Message>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.ReceiveAsync(this.timeout));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.ReceiveAsync(this.timeout);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.ReceiveAsync(this.timeout), times);
         }
 
-        private sealed class CompleteTestCase : OperationTestCase<bool>
+        private sealed class CompleteTestHelper : OperationTestHelper<bool>
         {
             private readonly Message message;
 
-            public CompleteTestCase(Message message, bool result) : base(result) => this.message = message;
+            public CompleteTestHelper(Message message, bool result) : base(result) => this.message = message;
 
-            protected override ISetupSequentialResult<Task<bool>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.CompleteAsync(this.message));
+            protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.CompleteAsync(this.message));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.CompleteAsync(this.message);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.CompleteAsync(this.message), times);
         }
 
-        private sealed class AbandonTestCase : OperationTestCase<bool>
+        private sealed class AbandonTestHelper : OperationTestHelper<bool>
         {
             private readonly Message message;
 
-            public AbandonTestCase(Message message, bool result) : base(result) => this.message = message;
+            public AbandonTestHelper(Message message, bool result) : base(result) => this.message = message;
 
-            protected override ISetupSequentialResult<Task<bool>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.AbandonAsync(this.message));
+            protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.AbandonAsync(this.message));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.AbandonAsync(this.message);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.AbandonAsync(this.message), times);
         }
 
-        private sealed class RejectTestCase : OperationTestCase<bool>
+        private sealed class RejectTestHelper : OperationTestHelper<bool>
         {
             private readonly Message message;
 
-            public RejectTestCase(Message message, bool result) : base(result) => this.message = message;
+            public RejectTestHelper(Message message, bool result) : base(result) => this.message = message;
 
-            protected override ISetupSequentialResult<Task<bool>> SetupCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.RejectAsync(this.message));
+            protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.RejectAsync(this.message));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.RejectAsync(this.message);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.RejectAsync(this.message), times);
         }
 
-        private static IEnumerable<IOperationTestCase> GetOperationTestCases()
+        private static IEnumerable<IOperationTestHelper> GetOperationTestHelpers()
         {
             using var message = new Message();
-            yield return new GetTwinAsyncTestCase(new Twin());
-            yield return new SendEventAsyncTestCase(new LoRaDeviceTelemetry(), new Dictionary<string, string>(), true);
-            yield return new UpdateReportedPropertiesTestCase(new TwinCollection(), true);
-            yield return new ReceiveTestCase(TimeSpan.FromSeconds(5), message);
-            yield return new CompleteTestCase(message, true);
-            yield return new AbandonTestCase(message, true);
-            yield return new RejectTestCase(message, true);
+            yield return new GetTwinAsyncTestHelper(new Twin());
+            yield return new SendEventAsyncTestHelper(new LoRaDeviceTelemetry(), new Dictionary<string, string>(), true);
+            yield return new UpdateReportedPropertiesTestHelper(new TwinCollection(), true);
+            yield return new ReceiveTestHelper(TimeSpan.FromSeconds(5), message);
+            yield return new CompleteTestHelper(message, true);
+            yield return new AbandonTestHelper(message, true);
+            yield return new RejectTestHelper(message, true);
         }
 
-        public static TheoryData<IOperationTestCase> GetOperationsTestData() =>
-            TheoryDataFactory.From(GetOperationTestCases());
+        public static TheoryData<IOperationTestHelper> GetOperationsTestData() =>
+            TheoryDataFactory.From(GetOperationTestHelpers());
 
-        public static TheoryData<IOperationTestCase, Exception> GetResiliencyTestData() =>
-            TheoryDataFactory.From(from tc in GetOperationTestCases()
+        public static TheoryData<IOperationTestHelper, Exception> GetResiliencyTestData() =>
+            TheoryDataFactory.From(from tc in GetOperationTestHelpers()
                                    from re in GetRetriedExceptions()
                                    select (tc, re));
 
         [Theory]
         [MemberData(nameof(GetOperationsTestData))]
-        public async Task Successful_Operation(IOperationTestCase testCase)
+        public async Task Successful_Operation(IOperationTestHelper operation)
         {
-            testCase.Setup(this.originalMock).Succeed();
+            operation.SetupSequence(this.originalMock).Succeed();
 
-            await testCase.InvokeAsync(this.subject);
+            await operation.InvokeAsync(this.subject);
 
-            testCase.Verify(this.originalMock, Times.Exactly(1));
+            operation.Verify(this.originalMock, Times.Exactly(1));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
             this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Theory]
         [MemberData(nameof(GetResiliencyTestData))]
-        public async Task Unsuccessful_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
+        public async Task Unsuccessful_Operation_Retries_On_Expected_Errors(IOperationTestHelper operation, Exception exception)
         {
-            testCase.Setup(this.originalMock)
-                    .Fail(exception)
-                    .Fail(exception)
-                    .Fail(exception);
+            operation.SetupSequence(this.originalMock)
+                     .Fail(exception)
+                     .Fail(exception)
+                     .Fail(exception);
 
-            var ex = await Assert.ThrowsAsync(exception.GetType(), () => testCase.InvokeAsync(this.subject));
+            var ex = await Assert.ThrowsAsync(exception.GetType(), () => operation.InvokeAsync(this.subject));
 
             Assert.Same(exception, ex);
-            testCase.Verify(this.originalMock, Times.Exactly(3));
+            operation.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(3));
         }
 
         [Theory]
         [MemberData(nameof(GetOperationsTestData))]
-        public async Task Unsuccessful_Operation(IOperationTestCase testCase)
+        public async Task Unsuccessful_Operation(IOperationTestHelper operation)
         {
             var exception = new InvalidOperationException();
-            testCase.Setup(this.originalMock).Fail(exception);
+            operation.SetupSequence(this.originalMock).Fail(exception);
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => testCase.InvokeAsync(this.subject));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => operation.InvokeAsync(this.subject));
 
             Assert.Same(exception, ex);
-            testCase.Verify(this.originalMock, Times.Exactly(1));
+            operation.Verify(this.originalMock, Times.Exactly(1));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
             this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Theory]
         [MemberData(nameof(GetResiliencyTestData))]
-        public async Task Unstable_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
+        public async Task Unstable_Operation_Retries_On_Expected_Errors(IOperationTestHelper operation, Exception exception)
         {
-            testCase.Setup(this.originalMock)
-                    .Fail(exception)
-                    .Fail(exception)
-                    .Succeed();
+            operation.SetupSequence(this.originalMock)
+                     .Fail(exception)
+                     .Fail(exception)
+                     .Succeed();
 
-            await testCase.InvokeAsync(this.subject);
+            await operation.InvokeAsync(this.subject);
 
-            testCase.Verify(this.originalMock, Times.Exactly(3));
+            operation.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(2));
         }
