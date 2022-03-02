@@ -43,19 +43,19 @@ namespace LoRaWan.NetworkServer
                 private Void() { }
             }
 
-            private Task<TResult> RetryAsync<TResult>(Operation<Void, Void, TResult> operation,
-                                                      CancellationToken cancellationToken,
-                                                      [CallerMemberName] string? operationName = null) =>
-                RetryAsync(operation, Void.Value, Void.Value, cancellationToken, operationName);
+            private Task<TResult> InvokeAsync<TResult>(Operation<Void, Void, TResult> operation,
+                                                       CancellationToken cancellationToken,
+                                                       [CallerMemberName] string? operationName = null) =>
+                InvokeAsync(operation, Void.Value, Void.Value, cancellationToken, operationName);
 
-            private Task<TResult> RetryAsync<T, TResult>(Operation<T, Void, TResult> operation, T arg,
-                                                         CancellationToken cancellationToken,
-                                                         [CallerMemberName] string? operationName = null) =>
-                RetryAsync(operation, arg, Void.Value, cancellationToken, operationName);
+            private Task<TResult> InvokeAsync<T, TResult>(Operation<T, Void, TResult> operation, T arg,
+                                                          CancellationToken cancellationToken,
+                                                          [CallerMemberName] string? operationName = null) =>
+                InvokeAsync(operation, arg, Void.Value, cancellationToken, operationName);
 
-            private async Task<TResult> RetryAsync<T1, T2, TResult>(Operation<T1, T2, TResult> operation, T1 arg1, T2 arg2,
-                                                                    CancellationToken cancellationToken,
-                                                                    [CallerMemberName] string? operationName = null)
+            private async Task<TResult> InvokeAsync<T1, T2, TResult>(Operation<T1, T2, TResult> operation, T1 arg1, T2 arg2,
+                                                                     CancellationToken cancellationToken,
+                                                                     [CallerMemberName] string? operationName = null)
             {
                 for (var attempt = 1; ; attempt++)
                 {
@@ -91,25 +91,25 @@ namespace LoRaWan.NetworkServer
             }
 
             public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) =>
-                RetryAsync(Operations.GetTwin, cancellationToken);
+                InvokeAsync(Operations.GetTwin, cancellationToken);
 
             public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties) =>
-                RetryAsync(Operations.SendEvent, telemetry, properties, CancellationToken.None);
+                InvokeAsync(Operations.SendEvent, telemetry, properties, CancellationToken.None);
 
             public Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
-                RetryAsync(Operations.UpdateReportedProperties, reportedProperties, cancellationToken);
+                InvokeAsync(Operations.UpdateReportedProperties, reportedProperties, cancellationToken);
 
             public Task<Message> ReceiveAsync(TimeSpan timeout) =>
-                RetryAsync(Operations.Receive, timeout, CancellationToken.None);
+                InvokeAsync(Operations.Receive, timeout, CancellationToken.None);
 
             public Task<bool> CompleteAsync(Message cloudToDeviceMessage) =>
-                RetryAsync(Operations.Complete, cloudToDeviceMessage, CancellationToken.None);
+                InvokeAsync(Operations.Complete, cloudToDeviceMessage, CancellationToken.None);
 
             public Task<bool> AbandonAsync(Message cloudToDeviceMessage) =>
-                RetryAsync(Operations.Abandon, cloudToDeviceMessage, CancellationToken.None);
+                InvokeAsync(Operations.Abandon, cloudToDeviceMessage, CancellationToken.None);
 
             public Task<bool> RejectAsync(Message cloudToDeviceMessage) =>
-                RetryAsync(Operations.Reject, cloudToDeviceMessage, CancellationToken.None);
+                InvokeAsync(Operations.Reject, cloudToDeviceMessage, CancellationToken.None);
 
             ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this.client;
         }
