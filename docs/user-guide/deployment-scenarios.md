@@ -30,6 +30,11 @@ There are multiple strategies that you can take to improve the availability of t
 IoT Hub and Redis need to be taken into consideration as well. There is documentation for all of these services explaining
 the different options for HA and scalability.
 
+With the version 2.1.0 we introduced a major improvement for multi gateway deployments that
+allows the LNS to scale much better when using `DeduplicationMode.Drop`.
+All the deployment scenarios are now scaling to similiar levels
+no matter if a multi gateway deployment is used or not.
+
 ### Single concentrator with single LNS
 
 This is the most basic deployment you can chose. It does only deploy 1 concentrator
@@ -37,9 +42,6 @@ and one network server. Each sensor can at most reach a single concentrator.
 
 #### Advantages
 
-1. Scalability: this model scales very well. There is no additional overhead to deduplicate
-messages, nor do we need to determine who is winning the race to potentially send messages
-back to the device. Also, no additional edge hub keeps a connection for the leaf device, which helps with the scale requirement on the IoT Hub itself.
 1. Simple: the deployment is simple to start with and maintain.
 1. Low cost: No redundant hardware is used, which helps keeping the operational cost down.
 
@@ -70,9 +72,6 @@ Multiple concentrators are deployed that reach a single network server. Each sen
 
 #### Advantages
 
-1. Scalability: this model scales very well. It's a bit more overhead than the single concentrator / single gateway
-model as it will have to deduplicate messages coming in from the additional
-concentrators. During [scale tests](./testing/load_tests.md) we verified that this scenario scales up to at least 900 OTAA devices, broadcasting a message every 3 minutes to 4 concentrators.
 1. Relatively simple
 1. Low cost
 1. Partial redundancy: if the deployment is designed to ensure that each sensor can reach
@@ -118,9 +117,6 @@ be eliminated.
 
 1. Cost: all components need to be deployed and managed multiple times.
 1. Complexity
-1. Scalability: The scalability is impacted as the LNS now needs to manage leader election
-for message handling, as well as multiple connetion are opened for the same client on
-multiple edge hubs, resulting in connection ping pong. For more information, refer to the [Load Tests](./testing/load_tests.md) documentation.
 
 #### Recommended settings
 
