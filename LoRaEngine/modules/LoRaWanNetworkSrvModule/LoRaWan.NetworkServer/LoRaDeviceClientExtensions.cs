@@ -67,14 +67,15 @@ namespace LoRaWan.NetworkServer
                         return await operation(this.client, arg1, arg2, cancellationToken);
                     }
                     catch (Exception ex)
-                        when (attempt < MaxAttempts
-                              && (ex is ObjectDisposedException
+                        when ((ex is ObjectDisposedException
                                   || (ex is InvalidOperationException ioe
                                       && ioe.Message.StartsWith("This operation is only allowed using a successfully authenticated context.", StringComparison.OrdinalIgnoreCase)))
                               && ExceptionFilterUtility.True(() => this.logger?.LogWarning(ex, @"Device client operation ""{Operation}"" failed due to: {Error}", operationName, ex.GetBaseException().Message)))
                     {
                         // disconnect, re-connect and then retry...
                         await this.client.DisconnectAsync(CancellationToken.None);
+                        if (attempt == MaxAttempts)
+                            throw;
                     }
                 }
             }
