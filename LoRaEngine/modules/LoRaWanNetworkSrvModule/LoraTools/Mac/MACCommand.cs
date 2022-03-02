@@ -108,7 +108,6 @@ namespace LoRaTools
                             pointer += txParamSetupAnswer.Length;
                             macCommands.Add(txParamSetupAnswer);
                             break;
-                        case Cid.None:
                         default:
                             logger?.LogError($"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
@@ -148,7 +147,6 @@ namespace LoRaTools
                             pointer += devStatusRequest.Length;
                             macCommands.Add(devStatusRequest);
                             break;
-                        case Cid.None:
                         case Cid.LinkADRCmd:
                         case Cid.DutyCycleCmd:
                         case Cid.RXParamCmd:

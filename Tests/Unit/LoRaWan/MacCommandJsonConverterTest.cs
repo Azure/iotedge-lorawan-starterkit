@@ -63,7 +63,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         }
 
         [Theory]
-        [InlineData(Cid.None)]
         [InlineData(Cid.TxParamSetupCmd)]
         public void When_Serializing_Invalid_Cid_Should_Throw(Cid cid)
         {

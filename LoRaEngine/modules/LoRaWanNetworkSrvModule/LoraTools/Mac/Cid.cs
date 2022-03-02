@@ -3,9 +3,10 @@
 
 namespace LoRaTools
 {
+#pragma warning disable CA1008 // Enums should have zero value
     public enum Cid
+#pragma warning restore CA1008 // Enums should have zero value
     {
-        None,
         LinkCheckCmd = 2,
         LinkADRCmd = 3,
         DutyCycleCmd = 4,

@@ -87,7 +87,6 @@ namespace LoRaTools
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
-                    case Cid.None:
                     case Cid.TxParamSetupCmd:
                     default:
                         throw new JsonReaderException($"Unhandled command identifier: {macCommandType}");
