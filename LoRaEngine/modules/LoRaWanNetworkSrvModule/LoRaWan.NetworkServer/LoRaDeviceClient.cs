@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning disable CA2000 // Dispose objects before losing scope
             var client = new LoRaDeviceClient(deviceId, connectionString, transportSettings, logger, meter, tracing);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            return new RetryingClient(client, logger);
+            return new ResilientClient(client, logger);
         }
 
         private LoRaDeviceClient(string deviceId,
@@ -292,12 +292,12 @@ namespace LoRaWan.NetworkServer
 
         ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this;
 
-        private sealed class RetryingClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
+        private sealed class ResilientClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
         {
             private readonly ILoRaDeviceClient client;
             private readonly ILogger logger;
 
-            public RetryingClient(ILoRaDeviceClient client, ILogger logger)
+            public ResilientClient(ILoRaDeviceClient client, ILogger logger)
             {
                 this.client = client;
                 this.logger = logger;
