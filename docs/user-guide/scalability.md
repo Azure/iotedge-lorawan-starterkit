@@ -39,7 +39,7 @@ state as well as on the function. The function side is used to send
 a notification, in case of an ownership change, to the previously
 owning LNS. This is covering the case of roaming devices, where a
 device could move outside of the reach of the owning gateway. That means
-it won't get any new messages and won't notice, the ownership change
+it won't get any new messages and won't notice the ownership change,
 unless it is being informed by the function.
 
 ## Deduplication
