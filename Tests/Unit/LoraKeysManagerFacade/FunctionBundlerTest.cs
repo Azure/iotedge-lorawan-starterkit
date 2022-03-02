@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
             var items = new IFunctionBundlerExecutionItem[]
             {
-                new DeduplicationExecutionItem(cacheStore),
+                new DeduplicationExecutionItem(cacheStore, Mock.Of<IServiceClient>()),
                 this.adrExecutionItem,
                 new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
@@ -336,7 +336,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
             var items = new IFunctionBundlerExecutionItem[]
             {
-                new DeduplicationExecutionItem(cacheStore),
+                new DeduplicationExecutionItem(cacheStore, Mock.Of<IServiceClient>()),
                 new ADRExecutionItem(this.adrManager),
                 new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),

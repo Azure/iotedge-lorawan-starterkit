@@ -112,13 +112,13 @@ namespace LoRaWan.Tests.Common
 
         public Uri CupsFwUrl { get; set; } //url of the blob containing the desired fw update for cups test
 
-        public string LoadTestLnsEndpointsString
+        public string LoadTestLnsEndpoints
         {
             get => JsonSerializer.Serialize(LnsEndpointsForSimulator);
-            set => LnsEndpointsForSimulator = JsonSerializer.Deserialize<List<Uri>>(value);
+            set => LnsEndpointsForSimulator = JsonSerializer.Deserialize<Dictionary<string, Uri>>(value);
         }
 
-        public IReadOnlyList<Uri> LnsEndpointsForSimulator { get; set; }
+        public IReadOnlyDictionary<string, Uri> LnsEndpointsForSimulator { get; set; }
 
         public int NumberOfLoadTestDevices { get; set; } = 10;
         public int NumberOfLoadTestConcentrators { get; set; } = 2;

@@ -3,23 +3,34 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
+    using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
+    using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
 
     public class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {
         private readonly ILoRaDeviceCacheStore cacheStore;
+        private readonly IServiceClient serviceClient;
 
-        public DeduplicationExecutionItem(ILoRaDeviceCacheStore cacheStore)
+        private const string MessageIdKey = "MessageId";
+
+        public DeduplicationExecutionItem(
+            ILoRaDeviceCacheStore cacheStore,
+            IServiceClient serviceClient)
         {
             this.cacheStore = cacheStore;
+            this.serviceClient = serviceClient;
         }
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            if (context is null) throw new System.ArgumentNullException(nameof(context));
+            if (context is null) throw new ArgumentNullException(nameof(context));
 
             context.Result.DeduplicationResult = await GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
 
@@ -47,7 +58,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    // we are owning the lock now
+                    logger?.LogDebug("Obtained the lock to execute deduplication for device '{DevEui}' and frame counter up '{FrameCounterUp}'.", devEUI, clientFCntUp);
+
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
                         var updateCacheState = false;
@@ -69,9 +81,48 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                         if (updateCacheState)
                         {
+                            var previousGateway = cachedDeviceState.GatewayId;
+
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
                             _ = deviceCache.StoreInfo(cachedDeviceState);
+
+                            logger?.LogDebug("Previous connection owner was '{PreviousConnectionOwner}', current message was received from '{Gateway}'", previousGateway, gatewayId);
+                            if (previousGateway != gatewayId)
+                            {
+                                var loraC2DMessage = new LoRaCloudToDeviceMessage()
+                                {
+                                    DevEUI = devEUI,
+                                    Fport = FramePort.AppMin,
+                                    MessageId = Guid.NewGuid().ToString()
+                                };
+
+                                using var scope = logger?.BeginScope(new Dictionary<string, object> { [MessageIdKey] = loraC2DMessage.MessageId });
+                                logger?.LogDebug("Invoking direct method on LNS '{PreviousConnectionOwner}' to drop connection for device '{DevEUI}'", previousGateway, devEUI);
+
+                                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                                _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
+
+                                logger?.LogDebug("Payload constructed with device '{DevEui}' for LNS '{PreviousConnectionOwner}'", loraC2DMessage.DevEUI, previousGateway);
+
+                                try
+                                {
+                                    var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                                    logger?.LogDebug("Invoked direct method on LNS '{PreviousConnectionOwner}'; status '{Status}'", previousGateway, res?.Status);
+
+                                    if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
+                                    {
+                                        logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
+                                    }
+                                }
+                                catch (IotHubException ex)
+                                {
+                                    logger?.LogError(ex, "Exception when invoking direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}'", previousGateway, devEUI);
+
+                                    // The exception is not rethrown because closing the connection on the losing gateway
+                                    // is performed on best effort basis.
+                                }
+                            }
                         }
                     }
                     else
