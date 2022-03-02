@@ -107,26 +107,17 @@ namespace LoRaWan.Tests.Integration
             // assert
             Assert.Equal(canProcess || !processingDelayEnabled, this.deviceMock.Object.IsConnectionOwner);
 
-            if (canProcess)
+            this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), canProcess ? Times.Once : Times.Never);
+
+            if (canProcess || !processingDelayEnabled)
             {
                 this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, It.IsAny<bool>()), Times.Never);
-                this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Once);
                 this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Once);
             }
             else
             {
-                if (processingDelayEnabled)
-                {
-                    this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
-                    this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Never);
-                }
-                else
-                {
-                    this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, It.IsAny<bool>()), Times.Never);
-                    this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Once);
-                }
-
-                this.deviceMock.Verify(x => x.BeginDeviceClientConnectionActivity(), Times.Never);
+                this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, false), Times.Once);
+                this.dataRequestHandlerMock.Verify(x => x.SaveChangesToDeviceAsyncAssert(), Times.Never);
             }
         }
 
