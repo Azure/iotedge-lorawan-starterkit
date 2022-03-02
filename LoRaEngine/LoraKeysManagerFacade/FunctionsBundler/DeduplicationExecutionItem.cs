@@ -97,7 +97,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 };
 
                                 using var scope = logger?.BeginScope(new Dictionary<string, object> { [MessageIdKey] = loraC2DMessage.MessageId });
-                                logger?.LogDebug("Invoking direct method on LNS '{PreviousConnectionOwner}' to drop connection for device '{DevEUI}' with message id '{MessageId}'", previousGateway, gatewayId, loraC2DMessage.MessageId);
+                                logger?.LogDebug("Invoking direct method on LNS '{PreviousConnectionOwner}' to drop connection for device '{DevEUI}' with message id '{MessageId}'", previousGateway, devEUI, loraC2DMessage.MessageId);
 
                                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
