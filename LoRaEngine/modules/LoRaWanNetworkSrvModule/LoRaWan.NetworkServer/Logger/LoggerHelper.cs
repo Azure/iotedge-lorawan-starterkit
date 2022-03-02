@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.Logger
 {
     using System;
     using System.Collections.Generic;
+    using LoRaTools;
     using Microsoft.Extensions.Logging;
 
     internal static class LoggerHelper

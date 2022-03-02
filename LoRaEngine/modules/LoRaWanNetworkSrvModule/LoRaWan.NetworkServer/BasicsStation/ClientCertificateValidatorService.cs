@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServer.Logger;
+    using LoRaTools;
     using Microsoft.Extensions.Logging;
 
     internal sealed class ClientCertificateValidatorService : IClientCertificateValidatorService

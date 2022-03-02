@@ -18,6 +18,7 @@ namespace LoRaWan.NetworkServer.Logger
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
+    using LoRaTools;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;

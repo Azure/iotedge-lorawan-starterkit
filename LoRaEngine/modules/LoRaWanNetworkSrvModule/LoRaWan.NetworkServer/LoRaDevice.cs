@@ -8,10 +8,10 @@ namespace LoRaWan.NetworkServer
     using System.Diagnostics.Metrics;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
-    using LoRaWan.NetworkServer.Logger;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;

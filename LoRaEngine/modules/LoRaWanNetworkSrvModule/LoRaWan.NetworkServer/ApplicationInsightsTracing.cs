@@ -6,6 +6,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using LoRaTools;
     using Microsoft.ApplicationInsights;
     using Microsoft.ApplicationInsights.DataContracts;
 

@@ -17,7 +17,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using LoRaTools.LoRaMessage;
     using LoRaTools.NetworkServerDiscovery;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
-    using LoRaWan.NetworkServer.Logger;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
