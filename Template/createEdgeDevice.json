@@ -60,6 +60,13 @@
             "metadata": {
                 "description": "The StationEUI of the sample concentrator device"
             }
+        },
+        "processingDelay" : {
+            "type": "int",
+            "metadata": {
+                "defaultValue": 400,
+                "description": "Processing delay (in milliseconds) to be used in a Network Server which does not own a connection for a leaf device"
+            }
         }
     },
     "variables": {
@@ -73,7 +80,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&region=',parameters('region'),'&resetPin=',parameters('resetPin'),'&stationEui=',parameters('stationEui'),'&spiDev=',parameters('spiDev'),'&spiSpeed=',parameters('spiSpeed'),'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=', list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",
+                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&region=',parameters('region'),'&resetPin=',parameters('resetPin'),'&stationEui=',parameters('stationEui'),'&spiDev=',parameters('spiDev'),'&spiSpeed=',parameters('spiSpeed'),'&deviceName=',parameters('edgeGatewayName'),'&processingDelay=',parameters('processingDelay'),'&publishingUserName=', list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",
                     "contentVersion": "1.0.0.0"
                 }
             }

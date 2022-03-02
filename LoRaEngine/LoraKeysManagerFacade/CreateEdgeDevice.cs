@@ -27,6 +27,7 @@ namespace LoraKeysManagerFacade
         private const string NetworkTagName = "network";
         private const string HostAddressPropertyName = "hostAddress";
         private const string NetworkId = "quickstartnetwork";
+        private const string ProcessingDelayPropertyName = "ProcessingDelayInMilliseconds";
         private static readonly Uri DefaultHostAddress = new Uri("ws://mylns:5000");
         private readonly RegistryManager registryManager;
         private readonly IHttpClientFactory httpClientFactory;
@@ -64,6 +65,7 @@ namespace LoraKeysManagerFacade
             // optional arguments
             _ = queryStrings.TryGetValue("spiSpeed", out var spiSpeed);
             _ = queryStrings.TryGetValue("spiDev", out var spiDev);
+            _ = queryStrings.TryGetValue("processingDelay", out var processingDelay);
 
             _ = bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out var deployEndDevice);
 
@@ -142,6 +144,7 @@ namespace LoraKeysManagerFacade
                 var twin = new Twin();
                 twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
                 twin.Properties.Desired[HostAddressPropertyName] = DefaultHostAddress;
+                twin.Properties.Desired[ProcessingDelayPropertyName] = processingDelay;
                 twin.Tags[NetworkTagName] = NetworkId;
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 

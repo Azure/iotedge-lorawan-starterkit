@@ -80,6 +80,13 @@
             "metadata": {
                 "description": "Controls whether the standalone discovery service should be deployed."
             }
+        },
+        "processingDelay" : {
+            "type": "int",
+            "metadata": {
+                "defaultValue": 400,
+                "description": "Processing delay (in milliseconds) to be used in a Network Server which does not own a connection for a leaf device"
+            }
         }
     },
     "variables": {
@@ -291,6 +298,9 @@
                     },
                     "stationEui": {
                         "value": "[parameters('stationEui')]"
+                    },
+                    "processingDelay": {
+                        "value": "[parameters('processingDelay')]"
                     }
                 }
             }
