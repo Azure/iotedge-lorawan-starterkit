@@ -32,17 +32,17 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         /// <summary>
         /// Gets a default MAC command test subject.
         /// </summary>
-        public T Subject { get; }
+        protected T Subject { get; }
 
         /// <summary>
         /// Gets the list of data bytes (excluding the CID).
         /// </summary>
-        public IReadOnlyList<byte> DataBytes { get; }
+        protected IReadOnlyList<byte> DataBytes { get; }
 
         /// <summary>
         /// Gets the expected length of the MAC command.
         /// </summary>
-        public int Length => DataBytes.Count + 1;
+        protected int Length => DataBytes.Count + 1;
 
         [Fact]
         public void ToBytes_Success() => ToBytes_Internal(Subject, DataBytes);
