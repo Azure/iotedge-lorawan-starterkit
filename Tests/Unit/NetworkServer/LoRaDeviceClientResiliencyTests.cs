@@ -47,6 +47,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                               new ObjectDisposedException("<object>"));
 
         [Fact]
+        public void AddResiliency_Returns_Same_For_Successive_Call()
+        {
+            var result = this.subject.AddResiliency(null);
+
+            Assert.Same(this.subject, result);
+        }
+
+        [Fact]
         public async Task GetTwinAsync_Invokes_Original_Client()
         {
             var twin = new Twin();
