@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using Newtonsoft.Json;
     using Xunit;
 
-    public class MacCommandTests<T> where T : MacCommand
+    public abstract class MacCommandTests<T> where T : MacCommand
     {
         protected MacCommandTests(Cid cid, T subject, IReadOnlyList<byte> dataBytes)
         {
@@ -131,7 +131,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(actual => actual.Cid == Cid, "{'cid':6}");
+            DeserializationTest(actual => actual.Cid == Cid, "{cid:6}");
     }
 
     public sealed class DutyCycleAnswerTests : MacCommandTests<DutyCycleAnswer>
@@ -155,7 +155,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         public void Deserializes_Correctly() =>
             DeserializationTest(actual => actual.Cid == Cid
                                        && actual.DutyCyclePL == Subject.DutyCyclePL,
-                                "{'cid':4,'dutyCyclePL':3}");
+                                "{cid:4,dutyCyclePL:3}");
     }
 
     public sealed class LinkAdrAnswerTests : MacCommandTests<LinkADRAnswer>
@@ -192,7 +192,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void Deserializes_Correctly() =>
-            DeserializationTest(Assert, "{'cid':3,'dataRate':1,'txPower':2,'chMask':3,'chMaskCntl':4,'nbRep':5}");
+            DeserializationTest(Assert, "{cid:3,dataRate:1,txPower:2,chMask:3,chMaskCntl:4,nbRep:5}");
 
         [Fact]
         public void FromBytes_Success() => FromBytesTest(Assert, bytes => new LinkADRRequest(bytes), DataBytes);
@@ -254,7 +254,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                        && actual.Freq == Subject.Freq
                                        && actual.MaxDR == Subject.MaxDR
                                        && actual.MinDR == Subject.MinDR,
-                                "{'cid':7,'chIndex':1,'freq':2,'drRange':52}");
+                                "{cid:7,chIndex:1,freq:2,drRange:52}");
     }
 
     public sealed class RxParamSetupAnswerTests : MacCommandTests<RXParamSetupAnswer>
@@ -288,7 +288,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
                                        && actual.Frequency == Subject.Frequency
                                        && actual.RX1DROffset == Subject.RX1DROffset
                                        && actual.RX2DataRate == Subject.RX2DataRate,
-                                "{'cid':5,'frequency':3,'dlSettings':18}");
+                                "{cid:5,frequency:3,dlSettings:18}");
     }
 
     public sealed class RxTimingSetupAnswerTests : MacCommandTests<RXTimingSetupAnswer>
@@ -311,6 +311,6 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         [Fact]
         public void Deserializes_Correctly() =>
             DeserializationTest(actual => actual.Cid == Cid && actual.Settings == Subject.Settings,
-                                "{'cid':8,'settings':1}");
+                                "{cid:8,settings:1}");
     }
 }
