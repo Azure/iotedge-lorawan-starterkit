@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -39,12 +40,25 @@ namespace LoRaWan.NetworkServer
         private readonly Counter<int> twinLoadRequests;
         private DeviceClient deviceClient;
 
-        public LoRaDeviceClient(string deviceId,
-                                string connectionString,
-                                ITransportSettings[] transportSettings,
-                                ILogger<LoRaDeviceClient> logger,
-                                Meter meter,
-                                ITracing tracing)
+        public static ILoRaDeviceClient Create(string deviceId,
+                                               string connectionString,
+                                               ITransportSettings[] transportSettings,
+                                               ILogger<LoRaDeviceClient> logger,
+                                               Meter meter,
+                                               ITracing tracing)
+        {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var client = new LoRaDeviceClient(deviceId, connectionString, transportSettings, logger, meter, tracing);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            return new RetryingClient(client, logger);
+        }
+
+        private LoRaDeviceClient(string deviceId,
+                                 string connectionString,
+                                 ITransportSettings[] transportSettings,
+                                 ILogger<LoRaDeviceClient> logger,
+                                 Meter meter,
+                                 ITracing tracing)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or empty.", nameof(connectionString));
             if (meter is null) throw new ArgumentNullException(nameof(meter));
@@ -277,5 +291,64 @@ namespace LoRaWan.NetworkServer
         }
 
         ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this;
+
+        private sealed class RetryingClient : ILoRaDeviceClient, IIdentityProvider<ILoRaDeviceClient>
+        {
+            private readonly ILoRaDeviceClient client;
+            private readonly ILogger logger;
+
+            public RetryingClient(ILoRaDeviceClient client, ILogger logger)
+            {
+                this.client = client;
+                this.logger = logger;
+            }
+
+            public bool EnsureConnected() => this.client.EnsureConnected();
+            public Task DisconnectAsync(CancellationToken cancellationToken) => this.client.DisconnectAsync(cancellationToken);
+            ValueTask IAsyncDisposable.DisposeAsync() => this.client.DisposeAsync();
+
+            private async Task<TResult> WithRetryAsync<T1, T2, TResult>(T1 arg1, T2 arg2, Func<ILoRaDeviceClient, T1, T2, Task<TResult>> function)
+            {
+                for (var attempt = 1; ; attempt++)
+                {
+                    try
+                    {
+                        return await function(this.client, arg1, arg2);
+                    }
+                    catch (Exception ex)
+                        when (attempt < 3
+                              && (ex is ObjectDisposedException
+                                  || (ex is InvalidOperationException ioe
+                                      && ioe.Message.StartsWith("This operation is only allowed using a successfully authenticated context.", StringComparison.OrdinalIgnoreCase)))
+                              && ExceptionFilterUtility.True(() => this?.logger.LogError(ex, ex.Message)))
+                    {
+                        // retry...
+                    }
+                }
+            }
+
+            public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) =>
+                WithRetryAsync(cancellationToken, Missing.Value, static (client, cancellationToken, _) => client.GetTwinAsync(cancellationToken));
+
+            public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties) =>
+                WithRetryAsync(telemetry, properties, static (client, telemetry, properties) => client.SendEventAsync(telemetry, properties));
+
+            public Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
+                WithRetryAsync(reportedProperties, cancellationToken, static (client, reportedProperties, cancellationToken) => client.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
+
+            public Task<Message> ReceiveAsync(TimeSpan timeout) =>
+                WithRetryAsync(timeout, Missing.Value, static (client, timeout, _) => client.ReceiveAsync(timeout));
+
+            public Task<bool> CompleteAsync(Message cloudToDeviceMessage) =>
+                WithRetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.CompleteAsync(message));
+
+            public Task<bool> AbandonAsync(Message cloudToDeviceMessage) =>
+                WithRetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.AbandonAsync(message));
+
+            public Task<bool> RejectAsync(Message cloudToDeviceMessage) =>
+                WithRetryAsync(cloudToDeviceMessage, Missing.Value, static (client, message, _) => client.RejectAsync(message));
+
+            ILoRaDeviceClient IIdentityProvider<ILoRaDeviceClient>.Identity => this.client;
+        }
     }
 }
