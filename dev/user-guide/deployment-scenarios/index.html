@@ -998,6 +998,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../scalability/" class="md-nav__link">
+        Scalability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../caching/" class="md-nav__link">
         Caching
       </a>
@@ -1757,14 +1771,15 @@ updates</a> for example.</p>
 <p><strong>Note</strong>: This guide is only talking about the LBS/LNS deployment configuration. For the full solution, the function endpoint,
 IoT Hub and Redis need to be taken into consideration as well. There is documentation for all of these services explaining
 the different options for HA and scalability.</p>
+<p>With the version 2.1.0 we introduced a major improvement for multi gateway deployments that
+allows the LNS to scale much better when using <code>DeduplicationMode.Drop</code>.
+All the deployment scenarios are now scaling to similiar levels
+no matter if a multi gateway deployment is used or not.</p>
 <h3 id="single-concentrator-with-single-lns">Single concentrator with single LNS</h3>
 <p>This is the most basic deployment you can chose. It does only deploy 1 concentrator
 and one network server. Each sensor can at most reach a single concentrator.</p>
 <h4 id="advantages">Advantages</h4>
 <ol>
-<li>Scalability: this model scales very well. There is no additional overhead to deduplicate
-messages, nor do we need to determine who is winning the race to potentially send messages
-back to the device. Also, no additional edge hub keeps a connection for the leaf device, which helps with the scale requirement on the IoT Hub itself.</li>
 <li>Simple: the deployment is simple to start with and maintain.</li>
 <li>Low cost: No redundant hardware is used, which helps keeping the operational cost down.</li>
 </ol>
@@ -1819,9 +1834,6 @@ within reach of that concentrator.</li>
 <p>Multiple concentrators are deployed that reach a single network server. Each sensor can reach one or multiple concentrators. Depending on the goal of the deployment (availability and/or reach).</p>
 <h4 id="advantages_1">Advantages</h4>
 <ol>
-<li>Scalability: this model scales very well. It's a bit more overhead than the single concentrator / single gateway
-model as it will have to deduplicate messages coming in from the additional
-concentrators. During <a href="../testing/load_tests/">scale tests</a> we verified that this scenario scales up to at least 900 OTAA devices, broadcasting a message every 3 minutes to 4 concentrators.</li>
 <li>Relatively simple</li>
 <li>Low cost</li>
 <li>Partial redundancy: if the deployment is designed to ensure that each sensor can reach
@@ -1890,9 +1902,6 @@ be eliminated.</li>
 <ol>
 <li>Cost: all components need to be deployed and managed multiple times.</li>
 <li>Complexity</li>
-<li>Scalability: The scalability is impacted as the LNS now needs to manage leader election
-for message handling, as well as multiple connetion are opened for the same client on
-multiple edge hubs, resulting in connection ping pong. For more information, refer to the <a href="../testing/load_tests/">Load Tests</a> documentation.</li>
 </ol>
 <h4 id="recommended-settings_2">Recommended settings</h4>
 <table>
@@ -1945,7 +1954,7 @@ also tests this scenario with an installation of EFLOW in a Windows Server VM in
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-02-28T15:31:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-02-28</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-03-02T15:42:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-03-02</span>
       
         <br>
         Created:
@@ -1988,13 +1997,13 @@ also tests this scenario with an installation of EFLOW in a Windows Server VM in
       
       
         
-        <a href="../caching/" class="md-footer__link md-footer__link--next" aria-label="Next: Caching" rel="next">
+        <a href="../scalability/" class="md-footer__link md-footer__link--next" aria-label="Next: Scalability" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Caching
+              Scalability
             </div>
           </div>
           <div class="md-footer__button md-icon">
