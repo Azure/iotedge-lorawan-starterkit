@@ -73,10 +73,8 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             this.deviceMock.Object.IsConnectionOwner = connectionOwner;
-
-            if (!processingDelayEnabled)
-                ServerConfiguration.ProcessingDelayInMilliseconds = 0;
-
+            this.dataRequestHandlerMock.Setup(x => x.IsProcessingDelayEnabled()).Returns(processingDelayEnabled);
+            
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.deviceMock.Object);
 
@@ -101,8 +99,7 @@ namespace LoRaWan.Tests.Integration
                 NextFCntDown = null
             });
 
-            if (!processingDelayEnabled)
-                ServerConfiguration.ProcessingDelayInMilliseconds = 0;
+            this.dataRequestHandlerMock.Setup(x => x.IsProcessingDelayEnabled()).Returns(processingDelayEnabled);
 
             // act
             _ = await this.dataRequestHandlerMock.Object.ProcessRequestAsync(this.loraRequest, this.deviceMock.Object);
