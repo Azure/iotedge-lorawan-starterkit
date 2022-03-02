@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer.Logger
 {
     using System;
+    using global::LoRaTools;
     using LoRaWan;
     using LoRaWan.NetworkServer.Logger;
     using Microsoft.Extensions.Logging;

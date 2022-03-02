@@ -284,8 +284,7 @@ namespace LoRaWan.NetworkServer
 
             this.logger.LogInformation($"{nameof(LoRaDeviceCache)} cleared.");
 
-            await Parallel.ForEachAsync(devices, new ParallelOptions { MaxDegreeOfParallelism = 20 },
-                                        (device, _) => device.DisposeAsync());
+            await devices.DisposeAllAsync(20);
         }
 
         private class StatisticsTracker

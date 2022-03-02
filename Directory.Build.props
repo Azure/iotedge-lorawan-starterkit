@@ -18,7 +18,7 @@
       <MicrosoftExtensionsDependencyInjectionVersion>6.0.0</MicrosoftExtensionsDependencyInjectionVersion>
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
-      <MicrosoftNETSdkFunctionsVersion>4.0.1</MicrosoftNETSdkFunctionsVersion>
+      <MicrosoftNETSdkFunctionsVersion>4.1.0</MicrosoftNETSdkFunctionsVersion>
       <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
@@ -32,7 +32,7 @@
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
       <MicrosoftNETTestSdkVersion>17.1.0</MicrosoftNETTestSdkVersion>
-      <MoqVersion>4.16.1</MoqVersion>
+      <MoqVersion>4.17.1</MoqVersion>
       <XUnitVersion>2.4.1</XUnitVersion>
       <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.0</MicrosoftExtensionsConfigurationVersion>
