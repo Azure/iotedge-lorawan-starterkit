@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
+    using System.Collections.Generic;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
 
-    internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable
+    internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService, IDisposable, IAsyncDisposable
     {
         internal const string RouterConfigPropertyName = "routerConfig";
         private const string DwellTimeConfigurationPropertyName = "desiredTxParams";
@@ -32,23 +33,32 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         private static readonly TimeSpan CacheTimeout = TimeSpan.FromHours(2);
         private readonly SemaphoreSlim cacheSemaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim deviceClientSemaphore = new SemaphoreSlim(1);
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
         private readonly ILoRaDeviceFactory loRaDeviceFactory;
         private readonly IMemoryCache cache;
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly ILogger<BasicsStationConfigurationService> logger;
+        private readonly List<LoRaDevice> stationDeviceProxies = new List<LoRaDevice>();
 
         public BasicsStationConfigurationService(LoRaDeviceAPIServiceBase loRaDeviceApiService,
                                                  ILoRaDeviceFactory loRaDeviceFactory,
                                                  IMemoryCache cache,
+                                                 ILoRaDeviceClientConnectionManager connectionManager,
                                                  ILogger<BasicsStationConfigurationService> logger)
         {
             this.loRaDeviceApiService = loRaDeviceApiService;
             this.loRaDeviceFactory = loRaDeviceFactory;
             this.cache = cache;
+            this.connectionManager = connectionManager;
             this.logger = logger;
         }
 
-        public void Dispose() => this.cacheSemaphore.Dispose();
+        public void Dispose()
+        {
+            this.cacheSemaphore.Dispose();
+            this.deviceClientSemaphore.Dispose();
+        }
 
         private async Task<TwinCollection> GetTwinDesiredPropertiesAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
@@ -64,14 +74,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 return await this.cache.GetOrCreateAsync(cacheKey, async cacheEntry =>
                 {
                     _ = cacheEntry.SetAbsoluteExpiration(CacheTimeout);
-                    var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
-                    if (string.IsNullOrEmpty(key))
-                    {
-                        throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
-                                                          LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-                    }
-
-                    await using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+                    var client = await GetDeviceClientAsync(stationEui, cancellationToken);
                     var twin = await client.GetTwinAsync(cancellationToken);
                     return twin.Properties.Desired;
                 });
@@ -79,6 +82,37 @@ namespace LoRaWan.NetworkServer.BasicsStation
             finally
             {
                 _ = this.cacheSemaphore.Release();
+            }
+        }
+
+        private async Task<ILoRaDeviceClient> GetDeviceClientAsync(StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var devEui = new DevEui(stationEui.AsUInt64);
+
+            await this.deviceClientSemaphore.WaitAsync(cancellationToken);
+            try
+            {
+                if (this.connectionManager.TryGetClient(devEui, out var deviceClient))
+                {
+                    return deviceClient;
+                }
+
+                var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
+                                                      LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+                }
+
+                deviceClient = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+                var loRaDevice = new LoRaDevice(null, devEui, this.connectionManager);
+                this.stationDeviceProxies.Add(loRaDevice);
+                this.connectionManager.Register(loRaDevice, deviceClient);
+                return deviceClient;
+            }
+            finally
+            {
+                _ = this.deviceClientSemaphore.Release();
             }
         }
 
@@ -135,26 +169,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 return;
             }
 
-            var key = await this.loRaDeviceApiService.GetPrimaryKeyByEuiAsync(stationEui);
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
-                                                  LoRaProcessingErrorCode.InvalidDeviceConfiguration);
-            }
+            var client = await GetDeviceClientAsync(stationEui, cancellationToken);
+            var twinCollection = new TwinCollection();
+            twinCollection[TwinProperty.Package] = package;
+            _ = await client.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
+        }
 
-            await this.cacheSemaphore.WaitAsync(cancellationToken);
-
-            try
-            {
-                await using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
-                var twinCollection = new TwinCollection();
-                twinCollection[TwinProperty.Package] = package;
-                _ = await client.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
-            }
-            finally
-            {
-                _ = this.cacheSemaphore.Release();
-            }
+        public ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
         }
     }
 }

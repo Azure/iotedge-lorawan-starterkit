@@ -27,6 +27,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     {
         private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApiServiceMock;
         private readonly Mock<ILoRaDeviceFactory> loRaDeviceFactoryMock;
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
         private readonly IMemoryCache memoryCache;
         private readonly StationEui stationEui;
         private readonly DevEui devEui;
@@ -40,9 +41,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             this.loRaDeviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
             this.loRaDeviceFactoryMock = new Mock<ILoRaDeviceFactory>();
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
+            this.connectionManager = new LoRaDeviceClientConnectionManager(this.memoryCache, NullLogger<LoRaDeviceClientConnectionManager>.Instance);
             this.sut = new BasicsStationConfigurationService(this.loRaDeviceApiServiceMock.Object,
                                                              this.loRaDeviceFactoryMock.Object,
                                                              this.memoryCache,
+                                                             this.connectionManager,
                                                              NullLogger<BasicsStationConfigurationService>.Instance);
         }
 
@@ -394,6 +397,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 {
                     this.sut.Dispose();
                     this.memoryCache.Dispose();
+                    this.connectionManager.DisposeAsync().AsTask().Wait();
                 }
 
                 this.disposedValue = true;

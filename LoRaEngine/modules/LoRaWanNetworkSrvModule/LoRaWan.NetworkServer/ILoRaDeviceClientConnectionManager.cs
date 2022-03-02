@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer
     public interface ILoRaDeviceClientConnectionManager : IAsyncDisposable
     {
         ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
+        bool TryGetClient(DevEui devEui, out ILoRaDeviceClient? deviceClient);
 
         Task ReleaseAsync(LoRaDevice loRaDevice);
 

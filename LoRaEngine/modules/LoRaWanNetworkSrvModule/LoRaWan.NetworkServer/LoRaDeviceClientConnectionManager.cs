@@ -17,6 +17,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
@@ -58,6 +59,16 @@ namespace LoRaWan.NetworkServer
             return this.clientByDevEui.TryGetValue(loRaDevice.DevEUI, out var client)
                  ? client
                  : throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
+        }
+
+        public bool TryGetClient(DevEui devEui, [NotNullWhen(true)] out ILoRaDeviceClient? deviceClient)
+        {
+            deviceClient = null;
+            if (this.clientByDevEui.TryGetValue(devEui, out var client))
+            {
+                deviceClient = client;
+            }
+            return deviceClient != null;
         }
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)

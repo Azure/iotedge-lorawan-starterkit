@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan;
     using LoRaWan.NetworkServer;
 
     /// <summary>
@@ -33,5 +34,11 @@ namespace LoRaWan.Tests.Common
         public Task ReleaseAsync(LoRaDevice loRaDevice) => this.singleDeviceClient.DisposeAsync().AsTask();
 
         public ValueTask DisposeAsync() => this.singleDeviceClient.DisposeAsync();
+
+        public bool TryGetClient(DevEui devEui, out ILoRaDeviceClient deviceClient)
+        {
+            deviceClient = this.singleDeviceClient;
+            return deviceClient != null;
+        }
     }
 }
