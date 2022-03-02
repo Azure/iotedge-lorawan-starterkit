@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -28,11 +29,27 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<ILogger> loggerMock = new();
         private readonly ILoRaDeviceClient subject;
         private readonly CancellationTokenSource cancellationTokenSource = new();
+        private readonly List<LogEntry> log = new();
+
+        private record struct LogEntry(string Message, Exception? Exception);
 
         public LoRaDeviceClientResiliencyTests()
         {
             this.originalMock = new Mock<ILoRaDeviceClient>();
             var loggerFactoryMock = new Mock<ILoggerFactory>();
+            this.loggerMock
+                .Setup(l => l.Log(LogLevel.Warning,
+                                  It.IsAny<EventId>(),
+                                  It.IsAny<It.IsAnyType>(),
+                                  It.IsNotNull<Exception>(),
+                                  (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()))
+                .Callback((IInvocation invocation) =>
+                {
+                    var exception = (Exception)invocation.Arguments[3];
+                    var formatter = (Delegate)invocation.Arguments[4];
+                    var message = (string)formatter.DynamicInvoke(invocation.Arguments[2], exception)!;
+                    this.log.Add(new LogEntry(message, exception));
+                });
             loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(this.loggerMock.Object);
             this.subject = this.originalMock.Object.AddResiliency(loggerFactoryMock.Object);
         }
@@ -134,6 +151,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public interface IOperationTestHelper
         {
+            string Name { get; }
             IOperationSequentialResultSetup SetupSequence(Mock<ILoRaDeviceClient> mock);
             Task InvokeAsync(ILoRaDeviceClient subject);
             void Verify(Mock<ILoRaDeviceClient> mock, Times times);
@@ -152,6 +170,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             private ISetupSequentialResult<Task<T>>? setupSequentialResult;
 
             protected OperationTestHelper(T result) => this.result = result;
+
+            public virtual string Name => GetType().Name[..^"TestHelper".Length];
 
             protected CancellationToken CancellationToken => this.cancellationTokenSource.Token;
 
@@ -222,11 +242,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.SendEventAsync(this.telemetry, this.properties), times);
         }
 
-        private sealed class UpdateReportedPropertiesTestHelper : OperationTestHelper<bool>
+        private sealed class UpdateReportedPropertiesAsyncTestHelper : OperationTestHelper<bool>
         {
             private readonly TwinCollection twinCollection;
 
-            public UpdateReportedPropertiesTestHelper(TwinCollection twinCollection, bool result) : base(result) =>
+            public UpdateReportedPropertiesAsyncTestHelper(TwinCollection twinCollection, bool result) : base(result) =>
                 this.twinCollection = twinCollection;
 
             protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.UpdateReportedPropertiesAsync(this.twinCollection, CancellationToken));
@@ -234,11 +254,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.UpdateReportedPropertiesAsync(this.twinCollection, CancellationToken), times);
         }
 
-        private sealed class ReceiveTestHelper : OperationTestHelper<Message>
+        private sealed class ReceiveAsyncTestHelper : OperationTestHelper<Message>
         {
             private readonly TimeSpan timeout;
 
-            public ReceiveTestHelper(TimeSpan timeout, Message result) : base(result) =>
+            public ReceiveAsyncTestHelper(TimeSpan timeout, Message result) : base(result) =>
                 this.timeout = timeout;
 
             protected override ISetupSequentialResult<Task<Message>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.ReceiveAsync(this.timeout));
@@ -246,33 +266,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.ReceiveAsync(this.timeout), times);
         }
 
-        private sealed class CompleteTestHelper : OperationTestHelper<bool>
+        private sealed class CompleteAsyncTestHelper : OperationTestHelper<bool>
         {
             private readonly Message message;
 
-            public CompleteTestHelper(Message message, bool result) : base(result) => this.message = message;
+            public CompleteAsyncTestHelper(Message message, bool result) : base(result) => this.message = message;
 
             protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.CompleteAsync(this.message));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.CompleteAsync(this.message);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.CompleteAsync(this.message), times);
         }
 
-        private sealed class AbandonTestHelper : OperationTestHelper<bool>
+        private sealed class AbandonAsyncTestHelper : OperationTestHelper<bool>
         {
             private readonly Message message;
 
-            public AbandonTestHelper(Message message, bool result) : base(result) => this.message = message;
+            public AbandonAsyncTestHelper(Message message, bool result) : base(result) => this.message = message;
 
             protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.AbandonAsync(this.message));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.AbandonAsync(this.message);
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.AbandonAsync(this.message), times);
         }
 
-        private sealed class RejectTestHelper : OperationTestHelper<bool>
+        private sealed class RejectAsyncTestHelper : OperationTestHelper<bool>
         {
             private readonly Message message;
 
-            public RejectTestHelper(Message message, bool result) : base(result) => this.message = message;
+            public RejectAsyncTestHelper(Message message, bool result) : base(result) => this.message = message;
 
             protected override ISetupSequentialResult<Task<bool>> SetupSequenceCore(Mock<ILoRaDeviceClient> mock) => mock.SetupSequence(x => x.RejectAsync(this.message));
             public override Task InvokeAsync(ILoRaDeviceClient subject) => subject.RejectAsync(this.message);
@@ -284,11 +304,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             using var message = new Message();
             yield return new GetTwinAsyncTestHelper(new Twin());
             yield return new SendEventAsyncTestHelper(new LoRaDeviceTelemetry(), new Dictionary<string, string>(), true);
-            yield return new UpdateReportedPropertiesTestHelper(new TwinCollection(), true);
-            yield return new ReceiveTestHelper(TimeSpan.FromSeconds(5), message);
-            yield return new CompleteTestHelper(message, true);
-            yield return new AbandonTestHelper(message, true);
-            yield return new RejectTestHelper(message, true);
+            yield return new UpdateReportedPropertiesAsyncTestHelper(new TwinCollection(), true);
+            yield return new ReceiveAsyncTestHelper(TimeSpan.FromSeconds(5), message);
+            yield return new CompleteAsyncTestHelper(message, true);
+            yield return new AbandonAsyncTestHelper(message, true);
+            yield return new RejectAsyncTestHelper(message, true);
         }
 
         public static TheoryData<IOperationTestHelper> GetOperationsTestData() =>
@@ -310,6 +330,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(1));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
             this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
+            Assert.Empty(this.log);
         }
 
         [Theory]
@@ -327,6 +348,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(3));
+            Assert.Equal(CreateExpectedLog(3, operation.Name, exception), this.log);
         }
 
         [Theory]
@@ -342,6 +364,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(1));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
             this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
+            Assert.Empty(this.log);
         }
 
         [Theory]
@@ -358,6 +381,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(2));
+            Assert.Equal(CreateExpectedLog(2, operation.Name, exception), this.log);
         }
+
+        private static IEnumerable<LogEntry> CreateExpectedLog(int count, string name, Exception exception) =>
+            from a in Enumerable.Range(1, count)
+            select a.ToString(CultureInfo.InvariantCulture) into a
+            select new LogEntry($@"Device client operation ""{name}"" (attempt {a}/3) failed due to error: {exception.Message}", exception);
     }
 }
