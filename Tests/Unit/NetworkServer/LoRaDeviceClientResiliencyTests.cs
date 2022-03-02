@@ -295,8 +295,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             TheoryDataFactory.From(GetOperationTestCases());
 
         public static TheoryData<IOperationTestCase, Exception> GetResiliencyTestData() =>
-            TheoryDataFactory.From(from re in GetRetriedExceptions()
-                                   from tc in GetOperationTestCases()
+            TheoryDataFactory.From(from tc in GetOperationTestCases()
+                                   from re in GetRetriedExceptions()
                                    select (tc, re));
 
         [Theory]
