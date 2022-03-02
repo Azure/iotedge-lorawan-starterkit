@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Concurrent;
-    using LoRaWan.NetworkServer.Logger;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -17,6 +16,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using LoRaTools;
 
     /// <summary>
     /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
