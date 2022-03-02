@@ -145,7 +145,7 @@ namespace LoRaWan.Tests.Integration
 
         private void SetupSaveDeviceChangeFailure(Exception exception)
         {
-            this.mockTestDefaultLoRaRequestHandler.Setup(h => h.SaveChangesToDeviceAsync(It.IsAny<LoRaDevice>(), It.IsAny<bool>()))
+            this.mockTestDefaultLoRaRequestHandler.Setup(h => h.SaveChangesToDeviceAsync(It.IsAny<LoRaDevice>(), false))
                                                   .ThrowsAsync(exception);
         }
 
