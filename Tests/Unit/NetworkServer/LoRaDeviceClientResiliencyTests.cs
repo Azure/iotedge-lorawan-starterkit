@@ -91,14 +91,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken), Times.Once);
         }
 
-        private static readonly IEnumerable<Exception> RetriedExceptions = new []
+        private static IEnumerable<Exception> RetriedExceptions() => new[]
         {
             new InvalidOperationException("This operation is only allowed using a successfully authenticated context. " + "" +
                                           "This sentence in the error message shouldn't matter."),
             new ObjectDisposedException("<object>")
         };
 
-        public static readonly TheoryData<Exception> RetriedExceptionsData = TheoryDataFactory.From(RetriedExceptions);
+        public static TheoryData<Exception> RetriedExceptionsData() => TheoryDataFactory.From(RetriedExceptions());
 
         [Theory]
         [MemberData(nameof(RetriedExceptionsData))]
@@ -295,7 +295,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             TheoryDataFactory.From(OperationTestCases());
 
         public static TheoryData<IOperationTestCase, Exception> ResiliencyTestData() =>
-            TheoryDataFactory.From(from re in RetriedExceptions
+            TheoryDataFactory.From(from re in RetriedExceptions()
                                    from tc in OperationTestCases()
                                    select (tc, re));
 
