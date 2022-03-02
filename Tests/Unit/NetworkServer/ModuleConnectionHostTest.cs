@@ -211,7 +211,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = new DevEui(0);
             var mockedDevice = new Mock<LoRaDevice>(null, devEui, null);
             _ = loRaDeviceRegistry.Setup(x => x.GetDeviceByDevEUIAsync(devEui)).ReturnsAsync(mockedDevice.Object);
-            var c2d = $"{{\"DevEui\": \"{ devEui }\", \"Fport\": 1}}";
+            var c2d = $"{{\"DevEui\": \"{ devEui }\", \"Fport\": 1, \"MessageId\": \"{ Guid.NewGuid() }\"}}";
 
             // act
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
@@ -227,9 +227,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 {
                     null,
                     Array.Empty<byte>(),
-                    Encoding.UTF8.GetBytes("{{\"DevEui\": null, \"Fport\": 1}}")
+                    Encoding.UTF8.GetBytes("{{\"DevEui\": null, \"Fport\": 1}}"), // invalid DevEui
+                    Encoding.UTF8.GetBytes("{{\"DevEui\": \"{ new DevEui(0) }\", \"Fport\": 1, \"MessageId\": 123}}") // invalid message id
                 };
-
 
         [Theory]
         [MemberData(nameof(DropConnectionInvalidMessages))]
@@ -268,7 +268,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.Equal((int)HttpStatusCode.NotFound, response.Status);
             loRaDeviceRegistry.Verify(x => x.GetDeviceByDevEUIAsync(devEui), Times.Once);
             loRaDeviceRegistry.VerifyNoOtherCalls();
-
         }
 
         [Fact]

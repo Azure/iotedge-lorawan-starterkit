@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
-        public const string DroppedConnectionLog = "device connection was dropped";
+        public const string DroppedConnectionLog = "device connection was dropped ";
 
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         internal async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
             if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
-            this.logger.LogDebug($"Direct method: { methodRequest.Name } invoked on LNS: { this.networkServerConfiguration.GatewayID }");
+            this.logger.LogDebug("Direct method '{MethodName}' invoked on LNS '{Gateway}'.", methodRequest.Name, this.networkServerConfiguration.GatewayID);
 
             try
             {
@@ -170,7 +170,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
             catch (Exception ex) when (ex is ArgumentNullException or JsonException)
             {
-                this.logger.LogError($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}");
+                this.logger.LogError(ex, "Unable to parse Json for direct method '{MethodName}' for device '{DevEui}', message id '{MessageId}'", methodRequest.Name, c2d?.DevEUI, c2d?.MessageId);
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
 
@@ -178,7 +178,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             if (c2d.DevEUI == null)
             {
-                this.logger.LogError($"DevEUI missing, cannot identify device to drop connection for; message Id: {c2d.MessageId}");
+                this.logger.LogError("DevEUI missing, cannot identify device to drop connection for; message Id '{MessageId}'", c2d.MessageId);
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
 
@@ -187,13 +187,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
             if (loRaDevice == null)
             {
-                this.logger.LogError($"Could not retrieve LoRa device {c2d.DevEUI.Value}");
+                this.logger.LogError("Could not retrieve LoRa device with DevEui '{DevEui}'; message id '{MessageId}'", c2d.DevEUI.Value, c2d.MessageId);
                 return new MethodResponse((int)HttpStatusCode.NotFound);
             }
 
             loRaDevice.IsConnectionOwner = false;
             await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
-            this.logger.LogInformation($"{DroppedConnectionLog} from gateway: {this.networkServerConfiguration.GatewayID}");
+            this.logger.LogInformation(DroppedConnectionLog + "from gateway id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
 
             return new MethodResponse((int)HttpStatusCode.OK);
         }

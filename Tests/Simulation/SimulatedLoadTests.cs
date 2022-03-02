@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.Simulation
             AssertMessageAcknowledgement(device, messageCount);
         }
 
-        [Fact(Skip = "skip - will be reverted")]
+        [Fact]
         public async Task Ensures_Disconnect_Happens_For_Losing_Gateway_When_Connection_Switches()
         {
             // arrange
