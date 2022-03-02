@@ -168,7 +168,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
     public sealed class LinkAdrRequestTests : MacCommandTests<LinkADRRequest>
     {
-        private static readonly Func<LinkADRRequest, object> Transform = actual => new
+        private static object Transform(LinkADRRequest actual) => new
         {
             actual.Cid,
             actual.DataRate,
