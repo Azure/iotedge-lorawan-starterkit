@@ -62,85 +62,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Fact]
-        public async Task GetTwinAsync_Invokes_Original_Client()
-        {
-            var twin = new Twin();
-            this.originalMock.Setup(x => x.GetTwinAsync(CancellationToken)).ReturnsAsync(twin);
-
-            var result = await this.subject.GetTwinAsync(CancellationToken);
-
-            Assert.Same(twin, result);
-        }
-
-        [Fact]
-        public async Task SendEventAsync_Invokes_Original_Client()
-        {
-            var telemetry = new LoRaDeviceTelemetry();
-            var properties = new Dictionary<string, string>();
-            this.originalMock.Setup(x => x.SendEventAsync(telemetry, properties)).ReturnsAsync(true);
-
-            var result = await this.subject.SendEventAsync(telemetry, properties);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task UpdateReportedPropertiesAsync_Invokes_Original_Client()
-        {
-            var properties = new TwinCollection();
-            this.originalMock.Setup(x => x.UpdateReportedPropertiesAsync(properties, CancellationToken)).ReturnsAsync(true);
-
-            var result = await this.subject.UpdateReportedPropertiesAsync(properties, CancellationToken);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task ReceiveAsync_Invokes_Original_Client()
-        {
-            var timeout = TimeSpan.FromSeconds(5);
-            using var message = new Message();
-            this.originalMock.Setup(x => x.ReceiveAsync(timeout)).ReturnsAsync(message);
-
-            var result = await this.subject.ReceiveAsync(timeout);
-
-            Assert.Same(message, result);
-        }
-
-        [Fact]
-        public async Task CompleteAsync_Invokes_Original_Client()
-        {
-            using var message = new Message();
-            this.originalMock.Setup(x => x.CompleteAsync(message)).ReturnsAsync(true);
-
-            var result = await this.subject.CompleteAsync(message);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task AbandonAsync_Invokes_Original_Client()
-        {
-            using var message = new Message();
-            this.originalMock.Setup(x => x.AbandonAsync(message)).ReturnsAsync(true);
-
-            var result = await this.subject.AbandonAsync(message);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task RejectAsync_Invokes_Original_Client()
-        {
-            using var message = new Message();
-            this.originalMock.Setup(x => x.RejectAsync(message)).ReturnsAsync(true);
-
-            var result = await this.subject.RejectAsync(message);
-
-            Assert.True(result);
-        }
-
-        [Fact]
         public void EnsureConnected_Invokes_Original_Client()
         {
             this.originalMock.Setup(x => x.EnsureConnected()).Returns(true);
@@ -358,23 +279,42 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             public override void Verify(Mock<ILoRaDeviceClient> mock, Times times) => mock.Verify(x => x.RejectAsync(this.message), times);
         }
 
-        public static readonly TheoryData<IOperationTestCase, Exception> ResiliencyTestData = TheoryDataFactory.From(
-            from re in RetriedExceptions
-            from tc in new IOperationTestCase[]
-            {
-                new GetTwinAsyncTestCase(new Twin()),
-                new SendEventAsyncTestCase(new LoRaDeviceTelemetry(), new Dictionary<string, string>(), true),
-                new UpdateReportedPropertiesTestCase(new TwinCollection(), true),
-                new ReceiveTestCase(TimeSpan.FromSeconds(5), new Message()),
-                new CompleteTestCase(new Message(), true),
-                new AbandonTestCase(new Message(), true),
-                new RejectTestCase(new Message(), true),
-            }
-            select (tc, re));
+        private static IEnumerable<IOperationTestCase> OperationTestCases()
+        {
+            using var message = new Message();
+            yield return new GetTwinAsyncTestCase(new Twin());
+            yield return new SendEventAsyncTestCase(new LoRaDeviceTelemetry(), new Dictionary<string, string>(), true);
+            yield return new UpdateReportedPropertiesTestCase(new TwinCollection(), true);
+            yield return new ReceiveTestCase(TimeSpan.FromSeconds(5), message);
+            yield return new CompleteTestCase(message, true);
+            yield return new AbandonTestCase(message, true);
+            yield return new RejectTestCase(message, true);
+        }
+
+        public static readonly TheoryData<IOperationTestCase> OperationsTestData =
+            TheoryDataFactory.From(OperationTestCases());
+
+        public static readonly TheoryData<IOperationTestCase, Exception> ResiliencyTestData =
+            TheoryDataFactory.From(from re in RetriedExceptions
+                                   from tc in OperationTestCases()
+                                   select (tc, re));
+
+        [Theory]
+        [MemberData(nameof(OperationsTestData))]
+        public async Task Successful_Operation(IOperationTestCase testCase)
+        {
+            testCase.Setup(this.originalMock).Succeed();
+
+            await testCase.InvokeAsync(this.subject);
+
+            testCase.Verify(this.originalMock, Times.Exactly(1));
+            this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
+            this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
         [Theory]
         [MemberData(nameof(ResiliencyTestData))]
-        public async Task Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
+        public async Task Unsuccessful_Operation_Retries_On_Expected_Errors(IOperationTestCase testCase, Exception exception)
         {
             testCase.Setup(this.originalMock)
                     .Fail(exception)
