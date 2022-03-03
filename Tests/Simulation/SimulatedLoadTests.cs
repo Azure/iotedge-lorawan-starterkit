@@ -215,6 +215,9 @@ namespace LoRaWan.Tests.Simulation
         [Fact(Skip = "Test is only used for manual load tests.")]
         public async Task Multiple_ABP_and_OTAA_Simulated_Devices_Confirmed()
         {
+            var testAbpDevicesInfo = TestFixtureSim.DeviceRange2000_ABP_FullLoad;
+            var testOtaaDevicesInfo = TestFixtureSim.DeviceRange3000_OTAA_FullLoad;
+            LogTestStart(testAbpDevicesInfo.Concat(testOtaaDevicesInfo));
             const int messagesPerDeviceExcludingWarmup = 10;
             const int batchSizeDataMessages = 15;
             const int batchSizeWarmupMessages = 2;
@@ -222,8 +225,8 @@ namespace LoRaWan.Tests.Simulation
             const int messagesBeforeConfirmed = 5;
             var warmupDelay = TimeSpan.FromSeconds(5);
 
-            var simulatedAbpDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange2000_ABP_FullLoad);
-            var simulatedOtaaDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange3000_OTAA_FullLoad);
+            var simulatedAbpDevices = InitializeSimulatedDevices(testAbpDevicesInfo);
+            var simulatedOtaaDevices = InitializeSimulatedDevices(testOtaaDevicesInfo);
             Assert.Equal(simulatedAbpDevices.Count, simulatedOtaaDevices.Count);
             Assert.True(simulatedOtaaDevices.Count < 50, "Simulator does not work for more than 50 of each devices (due to IoT Edge connection mode). To go beyond 100 device clients, use edge hub environment variable 'MaxConnectedClients'.");
             Assert.True(messagesBeforeConfirmed <= messagesBeforeJoin, "OTAA devices should send all messages as confirmed messages.");
