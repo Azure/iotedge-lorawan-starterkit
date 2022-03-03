@@ -55,9 +55,12 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Five_Devices_Sending_Messages_At_Same_Time()
         {
+            var testDeviceInfo = TestFixtureSim.DeviceRange1000_ABP;
+            LogTestStart(testDeviceInfo);
+
             // arrange
             const int messageCount = 2;
-            var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange1000_ABP);
+            var simulatedDevices = InitializeSimulatedDevices(testDeviceInfo);
             Assert.NotEmpty(simulatedDevices);
 
             // act
@@ -72,8 +75,11 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Single_ABP_Simulated_Device()
         {
+            var testDeviceInfo = TestFixtureSim.Device1001_Simulated_ABP;
+            LogTestStart(testDeviceInfo);
+
             const int messageCount = 5;
-            var device = new SimulatedDevice(TestFixtureSim.Device1001_Simulated_ABP, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
+            var device = new SimulatedDevice(testDeviceInfo, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
 
             await SendConfirmedUpstreamMessages(device, messageCount);
 
@@ -84,8 +90,11 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Single_OTAA_Simulated_Device()
         {
+            var testDeviceInfo = TestFixtureSim.Device1002_Simulated_OTAA;
+            LogTestStart(testDeviceInfo);
+
             const int messageCount = 5;
-            var device = new SimulatedDevice(TestFixtureSim.Device1002_Simulated_OTAA, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
+            var device = new SimulatedDevice(testDeviceInfo, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
 
             Assert.True(await device.JoinAsync(), "OTAA join failed");
             await SendConfirmedUpstreamMessages(device, messageCount);
@@ -97,9 +106,12 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Lots_Of_Devices_OTAA_Simulated_Load_Test()
         {
+            var testDeviceInfo = TestFixtureSim.DeviceRange4000_OTAA_FullLoad;
+            LogTestStart(testDeviceInfo);
+
             // arrange
             const int messageCounts = 10;
-            var simulatedDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange4000_OTAA_FullLoad);
+            var simulatedDevices = InitializeSimulatedDevices(testDeviceInfo);
             Assert.NotEmpty(simulatedDevices);
 
             // act
@@ -126,6 +138,9 @@ namespace LoRaWan.Tests.Simulation
         [Fact]
         public async Task Connected_Factory_Load_Test_Scenario()
         {
+            var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
+            LogTestStart(testDeviceInfo);
+
             const int numberOfFactories = 2;
             const double joinsPerSecond = 1.5;
             var messagesPerSecond = MoreLinq.MoreEnumerable.Generate(1.5, old => old > 2 ? old : old + 2);
@@ -142,7 +157,6 @@ namespace LoRaWan.Tests.Simulation
             Assert.True(stationsPerFactory >= 1, "There needs to be at least one concentrator per factory.");
             Assert.True(stationsPerFactory % Configuration.LnsEndpointsForSimulator.Count == 0, "LNS must be distributed evenly across factories (identical amount of indirectly connected LNS to factories).");
 
-            var testDeviceInfo = TestFixtureSim.DeviceRange9000_OTAA_FullLoad_DuplicationDrop;
             var devicesByFactory =
                 this.simulatedBasicsStations.Chunk(stationsPerFactory)
                                             .Take(numberOfFactories)
@@ -201,6 +215,9 @@ namespace LoRaWan.Tests.Simulation
         [Fact(Skip = "Test is only used for manual load tests.")]
         public async Task Multiple_ABP_and_OTAA_Simulated_Devices_Confirmed()
         {
+            var testAbpDevicesInfo = TestFixtureSim.DeviceRange2000_ABP_FullLoad;
+            var testOtaaDevicesInfo = TestFixtureSim.DeviceRange3000_OTAA_FullLoad;
+            LogTestStart(testAbpDevicesInfo.Concat(testOtaaDevicesInfo));
             const int messagesPerDeviceExcludingWarmup = 10;
             const int batchSizeDataMessages = 15;
             const int batchSizeWarmupMessages = 2;
@@ -208,8 +225,8 @@ namespace LoRaWan.Tests.Simulation
             const int messagesBeforeConfirmed = 5;
             var warmupDelay = TimeSpan.FromSeconds(5);
 
-            var simulatedAbpDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange2000_ABP_FullLoad);
-            var simulatedOtaaDevices = InitializeSimulatedDevices(TestFixtureSim.DeviceRange3000_OTAA_FullLoad);
+            var simulatedAbpDevices = InitializeSimulatedDevices(testAbpDevicesInfo);
+            var simulatedOtaaDevices = InitializeSimulatedDevices(testOtaaDevicesInfo);
             Assert.Equal(simulatedAbpDevices.Count, simulatedOtaaDevices.Count);
             Assert.True(simulatedOtaaDevices.Count < 50, "Simulator does not work for more than 50 of each devices (due to IoT Edge connection mode). To go beyond 100 device clients, use edge hub environment variable 'MaxConnectedClients'.");
             Assert.True(messagesBeforeConfirmed <= messagesBeforeJoin, "OTAA devices should send all messages as confirmed messages.");
