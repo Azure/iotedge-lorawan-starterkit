@@ -96,8 +96,8 @@ namespace LoRaWan.Tests.Simulation
             // assert
             var expectedLnsToDropConnection = Configuration.LnsEndpointsForSimulator.First().Key;
             await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => x.Contains(ModuleConnectionHost.DroppedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
-                new SearchLogOptions($"{ModuleConnectionHost.DroppedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
+                x => x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
+                new SearchLogOptions($"{ModuleConnectionHost.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
             await AssertIotHubMessageCountAsync(device, 2);
         }
 

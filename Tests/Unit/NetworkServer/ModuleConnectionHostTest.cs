@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.Tests.Common;
+    using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -197,7 +198,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             networkServerConfiguration.IoTEdgeTimeout = 5;
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceClearCache), null);
+            await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceClearCache), null);
             loRaDeviceRegistry.VerifyAll();
         }
 
@@ -215,7 +216,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDropConnection, Encoding.UTF8.GetBytes(c2d)), null);
+            await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(c2d)), null);
 
             // assert
             loRaDeviceRegistry.VerifyAll();
@@ -242,7 +243,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDropConnection, c2d), null);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, c2d), null);
 
             // assert
             Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
@@ -262,7 +263,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // act
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDropConnection, Encoding.UTF8.GetBytes(c2d)), null);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(c2d)), null);
 
             // assert
             Assert.Equal((int)HttpStatusCode.NotFound, response.Status);
@@ -285,7 +286,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             var c2d = "{\"test\":\"asd\"}";
 
-            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(c2d), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)), null);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(c2d), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)), null);
             Assert.Equal((int)HttpStatusCode.OK, response.Status);
         }
 
@@ -319,7 +320,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
             var c2d = "{\"test\":\"asd\"}";
 
-            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(this.faker.Random.String2(8), Encoding.UTF8.GetBytes(c2d)), null);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(this.faker.Random.String2(8), Encoding.UTF8.GetBytes(c2d)), null);
             Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
         }
 
@@ -336,10 +337,10 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             networkServerConfiguration.IoTEdgeTimeout = 5;
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
 
-            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, null), null);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, null), null);
             Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
 
-            var response2 = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, Array.Empty<byte>()), null);
+            var response2 = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Array.Empty<byte>()), null);
             Assert.Equal((int)HttpStatusCode.BadRequest, response2.Status);
         }
 
@@ -355,7 +356,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             networkServerConfiguration.IoTEdgeTimeout = 5;
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
 
-            var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(faker.Random.String2(10))), null);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(faker.Random.String2(10))), null);
             Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
         }
     }

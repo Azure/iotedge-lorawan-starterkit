@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
-        public const string DroppedConnectionLog = "Device connection was dropped ";
+        public const string ClosedConnectionLog = "Device connection was closed ";
 
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
@@ -94,7 +94,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         internal async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
             if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
-            this.logger.LogDebug("Direct method '{MethodName}' invoked with data '{JsonData}'.", methodRequest.Name, methodRequest.DataAsJson);
 
             try
             {
@@ -102,10 +101,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 {
                     return await ClearCacheAsync();
                 }
-                else if (string.Equals(Constants.CloudToDeviceDropConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(Constants.CloudToDeviceCloseConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    this.logger.LogDebug("Will drop connection with data '{JsonData}'", methodRequest.DataAsJson);
-                    return await DropConnectionAsync(methodRequest);
+                    return await CloseConnectionAsync(methodRequest);
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -159,12 +157,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             return new MethodResponse((int)HttpStatusCode.OK);
         }
 
-        private async Task<MethodResponse> DropConnectionAsync(MethodRequest methodRequest)
+        private async Task<MethodResponse> CloseConnectionAsync(MethodRequest methodRequest)
         {
             this.forceClosedConnections.Add(1);
             ReceivedLoRaCloudToDeviceMessage c2d = null;
-
-            this.logger.LogDebug("Will deserialize '{JsonData}'.", methodRequest.DataAsJson);
 
             try
             {
@@ -175,8 +171,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 this.logger.LogError(ex, "Unable to parse Json for direct method '{MethodName}' for device '{DevEui}', message id '{MessageId}'", methodRequest.Name, c2d?.DevEUI, c2d?.MessageId);
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
-
-            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
             if (c2d.DevEUI == null)
             {
@@ -193,9 +187,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 return new MethodResponse((int)HttpStatusCode.NotFound);
             }
 
+            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
             loRaDevice.IsConnectionOwner = false;
             await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
-            this.logger.LogInformation(DroppedConnectionLog + "from gateway with id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
+            this.logger.LogInformation(ClosedConnectionLog + "from gateway with id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
 
             return new MethodResponse((int)HttpStatusCode.OK);
         }

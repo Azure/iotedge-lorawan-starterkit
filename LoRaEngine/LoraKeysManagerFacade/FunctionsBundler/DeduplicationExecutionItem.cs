@@ -18,8 +18,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly IServiceClient serviceClient;
 
-        private const string MessageIdKey = "MessageId";
-
         public DeduplicationExecutionItem(
             ILoRaDeviceCacheStore cacheStore,
             IServiceClient serviceClient)
@@ -58,8 +56,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    logger?.LogDebug("Obtained the lock to execute deduplication for device '{DevEui}' and frame counter up '{FrameCounterUp}'.", devEUI, clientFCntUp);
-
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
                         var updateCacheState = false;
@@ -87,7 +83,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             cachedDeviceState.GatewayId = gatewayId;
                             _ = deviceCache.StoreInfo(cachedDeviceState);
 
-                            logger?.LogDebug("Previous connection owner was '{PreviousConnectionOwner}', current message was received from '{Gateway}'", previousGateway, gatewayId);
                             if (previousGateway != gatewayId)
                             {
                                 var loraC2DMessage = new LoRaCloudToDeviceMessage()
@@ -97,20 +92,15 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                     MessageId = Guid.NewGuid().ToString()
                                 };
 
-                                using var scope = logger?.BeginScope(new Dictionary<string, object> { [MessageIdKey] = loraC2DMessage.MessageId });
-                                logger?.LogDebug("Invoking direct method on LNS '{PreviousConnectionOwner}' to drop connection for device '{DevEUI}'", previousGateway, devEUI);
-
-                                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
-
-                                logger?.LogDebug("Payload constructed with device '{DevEui}' for LNS '{PreviousConnectionOwner}'", loraC2DMessage.DevEUI, previousGateway);
 
                                 try
                                 {
                                     var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
-                                    logger?.LogDebug("Invoked direct method on LNS '{PreviousConnectionOwner}'; status '{Status}'", previousGateway, res?.Status);
+                                    logger?.LogDebug("Connection owner changed and direct method was called on previous gateway '{PreviousConnectionOwner}' to close connection; result is '{Status}'", previousGateway, res?.Status);
 
-                                    if (res == null || !HttpUtilities.IsSuccessStatusCode(res.Status))
+                                    if (!HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
                                         logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
                                     }
@@ -130,7 +120,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                         // initialize
                         isDuplicate = false;
                         var state = deviceCache.Initialize(clientFCntUp, clientFCntDown);
-                        logger?.LogDebug("initialized state for {id}:{gwid} = {state}", devEUI, gatewayId, state);
+                        logger?.LogDebug("Connection owner for {DevEui} set to {GatewayId}; state {State}", devEUI, gatewayId, state);
                     }
                 }
                 else

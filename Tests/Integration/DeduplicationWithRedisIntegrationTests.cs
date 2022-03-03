@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Integration
 
                 // gateway1 should be notified that it needs to drop connection for the device
                 this.serviceClientMock.Verify(x => x.InvokeDeviceMethodAsync(gateway1, LoraKeysManagerFacadeConstants.NetworkServerModuleId,
-                    It.Is<CloudToDeviceMethod>(m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceDropConnection
+                    It.Is<CloudToDeviceMethod>(m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection
                     && m.GetPayloadAsJson().Contains(devEUI.ToString()))));
             }
         }
