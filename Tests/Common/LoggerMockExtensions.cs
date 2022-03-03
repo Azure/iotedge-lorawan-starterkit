@@ -20,19 +20,19 @@ namespace LoRaWan.Tests.Common
 
         public static IEnumerable<LoggerLogInvocation> GetLogInvocations(this Mock<ILogger> mock)
         {
-            ArgumentNullException.ThrowIfNull(mock, nameof(mock));
+            ArgumentNullException.ThrowIfNull(mock);
             return mock.Invocations.GetLoggerLogInvocations();
         }
 
         public static IEnumerable<LoggerLogInvocation> GetLogInvocations<T>(this Mock<ILogger<T>> mock)
         {
-            ArgumentNullException.ThrowIfNull(mock, nameof(mock));
+            ArgumentNullException.ThrowIfNull(mock);
             return mock.Invocations.GetLoggerLogInvocations();
         }
 
         public static IEnumerable<LoggerLogInvocation> GetLoggerLogInvocations(this IInvocationList invocations)
         {
-            ArgumentNullException.ThrowIfNull(invocations, nameof(invocations));
+            ArgumentNullException.ThrowIfNull(invocations);
 
             return from i in invocations
                    where i.Method.IsGenericMethod && i.Method.GetGenericMethodDefinition() == LogMethodInfo
