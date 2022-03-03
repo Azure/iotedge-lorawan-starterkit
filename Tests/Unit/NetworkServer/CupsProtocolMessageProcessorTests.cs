@@ -117,7 +117,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // assert
             Assert.Equal((int)HttpStatusCode.BadRequest, httpContext.Object.Response.StatusCode);
-            Assert.Contains(this.logger.Invocations, i => i.Arguments.Any(a => a.GetType() == exceptionType));
+            Assert.Contains(this.logger.GetLogInvocations(), args => args.Exception is { } exception && exception.GetType() == exceptionType);
         }
 
         [Fact]
