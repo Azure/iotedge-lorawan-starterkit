@@ -19,6 +19,7 @@ namespace LoRaTools
         [JsonProperty("cid")]
         public Cid Cid { get; set; }
 
+        [JsonIgnore]
         public abstract int Length { get; }
 
         public abstract override string ToString();
@@ -107,8 +108,6 @@ namespace LoRaTools
                             pointer += txParamSetupAnswer.Length;
                             macCommands.Add(txParamSetupAnswer);
                             break;
-                        case Cid.Zero:
-                        case Cid.One:
                         default:
                             logger?.LogError($"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing");
                             return null;
@@ -148,8 +147,6 @@ namespace LoRaTools
                             pointer += devStatusRequest.Length;
                             macCommands.Add(devStatusRequest);
                             break;
-                        case Cid.Zero:
-                        case Cid.One:
                         case Cid.LinkADRCmd:
                         case Cid.DutyCycleCmd:
                         case Cid.RXParamCmd:

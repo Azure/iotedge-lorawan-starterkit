@@ -16,7 +16,7 @@ namespace LoRaTools
         public byte Battery { get; set; }
 
         [JsonProperty("margin")]
-        private byte Margin { get; set; }
+        public byte Margin { get; set; }
 
         public override int Length => 3;
 
