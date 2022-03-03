@@ -12,7 +12,7 @@ The following table is providing a list of configuration options, to be provided
 | ENABLE_GATEWAY              | Indicates whether the edgeHub gateway should be enabled or not                         | No (defaults to `true`)             |
 | IOTEDGE_DEVICEID            | The gateway deviceId                                                                   | Yes                                 |
 | HTTPS_PROXY                 | HTTPS proxy url                                                                        | No                                  |
-| RX2_DATR                    | RX2 data rate                                                                          | No (defaults to 1)                  |
+| RX2_DATR                    | RX2 data rate; useful to override the default regional RX2 Data Rate at a global level | No (defaults to null, regional default value is used) |
 | RX2_FREQ                    | RX2 frequency                                                                          | No                                  |
 | IOTEDGE_TIMEOUT             | IoT Edge timeout in milliseconds                                                       | No (defaults to 0)                  |
 | FACADE_SERVER_URL           | Azure Facade function url                                                              | Yes                                 |
@@ -27,7 +27,7 @@ The following table is providing a list of configuration options, to be provided
 | AllowedDevAddresses         | Allowed Dev addresses                                                                  | No                                  |
 | LNS_SERVER_PFX_PATH         | Path of the .pfx certificate to be used for LNS Server endpoint                        | No                                  |
 | LNS_SERVER_PFX_PASSWORD     | Password of the .pfx certificate to be used for LNS Server endpoint                    | No                                  |
-| CLIENT_CERTIFICATE_MODE     | Specifies the client certificate mode with which the server should be run             | No (defaults to `NoCertificate`)    |
+| CLIENT_CERTIFICATE_MODE     | Specifies the client certificate mode with which the server should be run              | No (defaults to `NoCertificate`)    |
 | LNS_VERSION                 | Version of the LNS                                                                     | No                                  |
 | IOTHUB_CONNECTION_POOL_SIZE | IoT Hub connection pool size                                                           | No (defaults to 1)                  |
 
