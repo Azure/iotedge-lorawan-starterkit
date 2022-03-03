@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            if (context is null) throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
 
             context.Result.DeduplicationResult = await GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
 
