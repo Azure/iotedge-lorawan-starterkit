@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer
 
             FramePort? fport = null;
             var requiresDeviceAcknowlegement = false;
-            var macCommandType = Cid.Zero;
+            Cid? macCommandType = null;
 
             byte[] frmPayload = null;
 
@@ -132,6 +132,8 @@ namespace LoRaWan.NetworkServer
                     // Add C2D Mac commands
                     if (macCommandsC2d?.Count > 0)
                     {
+                        macCommandType = macCommandsC2d.First().Cid;
+
                         foreach (var macCommand in macCommandsC2d)
                         {
                             macCommands.Add(macCommand);
@@ -267,7 +269,7 @@ namespace LoRaWan.NetworkServer
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
             // default fport
-            var macCommandType = Cid.Zero;
+            Cid? macCommandType = null;
 
             var rndToken = new byte[2];
             RndKeysGenerator.GetBytes(rndToken);
@@ -370,8 +372,6 @@ namespace LoRaWan.NetworkServer
                     switch (requestedMacCommand.Cid)
                     {
                         case Cid.LinkCheckCmd:
-                        case Cid.Zero:
-                        case Cid.One:
                         case Cid.LinkADRCmd:
                             if (loRaRequest != null)
                             {

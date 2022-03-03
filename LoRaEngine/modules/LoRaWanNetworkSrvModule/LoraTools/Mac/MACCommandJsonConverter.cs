@@ -68,9 +68,6 @@ namespace LoRaTools
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
-
-                    case Cid.Zero:
-                    case Cid.One:
                     case Cid.LinkCheckCmd:
                     case Cid.LinkADRCmd:
                     {
