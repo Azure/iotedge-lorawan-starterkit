@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -16,16 +17,17 @@ namespace LoraKeysManagerFacade
     public class FCntCacheCheck
     {
         private readonly ILoRaDeviceCacheStore deviceCache;
+        private readonly ILogger<FCntCacheCheck> logger;
 
-        public FCntCacheCheck(ILoRaDeviceCacheStore deviceCache)
+        public FCntCacheCheck(ILoRaDeviceCacheStore deviceCache, ILogger<FCntCacheCheck> logger)
         {
             this.deviceCache = deviceCache;
+            this.logger = logger;
         }
 
         [FunctionName("NextFCntDown")]
         public async Task<IActionResult> NextFCntDownInvoke(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
 
@@ -49,6 +51,8 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult("Dev EUI is invalid.");
             }
 
+            using var deviceScope = this.logger.BeginDeviceScope(devEui);
+
             if (!uint.TryParse(fCntUp, out var clientFCntUp))
             {
                 throw new ArgumentException("Missing FCntUp");
@@ -67,7 +71,7 @@ namespace LoraKeysManagerFacade
                             // and continued processing
                             if (deviceInfo.FCntUp > 1)
                             {
-                                log.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEui, deviceInfo.FCntUp);
+                                this.logger.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEui, deviceInfo.FCntUp);
                                 deviceCache.ClearCache();
                             }
                         }

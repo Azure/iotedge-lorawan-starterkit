@@ -9,6 +9,7 @@ namespace LoraKeysManagerFacade
     using System.Net;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.CommonAPI;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -65,6 +66,8 @@ namespace LoraKeysManagerFacade
             {
                 return new BadRequestObjectResult(ex.Message);
             }
+
+            using var deviceScope = this.log.BeginDeviceScope(parsedDevEui);
 
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))

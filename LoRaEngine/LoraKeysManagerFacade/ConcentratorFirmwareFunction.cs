@@ -11,6 +11,7 @@ namespace LoraKeysManagerFacade
     using System.Threading.Tasks;
     using Azure;
     using Azure.Storage.Blobs;
+    using LoRaTools;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
@@ -68,6 +69,8 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult("StationEui missing in request or invalid");
             }
 
+            using var stationScope = this.logger.BeginEuiScope(stationEui);
+
             var twin = await this.registryManager.GetTwinAsync(stationEui.ToString("N", CultureInfo.InvariantCulture), cancellationToken);
             if (twin != null)
             {
@@ -90,9 +93,8 @@ namespace LoraKeysManagerFacade
                         StatusCode = (int)HttpStatusCode.InternalServerError,
                     };
                 }
-                catch (RequestFailedException ex)
+                catch (RequestFailedException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "Failed to download firmware from storage.")))
                 {
-                    this.logger.LogError(ex, "Failed to download firmware from storage.");
                     return new ObjectResult("Failed to download firmware")
                     {
                         StatusCode = (int)HttpStatusCode.InternalServerError

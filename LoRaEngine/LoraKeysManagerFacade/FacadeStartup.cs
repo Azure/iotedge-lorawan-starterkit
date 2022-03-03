@@ -58,6 +58,7 @@ namespace LoraKeysManagerFacade
                 .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),
                                                                               new LoRaADRStrategyProvider(sp.GetRequiredService<ILoggerFactory>()),
                                                                               deviceCacheStore,
+                                                                              sp.GetRequiredService<ILoggerFactory>(),
                                                                               sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
                 .AddSingleton<CreateEdgeDevice>()
                 .AddSingleton<DeviceGetter>()

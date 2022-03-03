@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -22,7 +23,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var devEui = TestEui.GenerateDevEui();
             var gatewayId = NewUniqueEUI64();
 
-            var deviceGetter = new DeviceGetter(InitRegistryManager(devEui), new LoRaInMemoryDeviceStore());
+            var deviceGetter = new DeviceGetter(InitRegistryManager(devEui), new LoRaInMemoryDeviceStore(), NullLogger<DeviceGetter>.Instance);
             var items = await deviceGetter.GetDeviceList(devEui, gatewayId, new DevNonce(0xABCD), null);
 
             Assert.Single(items);

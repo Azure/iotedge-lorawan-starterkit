@@ -29,9 +29,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var dummyExecContext = new ExecutionContext();
             var apiCalls = new Func<HttpRequest, Task<IActionResult>>[]
             {
-                (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty)),
-                (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance)
+                (req) => Task.Run(() => new FCntCacheCheck(null, NullLogger<FCntCacheCheck>.Instance).NextFCntDownInvoke(req)),
+                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>(), NullLogger<FunctionBundlerFunction>.Instance).FunctionBundler(req, string.Empty)),
+                (req) => new DeviceGetter(null, null, NullLogger<DeviceGetter>.Instance).GetDevice(req)
             };
 
             foreach (var apiCall in apiCalls)
