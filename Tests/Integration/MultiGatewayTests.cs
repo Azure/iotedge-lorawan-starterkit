@@ -139,6 +139,16 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
+            LoRaDeviceApi
+                .Setup(x => x.ExecuteFunctionBundlerAsync(devEui, It.IsAny<FunctionBundlerRequest>()))
+                .ReturnsAsync(() =>
+                    new FunctionBundlerResult
+                    {
+                        DeduplicationResult = new DeduplicationResult { GatewayId = ServerGatewayID, CanProcess = true, IsDuplicate = false },
+                        AdrResult = null,
+                        NextFCntDown = 0
+                    });
+
             LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEui, It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
 

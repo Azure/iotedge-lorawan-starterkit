@@ -299,6 +299,16 @@ namespace LoRaWan.Tests.Integration
                 new IoTHubDeviceInfo(device2.DevAddr, device2.DevEUI, "2"),
             };
 
+            LoRaDeviceApi
+                .Setup(x => x.ExecuteFunctionBundlerAsync(It.IsAny<DevEui>(), It.IsAny<FunctionBundlerRequest>()))
+                .ReturnsAsync(() =>
+                    new FunctionBundlerResult
+                    {
+                        DeduplicationResult = new DeduplicationResult { GatewayId = ServerGatewayID, CanProcess = true, IsDuplicate = false },
+                        AdrResult = null,
+                        NextFCntDown = 0
+                    });
+
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device1.DevAddr.Value))
                 .ReturnsAsync(new SearchDevicesResult(device1And2Result), TimeSpan.FromMilliseconds(searchDelay));
 

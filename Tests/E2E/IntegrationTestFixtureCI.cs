@@ -550,8 +550,7 @@ namespace LoRaWan.Tests.E2E
                 AppSKey = GetAppSessionKey(28),
                 NwkSKey = GetNetworkSessionKey(28),
                 DevAddr = new DevAddr(0x00000027),
-                IsIoTHubDevice = true,
-                Deduplication = DeduplicationMode.Drop
+                IsIoTHubDevice = true
             };
 
             Device29_ABP = new TestDeviceInfo()
@@ -577,8 +576,7 @@ namespace LoRaWan.Tests.E2E
                 DeviceID = "0000000000000031",
                 AppEui = JoinEui.Parse("0000000000000031"),
                 AppKey = GetAppKey(31),
-                IsIoTHubDevice = true,
-                Deduplication = DeduplicationMode.Drop
+                IsIoTHubDevice = true
             };
 
             Device32_ABP = new TestDeviceInfo()

@@ -644,6 +644,17 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(new SearchDevicesResult())
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
 
+            // Making the function bundler return a processable message only for multigw scenario
+            LoRaDeviceApi
+                .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                .ReturnsAsync(() =>
+                    new FunctionBundlerResult
+                    {
+                        DeduplicationResult = new DeduplicationResult { GatewayId = ServerGatewayID, CanProcess = true, IsDuplicate = false },
+                        AdrResult = null,
+                        NextFCntDown = 0
+                    });
+
             using var cache = new MemoryCache(new MemoryCacheOptions());
             await using var deviceRegistry = new LoRaDeviceRegistry(
                 ServerConfiguration,
@@ -824,6 +835,20 @@ namespace LoRaWan.Tests.Integration
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+
+            // Making the function bundler return a processable message only for multigw scenario
+            if (deviceGatewayID is null)
+            {
+                LoRaDeviceApi
+                    .Setup(x => x.ExecuteFunctionBundlerAsync(devEui, It.IsAny<FunctionBundlerRequest>()))
+                    .ReturnsAsync(() =>
+                        new FunctionBundlerResult
+                        {
+                            DeduplicationResult = new DeduplicationResult { GatewayId = ServerGatewayID, CanProcess = true, IsDuplicate = false },
+                            AdrResult = null,
+                            NextFCntDown = 0
+                        });
+            }
 
             using var cache = NewMemoryCache();
             await using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -1583,6 +1608,20 @@ namespace LoRaWan.Tests.Integration
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
+
+            // Making the function bundler return a processable message only for multigw scenario
+            if (gatewayID is null)
+            {
+                LoRaDeviceApi
+                    .Setup(x => x.ExecuteFunctionBundlerAsync(simDevice.DevEUI, It.IsAny<FunctionBundlerRequest>()))
+                    .ReturnsAsync(() =>
+                        new FunctionBundlerResult
+                        {
+                            DeduplicationResult = new DeduplicationResult { GatewayId = ServerGatewayID, CanProcess = true, IsDuplicate = false },
+                            AdrResult = null,
+                            NextFCntDown = 0
+                        });
+            }
 
             await using var messageDispatcherDisposableValue = SetupMessageDispatcherAsync();
             var messageDispatcher = messageDispatcherDisposableValue.Value;

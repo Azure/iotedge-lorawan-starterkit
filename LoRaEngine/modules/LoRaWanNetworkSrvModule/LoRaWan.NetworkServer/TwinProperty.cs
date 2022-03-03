@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
         public const string NetId = "NetId"; // Must be NetId to be backward compatible
         public const string DownlinkEnabled = "Downlink";
         public const string PreferredWindow = "PreferredWindow"; // (1 or 2)
-        public const string Deduplication = "Deduplication"; // None (default), Drop, Mark
+        public const string Deduplication = "Deduplication"; // None, Drop (default), Mark
         public const string ClassType = "ClassType";
         public const string Supports32BitFCnt = "Supports32BitFCnt";
         public const string FCntResetCounter = "FCntResetCounter";
