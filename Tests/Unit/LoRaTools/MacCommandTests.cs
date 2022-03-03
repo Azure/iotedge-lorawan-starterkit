@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.Battery, command.Margin },
-                                                         bytes => new DevStatusAnswer(new ReadOnlySpan<byte>(bytes)));
+                                                         bytes => new DevStatusAnswer(bytes.AsSpan()));
     }
 
     public sealed class DevStatusRequestTests : MacCommandTests<DevStatusRequest>
@@ -163,7 +163,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.PowerAck, command.DRAck, command.CHMaskAck },
-                                                         bytes => new LinkADRAnswer(new ReadOnlySpan<byte>(bytes)));
+                                                         bytes => new LinkADRAnswer(bytes.AsSpan()));
     }
 
     public sealed class LinkAdrRequestTests : MacCommandTests<LinkADRRequest>
@@ -202,7 +202,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.Margin, command.GwCnt },
-                                                         bytes => new LinkCheckAnswer(new ReadOnlySpan<byte>(bytes)));
+                                                         bytes => new LinkCheckAnswer(bytes.AsSpan()));
     }
 
     public sealed class LinkCheckRequestTests : MacCommandTests<LinkCheckRequest>
@@ -224,7 +224,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.DataRangeOk, command.ChannelFreqOk },
-                                                         bytes => new NewChannelAnswer(new ReadOnlySpan<byte>(bytes)));
+                                                         bytes => new NewChannelAnswer(bytes.AsSpan()));
     }
 
     public sealed class NewChannelRequestTests : MacCommandTests<NewChannelRequest>
@@ -251,7 +251,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
 
         [Fact]
         public void FromBytes_Success() => FromBytesTest(command => new { command.Cid, command.Rx1DROffsetAck, command.Rx2DROffsetAck, command.ChannelAck },
-                                                         bytes => new RXParamSetupAnswer(new ReadOnlySpan<byte>(bytes)));
+                                                         bytes => new RXParamSetupAnswer(bytes.AsSpan()));
     }
 
     public sealed class RxParamSetupRequestTests : MacCommandTests<RXParamSetupRequest>
