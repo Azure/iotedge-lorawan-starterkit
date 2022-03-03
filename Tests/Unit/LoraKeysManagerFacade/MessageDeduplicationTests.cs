@@ -4,12 +4,10 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Tests.Common;
-    using Microsoft.ApplicationInsights.Channel;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Client.Exceptions;
