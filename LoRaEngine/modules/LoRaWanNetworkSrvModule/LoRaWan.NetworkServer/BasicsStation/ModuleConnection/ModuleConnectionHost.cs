@@ -187,7 +187,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
 
             loRaDevice.IsConnectionOwner = false;
-            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
+            using var cts = methodRequest.ResponseTimeout is { } timeout ? new CancellationTokenSource(timeout) : null;
             await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
 
             this.logger.LogInformation(ClosedConnectionLog + "from gateway with id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
