@@ -25,7 +25,7 @@ The following table is providing a list of configuration options, to be provided
 | AllowedDevAddresses         | Allowed Dev addresses                                                                  | No                                  |
 | LNS_SERVER_PFX_PATH         | Path of the .pfx certificate to be used for LNS Server endpoint                        | No                                  |
 | LNS_SERVER_PFX_PASSWORD     | Password of the .pfx certificate to be used for LNS Server endpoint                    | No                                  |
-| CLIENT_CERTIFICATE_MODE     | Specifices the client certificate mode with which the server should be run             | No (defaults to `NoCertificate`)    |
+| CLIENT_CERTIFICATE_MODE     | Specifies the client certificate mode with which the server should be run             | No (defaults to `NoCertificate`)    |
 | LNS_VERSION                 | Version of the LNS                                                                     | No                                  |
 | IOTHUB_CONNECTION_POOL_SIZE | IoT Hub connection pool size                                                           | No (defaults to 1)                  |
 
