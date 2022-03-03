@@ -42,6 +42,7 @@ namespace LoRaTools
 
         public RXParamSetupRequest(byte rx1DROffset, byte rx2DataRateOffset, int frequency)
         {
+            Cid = Cid.RXParamCmd;
             DlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
             Frequency = frequency;
         }

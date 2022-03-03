@@ -167,7 +167,11 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(deviceId, deviceConnectionStr, transportSettings, this.loggerFactory.CreateLogger<LoRaDeviceClient>(), this.meter, this.tracing);
+                var client = new LoRaDeviceClient(deviceId, deviceConnectionStr, transportSettings,
+                                                  this.loggerFactory.CreateLogger<LoRaDeviceClient>(), this.meter,
+                                                  this.tracing);
+
+                return client.AddResiliency(this.loggerFactory);
             }
             catch (Exception ex)
             {
