@@ -163,11 +163,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             try
             {
-                c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                c2d = methodRequest.DataAsJson is { } json ? JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) : null;
             }
-            catch (Exception ex) when (ex is ArgumentNullException or JsonException)
+            catch (JsonException ex)
             {
                 this.logger.LogError(ex, "Unable to parse Json for direct method '{MethodName}' for device '{DevEui}', message id '{MessageId}'", methodRequest.Name, c2d?.DevEUI, c2d?.MessageId);
+                return new MethodResponse((int)HttpStatusCode.BadRequest);
+            }
+
+            if (c2d == null)
+            {
+                this.logger.LogError("Missing payload for direct method '{MethodName}'", methodRequest.Name);
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
 

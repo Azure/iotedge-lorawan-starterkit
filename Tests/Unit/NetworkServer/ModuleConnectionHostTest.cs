@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
@@ -288,7 +289,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var devEui = new DevEui(0);
             var mockedDevice = new Mock<LoRaDevice>(null, devEui, null);
             _ = loRaDeviceRegistry.Setup(x => x.GetDeviceByDevEUIAsync(devEui)).ReturnsAsync(mockedDevice.Object);
-            var c2d = $"{{\"DevEui\": \"{ devEui }\", \"Fport\": 1, \"MessageId\": \"{ Guid.NewGuid() }\"}}";
+            var c2d = JsonSerializer.Serialize(new
+            {
+                DevEui = devEui.ToString(),
+                Fport = 1,
+                MessageId = Guid.NewGuid(),
+            });
 
             // act
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
@@ -299,30 +305,31 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             mockedDevice.Verify(x => x.CloseConnectionAsync(It.IsAny<CancellationToken>(), true), Times.Once);
         }
 
-        public static TheoryData<byte[]> DropConnectionInvalidMessages =>
-            new TheoryData<byte[]>
-                {
-                    null,
-                    Array.Empty<byte>(),
-                    Encoding.UTF8.GetBytes("{{\"DevEui\": null, \"Fport\": 1}}"), // invalid DevEui
-                    Encoding.UTF8.GetBytes("{{\"DevEui\": \"{ new DevEui(0) }\", \"Fport\": 1, \"MessageId\": 123}}") // invalid message id
-                };
+        public static TheoryData<string, string> DropConnectionInvalidMessages =>
+            TheoryDataFactory.From(
+                (string.Empty, "Missing payload"),
+                ("null", "Missing payload"),
+                (JsonSerializer.Serialize(new { DevEui = (string)null, Fport = 1 }), "DevEUI missing"),
+                (JsonSerializer.Serialize(new { DevEui = new DevEui(0).ToString(), Fport = 1, MessageId = 123 }), "Unable to parse Json"));
 
         [Theory]
         [MemberData(nameof(DropConnectionInvalidMessages))]
-        public async Task OnDirectMethodCall_DropConnection_Should_Return_Bad_Request_When_Invalid_Message(byte[] c2d)
+        public async Task OnDirectMethodCall_DropConnection_Should_Return_Bad_Request_When_Invalid_Message(string json, string expectedLogPattern)
         {
             // arrange
             var networkServerConfiguration = new NetworkServerConfiguration();
             var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
             var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            var loggerMock = new Mock<ILogger<ModuleConnectionHost>>();
 
             // act
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, c2d), null);
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, loggerMock.Object, TestMeter.Instance);
+            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(json)), null);
 
             // assert
             Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
+            var log = Assert.Single(loggerMock.GetLogInvocations());
+            Assert.Matches(expectedLogPattern, log.Message);
             loRaDeviceRegistry.VerifyNoOtherCalls();
         }
 
@@ -334,8 +341,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
             var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>();
             var devEui = new DevEui(0);
-           
-            var c2d = $"{{\"DevEui\": \"{ devEui }\", \"Fport\": 1}}";
+            var c2d = JsonSerializer.Serialize(new { DevEui = devEui.ToString(), Fport = 1 });
 
             // act
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
