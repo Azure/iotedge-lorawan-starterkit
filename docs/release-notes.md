@@ -6,9 +6,12 @@ title: Release Notes
 
 ### New Features
 
-- Enable [multi-gateway scenario supporting higher scalability](./user-guide/scalability.md).
+- Increase scalability for [multi-gateway scenarios](./user-guide/scalability.md).
   This eliminates several disadvantages in a [multi-LNS deployment scenario](./user-guide/deployment-scenarios.md).
 - [Standalone discovery service](./user-guide/lns-discovery.md) for dynamic LNS discovery.
+- LoRaBasicsStationModule updated to Basics Station v2.0.6:
+  - Support for SX1302 ([configurable](./user-guide/station-module-configuration.md) via "CORECELL" parameter)
+  - Adjustable log level ([configurable](./user-guide/station-module-configuration.md) via "LOG_LEVEL" parameter)
 
 ### Quality Improvements
 
