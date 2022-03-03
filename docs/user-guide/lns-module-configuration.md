@@ -1,3 +1,8 @@
+---
+hide:
+  - toc
+---
+
 # Network Server IoT Edge Module configuration
 
 The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the `LoRaWanNetworkSrvModule`:
