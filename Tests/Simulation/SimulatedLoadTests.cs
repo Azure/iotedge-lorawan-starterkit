@@ -92,19 +92,28 @@ namespace LoRaWan.Tests.Simulation
         public async Task Ensures_Disconnect_Happens_For_Losing_Gateway_When_Connection_Switches()
         {
             // arrange
-            var device = new SimulatedDevice(TestFixtureSim.Device1003_Simulated_ABP, simulatedBasicsStation: new[] { this.simulatedBasicsStations.First() }, logger: this.logger);
-            await SendConfirmedUpstreamMessages(device, 1);
+            var testDeviceInfo = TestFixtureSim.Device1003_Simulated_ABP;
+            LogTestStart(testDeviceInfo);
+
+            var messagesToSendEachLNS = 3;
+            var simulatedDevice = new SimulatedDevice(testDeviceInfo, simulatedBasicsStation: new[] { this.simulatedBasicsStations.First() }, logger: this.logger);
+            await SendConfirmedUpstreamMessages(simulatedDevice, messagesToSendEachLNS);
+
+            await Task.Delay(messagesToSendEachLNS * IntervalBetweenMessages);
+            _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
+                x => !x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal),
+                new SearchLogOptions("No connection switch should be logged") { TreatAsError = true });
 
             // act: change basics station that the device is listened from and therefore the gateway it uses as well
-            device.SimulatedBasicsStations = new[] { this.simulatedBasicsStations.Last() };
-            await SendConfirmedUpstreamMessages(device, 1);
+            simulatedDevice.SimulatedBasicsStations = new[] { this.simulatedBasicsStations.Last() };
+            await SendConfirmedUpstreamMessages(simulatedDevice, messagesToSendEachLNS);
 
             // assert
             var expectedLnsToDropConnection = Configuration.LnsEndpointsForSimulator.First().Key;
-            await TestFixture.AssertNetworkServerModuleLogExistsAsync(
+            _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
                 x => x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
                 new SearchLogOptions($"{ModuleConnectionHost.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
-            await AssertIotHubMessageCountAsync(device, 2);
+            await AssertIotHubMessageCountAsync(simulatedDevice, messagesToSendEachLNS * 2);
         }
 
         [Fact]
