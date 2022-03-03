@@ -3,24 +3,31 @@
 
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 {
+    using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Tests.Common;
+    using Microsoft.ApplicationInsights.Channel;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Moq;
     using Xunit;
 
-    public class MessageDeduplicationTests : FunctionTestBase
+    public sealed class MessageDeduplicationTests : FunctionTestBase, IDisposable
     {
         private readonly DeduplicationExecutionItem deduplicationExecutionItem;
         private readonly Mock<IServiceClient> serviceClientMock;
+        private readonly TelemetryConfiguration telemetryConfiguration;
 
         public MessageDeduplicationTests()
         {
             this.serviceClientMock = new Mock<IServiceClient>();
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), this.serviceClientMock.Object, TestMeter.Instance);
+
+            this.telemetryConfiguration = new TelemetryConfiguration();
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), this.serviceClientMock.Object, this.telemetryConfiguration);
         }
 
         [Fact]
@@ -125,5 +132,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
         }
+
+        public void Dispose()
+            => this.telemetryConfiguration.Dispose();
     }
 }

@@ -4,10 +4,12 @@
 namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System;
-    using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
+    using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.Extensibility;
+    using Microsoft.ApplicationInsights.Metrics;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Logging;
@@ -19,18 +21,19 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly IServiceClient serviceClient;
-        private readonly Counter<int> connectionOwnershipChange;
+        private readonly Microsoft.ApplicationInsights.Metric connectionOwnershipChangedMetric;
 
         public DeduplicationExecutionItem(
             ILoRaDeviceCacheStore cacheStore,
             IServiceClient serviceClient,
-            Meter meter)
+            TelemetryConfiguration telemetryConfiguration)
         {
-            _ = meter ?? throw new ArgumentNullException(nameof(meter));
-
             this.cacheStore = cacheStore;
             this.serviceClient = serviceClient;
-            this.connectionOwnershipChange = meter.CreateCounter<int>(ConnectionOwnershipChangeMetricName);
+
+            var telemetryClient = new TelemetryClient(telemetryConfiguration);
+            var metricIdentifier = new MetricIdentifier(LoraKeysManagerFacadeConstants.MetricNamespace, ConnectionOwnershipChangeMetricName);
+            this.connectionOwnershipChangedMetric = telemetryClient.GetMetric(metricIdentifier);
         }
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
@@ -92,7 +95,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                             if (previousGateway != gatewayId)
                             {
-                                this.connectionOwnershipChange.Add(1);
+                                this.connectionOwnershipChangedMetric.TrackValue(1);
 
                                 var loraC2DMessage = new LoRaCloudToDeviceMessage()
                                 {

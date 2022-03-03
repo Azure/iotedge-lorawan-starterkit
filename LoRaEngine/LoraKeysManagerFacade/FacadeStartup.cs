@@ -6,7 +6,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Diagnostics.Metrics;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using Microsoft.Azure.Devices;
@@ -68,8 +67,12 @@ namespace LoraKeysManagerFacade
                 .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
                 .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
                 .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
-                .AddSingleton<LoRaDevAddrCache>()
-                .AddSingleton(_ => new Meter(LoraKeysManagerFacadeConstants.MeterName));
+                .AddSingleton<LoRaDevAddrCache>();
+
+            if (!string.IsNullOrEmpty(configHandler.AppInsightsInstrumentation))
+            {
+                _ = builder.Services.AddApplicationInsightsTelemetry(configHandler.AppInsightsInstrumentation);
+            }
         }
 
         private abstract class ConfigHandler
@@ -77,6 +80,7 @@ namespace LoraKeysManagerFacade
             internal const string IoTHubConnectionStringKey = "IoTHubConnectionString";
             internal const string RedisConnectionStringKey = "RedisConnectionString";
             internal const string StorageConnectionStringKey = "AzureWebJobsStorage";
+            internal const string AppInsightsInstrumentationKey = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
             internal static ConfigHandler Create(IFunctionsHostBuilder builder)
             {
@@ -98,6 +102,8 @@ namespace LoraKeysManagerFacade
 
             internal abstract string IoTHubConnectionString { get; }
 
+            internal abstract string AppInsightsInstrumentation { get; }
+
             private class ProductionConfigHandler : ConfigHandler
             {
                 private readonly IConfiguration config;
@@ -112,6 +118,8 @@ namespace LoraKeysManagerFacade
                 internal override string IoTHubConnectionString => this.config.GetConnectionString(IoTHubConnectionStringKey);
 
                 internal override string StorageConnectionString => this.config.GetConnectionStringOrSetting(StorageConnectionStringKey);
+
+                internal override string AppInsightsInstrumentation => this.config.GetValue<string>(AppInsightsInstrumentationKey);
             }
 
             private class LocalConfigHandler : ConfigHandler
@@ -130,7 +138,10 @@ namespace LoraKeysManagerFacade
                 internal override string RedisConnectionString => this.config.GetValue<string>(RedisConnectionStringKey);
 
                 internal override string IoTHubConnectionString => this.config.GetValue<string>(IoTHubConnectionStringKey);
+
                 internal override string StorageConnectionString => this.config.GetConnectionStringOrSetting(StorageConnectionStringKey);
+
+                internal override string AppInsightsInstrumentation => this.config.GetValue<string>(AppInsightsInstrumentationKey);
             }
         }
     }

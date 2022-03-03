@@ -14,6 +14,6 @@ namespace LoraKeysManagerFacade
         internal const string CloudToDeviceMessageMethodName = "cloudtodevicemessage";
         internal const string CloudToDeviceCloseConnection = "closeconnection";
         public const string RoundTripDateTimeStringFormat = "o";
-        internal const string MeterName = "LoRaWAN";
+        internal const string MetricNamespace = "LoRaWAN";
     }
 }

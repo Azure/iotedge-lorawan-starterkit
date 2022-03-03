@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Integration
     using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Tests.Common;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Azure.Devices;
     using Moq;
     using Xunit;
@@ -16,10 +17,11 @@ namespace LoRaWan.Tests.Integration
     /// Tests to run against a real Redis instance.
     /// </summary>
     [Collection(RedisFixture.CollectionName)]
-    public class DeduplicationTestWithRedis : IClassFixture<RedisFixture>
+    public sealed class DeduplicationTestWithRedis : IClassFixture<RedisFixture>, IDisposable
     {
         private readonly ILoRaDeviceCacheStore cache;
         private readonly Mock<IServiceClient> serviceClientMock;
+        private readonly TelemetryConfiguration telemetryConfiguration;
         private readonly DeduplicationExecutionItem deduplicationExecutionItem;
 
         public DeduplicationTestWithRedis(RedisFixture redis)
@@ -28,7 +30,8 @@ namespace LoRaWan.Tests.Integration
 
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
             this.serviceClientMock = new Mock<IServiceClient>();
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(this.cache, this.serviceClientMock.Object, TestMeter.Instance);
+            this.telemetryConfiguration = new TelemetryConfiguration();
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(this.cache, this.serviceClientMock.Object, this.telemetryConfiguration);
         }
 
         [Theory]
@@ -106,5 +109,8 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(pipeline2.Result.DeduplicationResult);
             Assert.False(pipeline2.Result.DeduplicationResult.IsDuplicate);
         }
+
+        public void Dispose() =>
+            this.telemetryConfiguration.Dispose();
     }
 }
