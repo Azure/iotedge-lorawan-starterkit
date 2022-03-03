@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             ctx.Request.QueryString = new QueryString($"?{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview.Version}");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             ctx.Request.QueryString = new QueryString($"?devEUI=193123");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             ctx.Request.QueryString = new QueryString($"?devEUI=193123&{ApiVersion.QueryStringParamName}={version}");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -73,7 +73,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
 
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<NotFoundResult>(result);
 
             registryManager.VerifyAll();
@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
 
             // act
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request, NullLogger.Instance);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request);
 
             // assert
             var okObjectResult = Assert.IsType<OkObjectResult>(result);
@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
 
             // act
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request, NullLogger.Instance);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(request);
 
             // assert
             var okObjectResult = Assert.IsType<OkObjectResult>(result);

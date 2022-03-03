@@ -35,8 +35,7 @@ namespace LoraKeysManagerFacade
         /// </summary>
         [FunctionName(nameof(GetDevice))]
         public async Task<IActionResult> GetDevice(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
 
@@ -78,7 +77,7 @@ namespace LoraKeysManagerFacade
 
                 using var devAddrScope = this.logger.BeginDeviceAddressScope(devAddr);
 
-                var results = await GetDeviceList(devEui, gatewayId, devNonce, devAddr, log);
+                var results = await GetDeviceList(devEui, gatewayId, devNonce, devAddr);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
@@ -88,7 +87,7 @@ namespace LoraKeysManagerFacade
             }
             catch (JoinRefusedException ex)
             {
-                log.LogDebug("Join refused: {msg}", ex.Message);
+                this.logger.LogDebug("Join refused: {msg}", ex.Message);
                 return new BadRequestObjectResult("JoinRefused: " + ex.Message);
             }
             catch (ArgumentException ex)
@@ -97,13 +96,13 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(DevEui? devEUI, string gatewayId, DevNonce? devNonce, DevAddr? devAddr, ILogger log = null)
+        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(DevEui? devEUI, string gatewayId, DevNonce? devNonce, DevAddr? devAddr)
         {
             var results = new List<IoTHubDeviceInfo>();
 
             if (devEUI is { } someDevEui)
             {
-                var joinInfo = await TryGetJoinInfoAndValidateAsync(someDevEui, gatewayId, log);
+                var joinInfo = await TryGetJoinInfoAndValidateAsync(someDevEui, gatewayId);
 
                 // OTAA join
                 using var deviceCache = new LoRaDeviceCache(this.cacheStore, someDevEui, gatewayId);
@@ -122,16 +121,16 @@ namespace LoraKeysManagerFacade
                     if (await deviceCache.TryToLockAsync())
                     {
                         deviceCache.ClearCache(); // clear the fcnt up/down after the join
-                        log?.LogDebug("Removed key '{key}':{gwid}", someDevEui, gatewayId);
+                        this.logger.LogDebug("Removed key '{key}':{gwid}", someDevEui, gatewayId);
                     }
                     else
                     {
-                        log?.LogWarning("Failed to acquire lock for '{key}'", someDevEui);
+                        this.logger.LogWarning("Failed to acquire lock for '{key}'", someDevEui);
                     }
                 }
                 else
                 {
-                    log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", someDevEui, gatewayId);
+                    this.logger.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", someDevEui, gatewayId);
                     throw new DeviceNonceUsedException();
                 }
             }
@@ -140,7 +139,7 @@ namespace LoraKeysManagerFacade
                 // ABP or normal message
 
                 // TODO check for sql injection
-                var devAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, log, gatewayId);
+                var devAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, this.logger, gatewayId);
                 if (await devAddrCache.TryTakeDevAddrUpdateLock(someDevAddr))
                 {
                     try
@@ -237,7 +236,7 @@ namespace LoraKeysManagerFacade
             return device.Authentication.SymmetricKey?.PrimaryKey;
         }
 
-        private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(DevEui devEUI, string gatewayId, ILogger log)
+        private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(DevEui devEUI, string gatewayId)
         {
             var cacheKeyJoinInfo = string.Concat(devEUI, ":joininfo");
             var lockKeyJoinInfo = string.Concat(devEUI, ":joinlockjoininfo");
@@ -265,7 +264,7 @@ namespace LoraKeysManagerFacade
                         }
 
                         _ = this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));
-                        log?.LogDebug("updated cache with join info '{key}':{gwid}", devEUI, gatewayId);
+                        this.logger.LogDebug("updated cache with join info '{key}':{gwid}", devEUI, gatewayId);
                     }
                 }
                 finally
@@ -284,7 +283,7 @@ namespace LoraKeysManagerFacade
                     throw new JoinRefusedException($"Not the owning gateway. Owning gateway is '{joinInfo.DesiredGateway}'");
                 }
 
-                log?.LogDebug("got LogInfo '{key}':{gwid} attached gw: {desiredgw}", devEUI, gatewayId, joinInfo.DesiredGateway);
+                this.logger.LogDebug("got LogInfo '{key}':{gwid} attached gw: {desiredgw}", devEUI, gatewayId, joinInfo.DesiredGateway);
             }
             else
             {

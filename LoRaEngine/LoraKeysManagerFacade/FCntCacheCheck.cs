@@ -27,8 +27,7 @@ namespace LoraKeysManagerFacade
 
         [FunctionName("NextFCntDown")]
         public async Task<IActionResult> NextFCntDownInvoke(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
 
@@ -72,7 +71,7 @@ namespace LoraKeysManagerFacade
                             // and continued processing
                             if (deviceInfo.FCntUp > 1)
                             {
-                                log.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEui, deviceInfo.FCntUp);
+                                this.logger.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEui, deviceInfo.FCntUp);
                                 deviceCache.ClearCache();
                             }
                         }

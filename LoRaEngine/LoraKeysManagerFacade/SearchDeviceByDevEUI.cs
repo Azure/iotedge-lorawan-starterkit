@@ -26,7 +26,7 @@ namespace LoraKeysManagerFacade
         }
 
         [FunctionName(nameof(GetDeviceByDevEUI))]
-        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
 
@@ -36,14 +36,14 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                log.LogError(ex, "Invalid version");
+                this.logger.LogError(ex, "Invalid version");
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await RunGetDeviceByDevEUI(req, log);
+            return await RunGetDeviceByDevEUI(req);
         }
 
-        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)
+        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req)
         {
             string devEui = req.Query["DevEUI"];
             if (!DevEui.TryParse(devEui, out var parsedDevEui))
@@ -56,7 +56,7 @@ namespace LoraKeysManagerFacade
             var device = await this.registryManager.GetDeviceAsync(parsedDevEui.ToString());
             if (device != null)
             {
-                log.LogDebug($"Search for {devEui} found 1 device");
+                this.logger.LogDebug($"Search for {devEui} found 1 device");
                 return new OkObjectResult(new
                 {
                     DevEUI = devEui,
@@ -65,7 +65,7 @@ namespace LoraKeysManagerFacade
             }
             else
             {
-                log.LogInformation($"Search for {devEui} found 0 devices");
+                this.logger.LogInformation($"Search for {devEui} found 0 devices");
                 return new NotFoundResult();
             }
         }
