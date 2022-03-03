@@ -24,7 +24,7 @@ The following table is providing a list of configuration options, to be provided
 | LOG_TO_TCP_ADDRESS          | IP address for TCP logs                                                                | Yes, only if TCP logging is enabled |
 | LOG_TO_TCP_PORT             | TCP port to send logs to                                                               | Yes, only if TCP logging is enabled |
 | NETID                       | Gateway network ID                                                                     | No (defaults to network id 1)       |
-| AllowedDevAddresses         | Allowed Dev addresses                                                                  | No                                  |
+| AllowedDevAddresses         | List of allowed dev addresses from which message processing is enabled.                | No (by default allows all messages coming from the defined NETID to be processed) |
 | LNS_SERVER_PFX_PATH         | Path of the .pfx certificate to be used for LNS Server endpoint                        | No                                  |
 | LNS_SERVER_PFX_PASSWORD     | Password of the .pfx certificate to be used for LNS Server endpoint                    | No                                  |
 | CLIENT_CERTIFICATE_MODE     | Specifies the client certificate mode with which the server should be run              | No (defaults to `NoCertificate`)    |
