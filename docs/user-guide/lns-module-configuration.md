@@ -5,7 +5,9 @@ hide:
 
 # Network Server IoT Edge Module configuration
 
-The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the `LoRaWanNetworkSrvModule`:
+The following table is providing a list of configuration options, to be provided
+as environment variables for manual configuration of the
+`LoRaWanNetworkSrvModule`:
 
 | Environment variable name   | Description                                                                            | Mandatory                           |
 | --------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------- |
@@ -32,7 +34,8 @@ The following table is providing a list of configuration options, to be provided
 | IOTHUB_CONNECTION_POOL_SIZE | AMQP Connection Pool Size for communication to IoT Edge Hub / IoT Hub (depending on `ENABLE_GATEWAY`). Increasing this value to higher number will improve scalability; for more information see [Scalability](./scalability.md) | No (defaults to 1) |
 | APPINSIGHTS_INSTRUMENTATIONKEY | Instrumentation key for forwarding metrics to Application Insights                  | No                                  |
 
-The following settings can be configured via desired properties of the Network Server module twin in IoT Hub:
+The following settings can be configured via desired properties of the Network
+Server module twin in IoT Hub:
 
 | Property name                 | Description                                                                                                                                   | Mandatory               |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
