@@ -19,8 +19,8 @@ namespace LoRaTools
             ? logger?.BeginScope(new Dictionary<string, object> { [DevEUIKey] = someDevEui.ToString() })
             : NoopDisposable.Instance;
 
-        public static IDisposable BeginDeviceAddressScope(this ILogger logger, DevAddr devAddr) =>
-            logger?.BeginDeviceAddressScope(devAddr.ToString());
+        public static IDisposable BeginDeviceAddressScope(this ILogger logger, DevAddr? devAddr) =>
+            devAddr is { } someDevAddr ? logger?.BeginDeviceAddressScope(someDevAddr.ToString()) : NoopDisposable.Instance;
 
         public static IDisposable BeginDeviceAddressScope(this ILogger logger, string deviceAddress) =>
             logger?.BeginScope(new Dictionary<string, object> { [DeviceAddressKey] = deviceAddress });

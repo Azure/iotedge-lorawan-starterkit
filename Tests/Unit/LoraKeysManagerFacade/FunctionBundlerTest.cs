@@ -50,18 +50,18 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             // .Returns(new LoRaADRStandardStrategy());
             var cacheStore = new LoRaInMemoryDeviceStore();
             this.adrStore = new LoRaADRInMemoryStore();
-            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore, NullLogger<LoRaADRServerManager>.Instance);
+            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore, NullLoggerFactory.Instance, NullLogger<LoRaADRServerManager>.Instance);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
 
             var items = new IFunctionBundlerExecutionItem[]
             {
                 new DeduplicationExecutionItem(cacheStore),
                 this.adrExecutionItem,
-                new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore)),
+                new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore, NullLogger<FCntCacheCheck>.Instance)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
             };
 
-            this.functionBundler = new FunctionBundlerFunction(items);
+            this.functionBundler = new FunctionBundlerFunction(items, NullLogger<FunctionBundlerFunction>.Instance);
         }
 
         [Fact]
@@ -338,7 +338,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             {
                 new DeduplicationExecutionItem(cacheStore),
                 new ADRExecutionItem(this.adrManager),
-                new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore)),
+                new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore, NullLogger<FCntCacheCheck>.Instance)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
             };
 
