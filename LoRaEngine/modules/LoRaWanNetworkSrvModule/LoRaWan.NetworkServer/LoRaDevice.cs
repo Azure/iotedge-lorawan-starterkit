@@ -337,7 +337,7 @@ namespace LoRaWan.NetworkServer
 
             DownlinkEnabled = desiredTwin.SafeRead(TwinProperty.DownlinkEnabled, DownlinkEnabled);
             PreferredWindow = desiredTwin.SafeRead(TwinProperty.PreferredWindow, 1) is 2 ? ReceiveWindow2 : ReceiveWindow1;
-            Deduplication = desiredTwin.SafeRead(TwinProperty.Deduplication, DeduplicationMode.None);
+            Deduplication = desiredTwin.SafeRead(TwinProperty.Deduplication, DeduplicationMode.Drop);
             ClassType = desiredTwin.SafeRead(TwinProperty.ClassType, LoRaDeviceClassType.A);
 
             this.preferredGatewayID = reportedTwin.ReadChangeTrackingProperty(TwinProperty.PreferredGatewayID, this.preferredGatewayID);

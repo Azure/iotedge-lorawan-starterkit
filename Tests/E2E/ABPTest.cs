@@ -106,7 +106,7 @@ namespace LoRaWan.Tests.E2E
                     var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenSending));
                     Assert.NotNull(sending.MatchedEvent);
 
-                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                    var searchTokenAlreadySent = $"{device.DeviceID}: duplication strategy indicated to not process message";
                     var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenAlreadySent));
                     Assert.NotNull(ignored.MatchedEvent);
 
@@ -162,7 +162,7 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                var searchTokenADRAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                var searchTokenADRAlreadySent = $"{device.DeviceID}: duplication strategy indicated to not process message";
                 var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenADRAlreadySent));
 
                 Assert.NotNull(ignored.MatchedEvent);
@@ -360,7 +360,7 @@ namespace LoRaWan.Tests.E2E
             var expectedLog = $"{device25.DeviceID}: processing time";
             await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(expectedLog, StringComparison.Ordinal), new SearchLogOptions(expectedLog));
 
-            // wait 61 seconds
+            // wait 120 seconds
             await Task.Delay(TimeSpan.FromSeconds(120));
 
             // Send 1 message from device 26

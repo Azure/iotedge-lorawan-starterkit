@@ -113,7 +113,7 @@ namespace LoRaWan.Tests.E2E
                     var sending = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenSending));
                     Assert.NotNull(sending.MatchedEvent);
 
-                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                    var searchTokenAlreadySent = $"{device.DeviceID}: duplication strategy indicated to not process message";
                     var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenAlreadySent));
                     Assert.NotNull(ignored.MatchedEvent);
 

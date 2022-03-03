@@ -186,7 +186,7 @@ namespace LoRaWan.Tests.Integration
 
             // fcnt up was updated
             Assert.Equal(startingPayloadFcnt, loRaDevice.FCntUp);
-            Assert.Equal(0U, loRaDevice.FCntDown);
+            Assert.Equal(string.IsNullOrEmpty(deviceGatewayID) ? 1U : 0U, loRaDevice.FCntDown);
 
             // If the starting payload was not 0, it is expected that it updates the framecounter char
             // The device will perform the frame counter update and at this point in time it will have the same frame counter as the desired

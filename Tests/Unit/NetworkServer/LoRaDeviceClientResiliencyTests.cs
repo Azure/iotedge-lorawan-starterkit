@@ -29,7 +29,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<ILogger> loggerMock = new();
         private readonly ILoRaDeviceClient subject;
         private readonly CancellationTokenSource cancellationTokenSource = new();
-        private readonly List<LogEntry> log = new();
 
         private record struct LogEntry(string Message, Exception? Exception);
 
@@ -37,22 +36,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.originalMock = new Mock<ILoRaDeviceClient>();
             var loggerFactoryMock = new Mock<ILoggerFactory>();
-            this.loggerMock
-                .Setup(l => l.Log(LogLevel.Debug,
-                                  It.IsAny<EventId>(),
-                                  It.IsAny<It.IsAnyType>(),
-                                  It.IsNotNull<Exception>(),
-                                  (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()))
-                .Callback((IInvocation invocation) =>
-                {
-                    var exception = (Exception)invocation.Arguments[3];
-                    var formatter = (Delegate)invocation.Arguments[4];
-                    var message = (string)formatter.DynamicInvoke(invocation.Arguments[2], exception)!;
-                    this.log.Add(new LogEntry(message, exception));
-                });
             loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(this.loggerMock.Object);
             this.subject = this.originalMock.Object.AddResiliency(loggerFactoryMock.Object);
         }
+
+        private IEnumerable<LogEntry> LogEntries =>
+            from e in this.loggerMock.GetLogInvocations()
+            where e.LogLevel is LogLevel.Debug
+            select new LogEntry(e.Message, e.Exception);
 
         public async ValueTask DisposeAsync()
         {
@@ -330,7 +321,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(1));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
             this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
-            Assert.Empty(this.log);
+            Assert.Empty(LogEntries);
         }
 
         [Theory]
@@ -348,7 +339,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(3));
-            Assert.Equal(CreateExpectedLog(3, operation.Name, exception), this.log);
+            Assert.Equal(CreateExpectedLog(3, operation.Name, exception), LogEntries);
         }
 
         [Theory]
@@ -364,7 +355,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(1));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(1));
             this.originalMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Never);
-            Assert.Empty(this.log);
+            Assert.Empty(LogEntries);
         }
 
         [Theory]
@@ -381,7 +372,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             operation.Verify(this.originalMock, Times.Exactly(3));
             this.originalMock.Verify(x => x.EnsureConnected(), Times.Exactly(3));
             this.originalMock.Verify(x => x.DisconnectAsync(CancellationToken.None), Times.Exactly(2));
-            Assert.Equal(CreateExpectedLog(2, operation.Name, exception), this.log);
+            Assert.Equal(CreateExpectedLog(2, operation.Name, exception), LogEntries);
         }
 
         private static IEnumerable<LogEntry> CreateExpectedLog(int count, string name, Exception exception) =>
