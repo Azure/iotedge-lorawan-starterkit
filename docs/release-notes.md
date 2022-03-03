@@ -2,6 +2,28 @@
 title: Release Notes
 ---
 
+## v2.1.0
+
+### New Features
+
+- Enable [multi-gateway scenario supporting higher scalability](./user-guide/scalability.md).
+  This eliminates several disadvantages in a [multi-LNS deployment scenario](./user-guide/deployment-scenarios.md).
+- [Standalone discovery service](./user-guide/lns-discovery.md) for dynamic LNS discovery.
+
+### Quality Improvements
+
+- [#1564](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1564): Throttling disposal of `DeviceClient`s.
+- [#1540](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1540): Observe unobserved tasks.
+- [#1462](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1462): Tracing of AMQP/MQTT dependencies to IoT Hub in Application Insights.
+- We [enforce stricter naming conventions](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1485).
+- We change the way we make HTTP requests to conform with how to [make HTTP requests using `IHttpClientFactory` in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-6.0).
+- When using the quickstart template, we now deploy a [Workspace-based Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource) instance instead of a classic Application Insights.
+
+## Bug fixes
+
+- [#1573](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1573): Handling `ObjectDisposedException` and other exceptions by recreating the `DeviceClient`.
+- [#1344](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1344): Duplicate log statement.
+
 ## v2.0.0
 
 ### New Features
