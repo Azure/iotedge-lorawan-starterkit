@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
     using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -96,7 +97,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 var result = await this.clientCertValidatorSvc.ValidateAsync(cert, chain, System.Net.Security.SslPolicyErrors.None, default);
 
                 Assert.False(result);
-                Assert.Contains(this.logger.Invocations, i => i.Arguments.Any(a => a.ToString()!.Contains(InvalidStationEui, StringComparison.OrdinalIgnoreCase)));
+                Assert.Contains(this.logger.GetLogInvocations(), args => args.Message.Contains(InvalidStationEui, StringComparison.OrdinalIgnoreCase));
             }
             finally
             {

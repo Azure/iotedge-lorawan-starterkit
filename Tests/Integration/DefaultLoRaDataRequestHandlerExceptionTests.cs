@@ -22,20 +22,12 @@ namespace LoRaWan.Tests.Integration
     {
         private readonly Mock<TestDefaultLoRaRequestHandler> mockTestDefaultLoRaRequestHandler;
         private readonly TestOutputLoggerFactory testOutputLoggerFactory;
-        private readonly List<Exception> loggedExceptions = new();
+        private readonly Mock<ILogger<DefaultLoRaDataRequestHandler>> loggerMock = new();
 
         private TestDefaultLoRaRequestHandler Subject => this.mockTestDefaultLoRaRequestHandler.Object;
 
         public DefaultLoRaDataRequestHandlerExceptionTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
-            var loggerMock = new Mock<ILogger<DefaultLoRaDataRequestHandler>>();
-            loggerMock.Setup(l => l.Log(It.IsAny<LogLevel>(),
-                                        It.IsAny<EventId>(),
-                                        It.IsAny<It.IsAnyType>(),
-                                        It.IsNotNull<Exception>(),
-                                        (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()))
-                      .Callback((IInvocation invocation) => this.loggedExceptions.Add((Exception)invocation.Arguments[3]));
-
             this.testOutputLoggerFactory = new TestOutputLoggerFactory(testOutputHelper);
             this.mockTestDefaultLoRaRequestHandler = new Mock<TestDefaultLoRaRequestHandler>(MockBehavior.Default,
                 ServerConfiguration,
@@ -53,6 +45,11 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.Setup(api => api.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                          .ReturnsAsync(1U);
         }
+
+        private IEnumerable<Exception> LoggedExceptions =>
+            from e in this.loggerMock.GetLogInvocations()
+            where e.Exception is not null
+            select e.Exception;
 
         public static TheoryData<Exception?, Exception?, Exception> Secondary_Task_Exceptions_TheoryData() =>
             TheoryDataFactory.From(new (Exception?, Exception?, Exception)[]
@@ -105,7 +102,7 @@ namespace LoRaWan.Tests.Integration
 
         private void AssertSecondaryTaskException(Exception expected)
         {
-            var ex = Assert.Single(this.loggedExceptions);
+            var ex = Assert.Single(LoggedExceptions);
             if (ex is AggregateException someAggregateException)
             {
                 var expectedAggregateException = Assert.IsType<AggregateException>(expected);

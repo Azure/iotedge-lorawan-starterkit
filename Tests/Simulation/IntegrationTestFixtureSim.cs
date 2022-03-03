@@ -121,7 +121,7 @@ namespace LoRaWan.Tests.Simulation
                     DevAddr = DevAddr.Parse(deviceId.ToString("00000000", CultureInfo.InvariantCulture)),
                 };
 
-            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode deduplicationMode = DeduplicationMode.None) =>
+            TestDeviceInfo CreateOtaaDevice(int deviceId, DeduplicationMode deduplicationMode = DeduplicationMode.Drop) =>
                 new TestDeviceInfo
                 {
                     DeviceID = deviceId.ToString("0000000000000000", CultureInfo.InvariantCulture),
