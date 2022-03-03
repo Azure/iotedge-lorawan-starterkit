@@ -4,9 +4,6 @@ The following table is providing a list of configuration options, to be provided
 
 | Environment variable name   | Description                                                                            | Mandatory                           |
 | --------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------- |
-| IOTEDGE_APIVERSION          | Version of IoT Edge; also used to determine if LNS is running as an IoT Edge module    | Yes, if running as IoT Edge module  |
-| IOTEDGE_IOTHUBHOSTNAME      | Host name of the IoT Hub                                                               | Yes                                 |
-| IOTEDGE_GATEWAYHOSTNAME     | Gateway host name                                                                      | Yes, if edgeHub gateway is enabled  |
 | ENABLE_GATEWAY              | Indicates whether the edgeHub gateway should be enabled or not                         | No (defaults to `true`)             |
 | IOTEDGE_DEVICEID            | The gateway deviceId                                                                   | Yes                                 |
 | HTTPS_PROXY                 | HTTPS proxy url                                                                        | No                                  |
