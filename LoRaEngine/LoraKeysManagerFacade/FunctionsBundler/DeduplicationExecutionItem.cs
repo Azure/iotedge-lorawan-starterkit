@@ -102,12 +102,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                                     if (!HttpUtilities.IsSuccessStatusCode(res.Status))
                                     {
-                                        logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
+                                        logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
                                     }
                                 }
                                 catch (IotHubException ex)
                                 {
-                                    logger?.LogError(ex, "Exception when invoking direct method on LNS '{PreviousConnectionOwner}' to drop the connection for device '{DevEUI}'", previousGateway, devEUI);
+                                    logger?.LogError(ex, "Exception when invoking direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'", previousGateway, devEUI);
 
                                     // The exception is not rethrown because closing the connection on the losing gateway
                                     // is performed on best effort basis.

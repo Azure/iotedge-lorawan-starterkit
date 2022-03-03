@@ -173,7 +173,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             if (c2d.DevEUI == null)
             {
-                this.logger.LogError("DevEUI missing, cannot identify device to drop connection for; message Id '{MessageId}'", c2d.MessageId);
+                this.logger.LogError("DevEUI missing, cannot identify device to close connection for; message Id '{MessageId}'", c2d.MessageId);
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
 
