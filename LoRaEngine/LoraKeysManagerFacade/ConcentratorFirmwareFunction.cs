@@ -93,9 +93,8 @@ namespace LoraKeysManagerFacade
                         StatusCode = (int)HttpStatusCode.InternalServerError,
                     };
                 }
-                catch (RequestFailedException ex)
+                catch (RequestFailedException ex) when (ExceptionFilterUtility.True(() => this.logger.LogError(ex, "Failed to download firmware from storage.")))
                 {
-                    this.logger.LogError(ex, "Failed to download firmware from storage.");
                     return new ObjectResult("Failed to download firmware")
                     {
                         StatusCode = (int)HttpStatusCode.InternalServerError

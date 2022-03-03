@@ -85,9 +85,8 @@ namespace LoraKeysManagerFacade
             {
                 return new BadRequestObjectResult("UsedDevNonce");
             }
-            catch (JoinRefusedException ex)
+            catch (JoinRefusedException ex) when (ExceptionFilterUtility.True(() => this.logger.LogDebug("Join refused: {msg}", ex.Message)))
             {
-                this.logger.LogDebug("Join refused: {msg}", ex.Message);
                 return new BadRequestObjectResult("JoinRefused: " + ex.Message);
             }
             catch (ArgumentException ex)
