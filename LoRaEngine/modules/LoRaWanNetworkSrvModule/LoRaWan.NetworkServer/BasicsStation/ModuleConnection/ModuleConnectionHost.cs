@@ -228,6 +228,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
 
             var reader = new TwinCollectionReader(desiredProperties, this.logger);
+
+            if (reader.TryRead<int>(Constants.ProcessingDelayKey, out var processingDelay))
+            {
+                if (processingDelay >= 0)
+                {
+                    this.logger.LogDebug("Updating processing delay for LNS to {ProcessingDelay} from desired properties of the module twin", processingDelay);
+                    this.networkServerConfiguration.ProcessingDelayInMilliseconds = processingDelay;
+                }
+                else
+                {
+                    this.logger.LogError("Processing delay for LNS was set to an invalid value {ProcessingDelay}, " +
+                        "using default delay of {DefaultDelay} ms", processingDelay, Constants.DefaultProcessingDelayInMilliseconds);
+                }
+            }
+
             if (reader.TryRead<string>(Constants.FacadeServerUrlKey, out var faceServerUrl))
             {
                 if (Uri.TryCreate(faceServerUrl, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))

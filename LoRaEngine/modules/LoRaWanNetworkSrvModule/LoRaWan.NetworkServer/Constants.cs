@@ -59,5 +59,17 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public const string MessageAlreadyEncountered = "because message already encountered";
 
+        /// <summary>
+        /// Delay (in milliseconds) to be used when message processing must be postponed by the LNS
+        /// which does not own the connection for a given device.
+        /// </summary>
+        public const string ProcessingDelayKey = "ProcessingDelayInMilliseconds";
+
+        /// <summary>
+        /// Default delay (in milliseconds) to be used when message processing must be postponed by the LNS
+        /// which does not own the connection for a given device.
+        /// </summary>
+        public const int DefaultProcessingDelayInMilliseconds = 400;
+
     }
 }

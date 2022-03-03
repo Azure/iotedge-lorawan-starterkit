@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools
     using Newtonsoft.Json;
     using Xunit;
 
-    public class MacCommandTest
+    public class MacCommandJsonConverterTest
     {
         [Fact]
         public void When_Serializing_List_Should_Create_Correct_Items()
@@ -60,6 +60,14 @@ namespace LoRaWan.Tests.Unit.LoRaTools
         {
             var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(input));
             Assert.Equal($"Property '{missingProperty}' is missing", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(Cid.TxParamSetupCmd)]
+        public void When_Serializing_Invalid_Cid_Should_Throw(Cid cid)
+        {
+            var ex = Assert.Throws<JsonReaderException>(() => JsonConvert.DeserializeObject<MacCommand>(@$"{{""cid"":{(int)cid}}}"));
+            Assert.Equal($"Unhandled command identifier: {cid}", ex.Message);
         }
     }
 }
