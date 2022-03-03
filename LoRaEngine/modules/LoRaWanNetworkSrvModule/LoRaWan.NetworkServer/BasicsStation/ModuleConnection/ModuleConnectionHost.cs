@@ -159,7 +159,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         private async Task<MethodResponse> CloseConnectionAsync(MethodRequest methodRequest)
         {
-            this.forceClosedConnections.Add(1);
             ReceivedLoRaCloudToDeviceMessage c2d = null;
 
             try
@@ -187,10 +186,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 return new MethodResponse((int)HttpStatusCode.NotFound);
             }
 
-            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
             loRaDevice.IsConnectionOwner = false;
+            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
             await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
+
             this.logger.LogInformation(ClosedConnectionLog + "from gateway with id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
+            this.forceClosedConnections.Add(1);
 
             return new MethodResponse((int)HttpStatusCode.OK);
         }
