@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.originalMock = new Mock<ILoRaDeviceClient>();
             var loggerFactoryMock = new Mock<ILoggerFactory>();
             this.loggerMock
-                .Setup(l => l.Log(LogLevel.Warning,
+                .Setup(l => l.Log(LogLevel.Debug,
                                   It.IsAny<EventId>(),
                                   It.IsAny<It.IsAnyType>(),
                                   It.IsNotNull<Exception>(),

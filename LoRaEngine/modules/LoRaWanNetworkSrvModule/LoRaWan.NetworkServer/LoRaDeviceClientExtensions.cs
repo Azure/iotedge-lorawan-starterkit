@@ -56,10 +56,10 @@ namespace LoRaWan.NetworkServer
                                   || (ex is InvalidOperationException ioe
                                       && ioe.Message.StartsWith("This operation is only allowed using a successfully authenticated context.", StringComparison.OrdinalIgnoreCase)))
                               && ExceptionFilterUtility.True(() =>
-                                     this.logger?.LogWarning(ex, @"Device client operation ""{Operation}"" (attempt {Attempt}/"
-                                                                 + MaxAttempts.ToString(CultureInfo.InvariantCulture)
-                                                                 + @") failed due to error: {Error}",
-                                                                 operationName, attempt, ex.GetBaseException().Message)))
+                                     this.logger?.LogDebug(ex, @"Device client operation ""{Operation}"" (attempt {Attempt}/"
+                                                               + MaxAttempts.ToString(CultureInfo.InvariantCulture)
+                                                               + @") failed due to error: {Error}",
+                                                               operationName, attempt, ex.GetBaseException().Message)))
                     {
                         // disconnect, re-connect and then retry...
                         await this.client.DisconnectAsync(CancellationToken.None);
