@@ -11,6 +11,7 @@ namespace LoraKeysManagerFacade
     using System.Threading.Tasks;
     using Azure;
     using Azure.Storage.Blobs;
+    using LoRaTools;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
@@ -67,6 +68,8 @@ namespace LoraKeysManagerFacade
                 this.logger.LogError("StationEui missing in request or invalid");
                 return new BadRequestObjectResult("StationEui missing in request or invalid");
             }
+
+            using var stationScope = this.logger.BeginEuiScope(stationEui);
 
             var twin = await this.registryManager.GetTwinAsync(stationEui.ToString("N", CultureInfo.InvariantCulture), cancellationToken);
             if (twin != null)

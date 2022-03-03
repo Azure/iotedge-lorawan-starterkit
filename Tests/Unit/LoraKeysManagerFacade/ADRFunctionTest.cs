@@ -45,7 +45,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 .Returns(adrStrategy.Object);
 
             this.adrStore = new LoRaADRInMemoryStore();
-            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, new LoRaInMemoryDeviceStore(), NullLogger<LoRaADRServerManager>.Instance);
+            this.adrManager = new LoRaADRServerManager(this.adrStore,
+                                                       strategyProvider.Object,
+                                                       new LoRaInMemoryDeviceStore(),
+                                                       NullLoggerFactory.Instance,
+                                                       NullLogger<LoRaADRServerManager>.Instance);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
         }
 

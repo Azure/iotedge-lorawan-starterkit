@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -20,11 +21,13 @@ namespace LoraKeysManagerFacade
     {
         private readonly RegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
+        private readonly ILogger<DeviceGetter> logger;
 
-        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
+        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore, ILogger<DeviceGetter> logger)
         {
             this.registryManager = registryManager;
             this.cacheStore = cacheStore;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -66,10 +69,15 @@ namespace LoraKeysManagerFacade
                 }
             }
 
+            using var deviceScope = this.logger.BeginDeviceScope(devEui);
+
             try
             {
                 DevNonce? devNonce = ushort.TryParse(rawDevNonce, NumberStyles.None, CultureInfo.InvariantCulture, out var d) ? new DevNonce(d) : null;
                 DevAddr? devAddr = DevAddr.TryParse(devAddrString, out var someDevAddr) ? someDevAddr : null;
+
+                using var devAddrScope = this.logger.BeginDeviceAddressScope(devAddr);
+
                 var results = await GetDeviceList(devEui, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);

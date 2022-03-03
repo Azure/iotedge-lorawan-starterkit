@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using global::LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging.Abstractions;
     using System.Threading.Tasks;
     using Xunit;
 
@@ -14,7 +15,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
         public FCntCacheCheckTest()
         {
-            this.fcntCheck = new FCntCacheCheck(new LoRaInMemoryDeviceStore());
+            this.fcntCheck = new FCntCacheCheck(new LoRaInMemoryDeviceStore(), NullLogger<FCntCacheCheck>.Instance);
         }
 
         [Fact]

@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
     public class FunctionBundlerFunction
     {
         private readonly IFunctionBundlerExecutionItem[] executionItems;
+        private readonly ILogger<FunctionBundlerFunction> logger;
 
         public FunctionBundlerFunction(
-            IFunctionBundlerExecutionItem[] items)
+            IFunctionBundlerExecutionItem[] items, ILogger<FunctionBundlerFunction> logger)
         {
             this.executionItems = items.OrderBy(x => x.Priority).ToArray();
+            this.logger = logger;
         }
 
         [FunctionName("FunctionBundler")]
@@ -42,6 +45,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 return new BadRequestObjectResult("Dev EUI is invalid.");
             }
+
+            using var deviceScope = this.logger.BeginDeviceScope(parsedDevEui);
 
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))

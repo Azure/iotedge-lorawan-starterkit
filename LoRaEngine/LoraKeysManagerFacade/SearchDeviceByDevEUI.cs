@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -16,10 +17,12 @@ namespace LoraKeysManagerFacade
     public class SearchDeviceByDevEUI
     {
         private readonly RegistryManager registryManager;
+        private readonly ILogger<SearchDeviceByDevEUI> logger;
 
-        public SearchDeviceByDevEUI(RegistryManager registryManager)
+        public SearchDeviceByDevEUI(RegistryManager registryManager, ILogger<SearchDeviceByDevEUI> logger)
         {
             this.registryManager = registryManager;
+            this.logger = logger;
         }
 
         [FunctionName(nameof(GetDeviceByDevEUI))]
@@ -47,6 +50,8 @@ namespace LoraKeysManagerFacade
             {
                 return new BadRequestObjectResult("DevEUI missing or invalid.");
             }
+
+            using var deviceScope = this.logger.BeginDeviceScope(parsedDevEui);
 
             var device = await this.registryManager.GetDeviceAsync(parsedDevEui.ToString());
             if (device != null)

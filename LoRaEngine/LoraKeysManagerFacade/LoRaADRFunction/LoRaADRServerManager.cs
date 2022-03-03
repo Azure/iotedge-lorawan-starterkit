@@ -11,16 +11,22 @@ namespace LoraKeysManagerFacade
     public class LoRaADRServerManager : LoRaADRManagerBase
     {
         private readonly ILoRaDeviceCacheStore deviceCacheStore;
+        private readonly ILoggerFactory loggerFactory;
 
-        public LoRaADRServerManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceCacheStore deviceCacheStore, ILogger<LoRaADRServerManager> logger)
+        public LoRaADRServerManager(ILoRaADRStore store,
+                                    ILoRaADRStrategyProvider strategyProvider,
+                                    ILoRaDeviceCacheStore deviceCacheStore,
+                                    ILoggerFactory loggerFactory,
+                                    ILogger<LoRaADRServerManager> logger)
             : base(store, strategyProvider, logger)
         {
             this.deviceCacheStore = deviceCacheStore;
+            this.loggerFactory = loggerFactory;
         }
 
         public override async Task<uint> NextFCntDown(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
-            var fcntCheck = new FCntCacheCheck(this.deviceCacheStore);
+            var fcntCheck = new FCntCacheCheck(this.deviceCacheStore, this.loggerFactory.CreateLogger<FCntCacheCheck>());
             return await fcntCheck.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
         }
     }

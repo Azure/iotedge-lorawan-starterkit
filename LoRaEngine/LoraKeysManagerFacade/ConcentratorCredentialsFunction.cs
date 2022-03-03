@@ -11,6 +11,7 @@ namespace LoraKeysManagerFacade
     using System.Threading.Tasks;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
+    using LoRaTools;
     using LoRaTools.CommonAPI;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -69,6 +70,8 @@ namespace LoraKeysManagerFacade
                 this.logger.LogError("StationEui missing in request or invalid");
                 return new BadRequestObjectResult("StationEui missing in request or invalid");
             }
+
+            using var stationScope = this.logger.BeginEuiScope(stationEui);
 
             var credentialTypeQueryString = req.Query["CredentialType"];
             if (StringValues.IsNullOrEmpty(credentialTypeQueryString))

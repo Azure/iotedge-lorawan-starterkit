@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -16,10 +17,12 @@ namespace LoraKeysManagerFacade
     public class FCntCacheCheck
     {
         private readonly ILoRaDeviceCacheStore deviceCache;
+        private readonly ILogger<FCntCacheCheck> logger;
 
-        public FCntCacheCheck(ILoRaDeviceCacheStore deviceCache)
+        public FCntCacheCheck(ILoRaDeviceCacheStore deviceCache, ILogger<FCntCacheCheck> logger)
         {
             this.deviceCache = deviceCache;
+            this.logger = logger;
         }
 
         [FunctionName("NextFCntDown")]
@@ -48,6 +51,8 @@ namespace LoraKeysManagerFacade
             {
                 return new BadRequestObjectResult("Dev EUI is invalid.");
             }
+
+            using var deviceScope = this.logger.BeginDeviceScope(devEui);
 
             if (!uint.TryParse(fCntUp, out var clientFCntUp))
             {
