@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Integration
 
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
             this.serviceClientMock = new Mock<IServiceClient>();
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(this.cache, this.serviceClientMock.Object);
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(this.cache, this.serviceClientMock.Object, TestMeter.Instance);
         }
 
         [Theory]

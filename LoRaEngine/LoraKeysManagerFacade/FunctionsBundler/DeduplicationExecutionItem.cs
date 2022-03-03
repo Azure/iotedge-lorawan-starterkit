@@ -4,7 +4,7 @@
 namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System;
-    using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
@@ -15,15 +15,22 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     public class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {
+        private const string ConnectionOwnershipChangeMetricName = "ConnectionOwnershipChange";
+
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly IServiceClient serviceClient;
+        private readonly Counter<int> connectionOwnershipChange;
 
         public DeduplicationExecutionItem(
             ILoRaDeviceCacheStore cacheStore,
-            IServiceClient serviceClient)
+            IServiceClient serviceClient,
+            Meter meter)
         {
+            _ = meter ?? throw new ArgumentNullException(nameof(meter));
+
             this.cacheStore = cacheStore;
             this.serviceClient = serviceClient;
+            this.connectionOwnershipChange = meter.CreateCounter<int>(ConnectionOwnershipChangeMetricName);
         }
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
@@ -85,6 +92,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                             if (previousGateway != gatewayId)
                             {
+                                this.connectionOwnershipChange.Add(1);
+
                                 var loraC2DMessage = new LoRaCloudToDeviceMessage()
                                 {
                                     DevEUI = devEUI,

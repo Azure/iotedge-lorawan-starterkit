@@ -6,6 +6,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Diagnostics.Metrics;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using Microsoft.Azure.Devices;
@@ -67,7 +68,8 @@ namespace LoraKeysManagerFacade
                 .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
                 .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
                 .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
-                .AddSingleton<LoRaDevAddrCache>();
+                .AddSingleton<LoRaDevAddrCache>()
+                .AddSingleton(_ => new Meter(LoraKeysManagerFacadeConstants.MeterName));
         }
 
         private abstract class ConfigHandler

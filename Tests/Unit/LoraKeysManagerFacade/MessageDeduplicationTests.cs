@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         public MessageDeduplicationTests()
         {
             this.serviceClientMock = new Mock<IServiceClient>();
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), this.serviceClientMock.Object);
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), this.serviceClientMock.Object, TestMeter.Instance);
         }
 
         [Fact]
