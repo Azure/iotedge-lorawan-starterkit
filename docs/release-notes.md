@@ -30,6 +30,7 @@ title: Release Notes
 
 - [#1573](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1573): Handling `ObjectDisposedException` and other exceptions by recreating the `DeviceClient`.
 - [#1344](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1344): Duplicate log statement.
+- [Fixing erroneous join request count metric](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1465).
 
 ## v2.0.0
 
