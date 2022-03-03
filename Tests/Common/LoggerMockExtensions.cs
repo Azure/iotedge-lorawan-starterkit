@@ -38,9 +38,9 @@ namespace LoRaWan.Tests.Common
                    where i.Method.IsGenericMethod && i.Method.GetGenericMethodDefinition() == LogMethodInfo
                    select i.Arguments into args
                    select new LoggerLogInvocation((LogLevel)args[0],
-                                            (EventId)args[1],
-                                            (Exception?)args[3],
-                                            (string)((Delegate)args[4]).DynamicInvoke(args[2], args[3])!);
+                                                  (EventId)args[1],
+                                                  (Exception?)args[3],
+                                                  (string)((Delegate)args[4]).DynamicInvoke(args[2], args[3])!);
         }
     }
 }
