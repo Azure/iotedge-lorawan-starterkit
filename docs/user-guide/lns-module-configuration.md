@@ -29,7 +29,7 @@ The following table is providing a list of configuration options, to be provided
 | LNS_VERSION                 | Version of the LNS                                                                     | No                                  |
 | IOTHUB_CONNECTION_POOL_SIZE | IoT Hub connection pool size                                                           | No (defaults to 1)                  |
 
-Additional settings are available via desired properties of the Network Server module twin in IoT Hub:
+The following settings can be configured via desired properties of the Network Server module twin in IoT Hub:
 
 | Property name                 | Description                                                                                                                                   | Mandatory               |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
