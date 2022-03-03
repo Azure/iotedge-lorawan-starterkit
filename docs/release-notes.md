@@ -13,6 +13,10 @@ title: Release Notes
   - Support for SX1302 ([configurable](./user-guide/station-module-configuration.md) via "CORECELL" parameter)
   - Adjustable log level ([configurable](./user-guide/station-module-configuration.md) via "LOG_LEVEL" parameter)
 
+### Breaking Changes
+
+- [#1576](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1576): The default deduplication strategy is now "Drop" instead of "None". More information found in the [decision record](./adr/007_message_deduplication.md).
+
 ### Quality Improvements
 
 - [#1564](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1564): Throttling disposal of `DeviceClient`s.
@@ -22,7 +26,7 @@ title: Release Notes
 - We change the way we make HTTP requests to conform with how to [make HTTP requests using `IHttpClientFactory` in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-6.0).
 - When using the quickstart template, we now deploy a [Workspace-based Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource) instance instead of a classic Application Insights.
 
-## Bug fixes
+### Bugfixes
 
 - [#1573](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1573): Handling `ObjectDisposedException` and other exceptions by recreating the `DeviceClient`.
 - [#1344](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1344): Duplicate log statement.
