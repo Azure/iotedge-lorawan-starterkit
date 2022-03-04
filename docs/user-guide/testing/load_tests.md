@@ -19,13 +19,19 @@ All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario
 These tests were using gateway mode - passing through the edge hub queue.
 For all tests a IoT Hub S3 instance was used, devices were issueing 3 join requests per second and 5 upstream messages per second.
 
-edgeHub was configured with the following environment variables:
+#### edgeHub module Configuration
 
-- OptimizeForPerformance: true
-- IotHubConnectionPoolSize: 200
-- MaxConnectedClients: 5000
+| Environment Variable       | Value   |
+|----------------------------|--------:|
+| OptimizeForPerformance     | true    |
+| IotHubConnectionPoolSize   | 200     |
+| OptimizeForPerformance     | 5000    |
 
-LoRaWanNetworkSrvModule was configured to match the IotHubConnectionPoolSize via the IOTHUB_CONNECTION_POOL_SIZE set to 200.
+#### LoRaWanNetworkSrvModule Configuration
+
+| Environment Variable       | Value   |
+|----------------------------|--------:|
+| IOTHUB_CONNECTION_POOL_SIZE| 200     |
 
 | Succeeded                      | IoT Hub SKU | Gateway count | Number of devices | Concentrators per gateway | Duration [min] | Total messages sent | Receive windows missed | Avg message delivery time [ms] | Note                                                         |
 | ------------------------------ | ----------- | ------------- | ----------------- | ------------------------- | -------------- | ------------------- | ---------------------- | ------------------------------ | ------------------------------------------------------------ |
