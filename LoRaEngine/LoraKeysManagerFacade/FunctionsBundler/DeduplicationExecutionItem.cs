@@ -3,23 +3,42 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
+    using System;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan;
+    using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.Extensibility;
+    using Microsoft.ApplicationInsights.Metrics;
+    using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
 
     public class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {
-        private readonly ILoRaDeviceCacheStore cacheStore;
+        private const string ConnectionOwnershipChangeMetricName = "ConnectionOwnershipChange";
 
-        public DeduplicationExecutionItem(ILoRaDeviceCacheStore cacheStore)
+        private readonly ILoRaDeviceCacheStore cacheStore;
+        private readonly IServiceClient serviceClient;
+        private readonly Microsoft.ApplicationInsights.Metric connectionOwnershipChangedMetric;
+
+        public DeduplicationExecutionItem(
+            ILoRaDeviceCacheStore cacheStore,
+            IServiceClient serviceClient,
+            TelemetryConfiguration telemetryConfiguration)
         {
             this.cacheStore = cacheStore;
+            this.serviceClient = serviceClient;
+
+            var telemetryClient = new TelemetryClient(telemetryConfiguration);
+            var metricIdentifier = new MetricIdentifier(LoraKeysManagerFacadeConstants.MetricNamespace, ConnectionOwnershipChangeMetricName);
+            this.connectionOwnershipChangedMetric = telemetryClient.GetMetric(metricIdentifier);
         }
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            if (context is null) throw new System.ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
 
             context.Result.DeduplicationResult = await GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
 
@@ -47,7 +66,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    // we are owning the lock now
                     if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
                         var updateCacheState = false;
@@ -69,9 +87,44 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
                         if (updateCacheState)
                         {
+                            var previousGateway = cachedDeviceState.GatewayId;
+
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
                             _ = deviceCache.StoreInfo(cachedDeviceState);
+
+                            if (previousGateway != gatewayId)
+                            {
+                                this.connectionOwnershipChangedMetric.TrackValue(1);
+
+                                var loraC2DMessage = new LoRaCloudToDeviceMessage()
+                                {
+                                    DevEUI = devEUI,
+                                    Fport = FramePort.AppMin,
+                                    MessageId = Guid.NewGuid().ToString()
+                                };
+
+                                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                                _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
+
+                                try
+                                {
+                                    var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                                    logger?.LogDebug("Connection owner changed and direct method was called on previous gateway '{PreviousConnectionOwner}' to close connection; result is '{Status}'", previousGateway, res?.Status);
+
+                                    if (!HttpUtilities.IsSuccessStatusCode(res.Status))
+                                    {
+                                        logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
+                                    }
+                                }
+                                catch (IotHubException ex)
+                                {
+                                    logger?.LogError(ex, "Exception when invoking direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'", previousGateway, devEUI);
+
+                                    // The exception is not rethrown because closing the connection on the losing gateway
+                                    // is performed on best effort basis.
+                                }
+                            }
                         }
                     }
                     else
@@ -79,7 +132,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                         // initialize
                         isDuplicate = false;
                         var state = deviceCache.Initialize(clientFCntUp, clientFCntDown);
-                        logger?.LogDebug("initialized state for {id}:{gwid} = {state}", devEUI, gatewayId, state);
+                        logger?.LogDebug("Connection owner for {DevEui} set to {GatewayId}; state {State}", devEUI, gatewayId, state);
                     }
                 }
                 else

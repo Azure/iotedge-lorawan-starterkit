@@ -27,12 +27,13 @@ namespace LoRaWan.Tests.Common
         private static readonly IJsonReader<DevEui> DevEuiMessageReader =
             JsonReader.Object(JsonReader.Property("DevEui", from d in JsonReader.String()
                                                             select DevEui.Parse(d)));
-        private readonly List<SimulatedBasicsStation> simulatedBasicsStations = new List<SimulatedBasicsStation>();
 
         private readonly ConcurrentBag<string> receivedMessages = new ConcurrentBag<string>();
         private readonly ILogger logger;
 
         public IReadOnlyCollection<string> ReceivedMessages => this.receivedMessages;
+
+        public IReadOnlyCollection<SimulatedBasicsStation> SimulatedBasicsStations { get; set; }
 
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
@@ -78,7 +79,7 @@ namespace LoRaWan.Tests.Common
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
             this.logger = logger;
-            this.simulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
+            SimulatedBasicsStations = simulatedBasicsStation?.ToList() ?? new List<SimulatedBasicsStation>();
 
             void AddToDeviceMessageQueue(string response)
             {
@@ -88,7 +89,7 @@ namespace LoRaWan.Tests.Common
                 }
             }
 
-            foreach (var basicsStation in this.simulatedBasicsStations)
+            foreach (var basicsStation in SimulatedBasicsStations)
                 basicsStation.MessageReceived += (_, eventArgs) => AddToDeviceMessageQueue(eventArgs.Value);
         }
 
@@ -257,7 +258,7 @@ namespace LoRaWan.Tests.Common
 
         //// Sends unconfirmed message
         public Task SendDataMessageAsync(LoRaRequest loRaRequest) =>
-            Task.WhenAll(from basicsStation in this.simulatedBasicsStations
+            Task.WhenAll(from basicsStation in SimulatedBasicsStations
                          select basicsStation.SendDataMessageAsync(loRaRequest, CancellationToken.None));
 
         // Performs join
@@ -305,12 +306,12 @@ namespace LoRaWan.Tests.Common
                     }
                 }
 
-                foreach (var basicsStation in this.simulatedBasicsStations)
+                foreach (var basicsStation in SimulatedBasicsStations)
                     basicsStation.MessageReceived += OnMessageReceived;
 
                 try
                 {
-                    foreach (var basicsStation in this.simulatedBasicsStations)
+                    foreach (var basicsStation in SimulatedBasicsStations)
                     {
                         await basicsStation.SerializeAndSendMessageAsync(new
                         {
@@ -342,7 +343,7 @@ namespace LoRaWan.Tests.Common
                 }
                 finally
                 {
-                    foreach (var basicsStation in this.simulatedBasicsStations)
+                    foreach (var basicsStation in SimulatedBasicsStations)
                         basicsStation.MessageReceived -= OnMessageReceived;
                 }
             }

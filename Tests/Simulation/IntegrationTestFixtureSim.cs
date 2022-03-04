@@ -20,6 +20,9 @@ namespace LoRaWan.Tests.Simulation
         // Device1002_Simulated_OTAA: used for simulator
         public TestDeviceInfo Device1002_Simulated_OTAA { get; private set; }
 
+        // Device1003_Simulated_ABP: used for ABP simulator
+        public TestDeviceInfo Device1003_Simulated_ABP { get; private set; }
+
         private readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
@@ -70,6 +73,18 @@ namespace LoRaWan.Tests.Simulation
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+
+            // Device1003_Simulated_ABP: used for simulator
+            Device1003_Simulated_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000001003",
+                Deduplication = DeduplicationMode.Drop,
+                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true,
+                AppSKey = GetAppSessionKey(1003),
+                NwkSKey = GetNetworkSessionKey(1003),
+                DevAddr = new DevAddr(0x00001003),
             };
 
             var fileName = "EU863.json";

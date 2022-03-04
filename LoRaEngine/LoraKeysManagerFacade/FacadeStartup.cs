@@ -68,7 +68,8 @@ namespace LoraKeysManagerFacade
                 .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
                 .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
                 .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
-                .AddSingleton<LoRaDevAddrCache>();
+                .AddSingleton<LoRaDevAddrCache>()
+                .AddApplicationInsightsTelemetry();
         }
 
         private abstract class ConfigHandler
@@ -129,6 +130,7 @@ namespace LoraKeysManagerFacade
                 internal override string RedisConnectionString => this.config.GetValue<string>(RedisConnectionStringKey);
 
                 internal override string IoTHubConnectionString => this.config.GetValue<string>(IoTHubConnectionStringKey);
+
                 internal override string StorageConnectionString => this.config.GetConnectionStringOrSetting(StorageConnectionStringKey);
             }
         }
