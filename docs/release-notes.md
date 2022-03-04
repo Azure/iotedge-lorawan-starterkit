@@ -18,6 +18,7 @@ title: Release Notes
 
 ### Breaking Changes
 
+- The Facade Function v2.1.0 supports only API Version `2022_03_04`. This version of the Facade is only compatible with version 2.1.0 of the LNS.
 - [#1576](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1576): The default deduplication strategy is now "Drop" instead of "None". More information found in the [decision record](./adr/007_message_deduplication.md).
 
 ### Quality Improvements
