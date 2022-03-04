@@ -16,7 +16,6 @@ as environment variables for manual configuration of the
 | HTTPS_PROXY                 | HTTPS proxy url                                                                        | No                                  |
 | RX2_DATR                    | RX2 data rate; useful to override the default regional RX2 Data Rate at a global level | No (defaults to null, regional default value is used) |
 | RX2_FREQ                    | RX2 frequency; useful to override the default regional RX2 Frequency at a global level | No (defaults to null, regional default value is used) |
-| IOTEDGE_TIMEOUT             | IoT Edge timeout in milliseconds                                                       | No (defaults to 0)                  |
 | FACADE_SERVER_URL           | Azure Facade function url                                                              | Yes                                 |
 | FACADE_AUTH_CODE            | Azure Facade function auth code                                                        | Yes                                 |
 | LOG_LEVEL                   | Logging level                                                                          | No (defaults to level 4 (Error)     |
