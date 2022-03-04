@@ -53,7 +53,6 @@ namespace LoRaWan.Tests.Integration
                                messageProcessed = true;
                                return new FunctionBundlerResult()
                                {
-                                   NextFCntDown = confirmedMessages ? 1 : null,
                                    DeduplicationResult = new DeduplicationResult { IsDuplicate = isDup }
                                };
                            }
