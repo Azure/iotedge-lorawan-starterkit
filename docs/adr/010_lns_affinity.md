@@ -185,11 +185,13 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
    now awards LNS2 as the "winning" LNS. LNS2 can now process the message upstream. It also **removes the "losing flag" from its in-memory store**.
 1. **The Function also proactively informs LNS1** that it's not anymore the winning LNS for this
    device.
-    - The reason why we do this is to ensure that LNS1 knows connection ownership was transferred to
-    another network server and it can drop the connection. This is for the case, where the upstream
-    message does not reach LNS1.
-    - For that we can use a C2D message to LNS. Alternative: direct method could be used here but
-    delivery will not be guaranteed then.
+    - The reason why we do this is to ensure that LNS1 knows that the connection ownership was
+    transferred to another network server and it should drop the connection. This is for the case,
+    where the upstream message does not reach LNS1 e.g. when the leaf device is not in its range any
+    more.
+    - For that we will use a Direct Method call to the LNS module, since [modules do not yet support
+      C2D
+      messages](https://docs.microsoft.com/en-us/azure/iot-edge/module-development?view=iotedge-2018-06&WT.mc_id=IoT-MVP-5004034#iot-hub-primitives).
 1. If LNS1 in the meantime gets message B and contacts the Function, it will let it know
    that it lost the race for this frame counter and must therefore drop the message, **mark
    itself as the losing LNS and close the connection if it hasn't done so yet**.
