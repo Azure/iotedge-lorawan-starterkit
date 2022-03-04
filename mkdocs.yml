@@ -79,6 +79,8 @@ nav:
       - user-guide/station-authentication-modes.md
       - user-guide/station-module-configuration.md
       - user-guide/station-firmware-upgrade.md
+    - 'LNS module configuration':
+      - user-guide/lns-module-configuration.md
     - 'Region specifics':
       - user-guide/as923.md
     - Testing:
