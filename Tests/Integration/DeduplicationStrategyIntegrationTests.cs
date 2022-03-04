@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
@@ -52,6 +53,7 @@ namespace LoRaWan.Tests.Integration
                                messageProcessed = true;
                                return new FunctionBundlerResult()
                                {
+                                   NextFCntDown = confirmedMessages ? 1 : null,
                                    DeduplicationResult = new DeduplicationResult { IsDuplicate = isDup }
                                };
                            }
@@ -82,7 +84,7 @@ namespace LoRaWan.Tests.Integration
                    .ReturnsAsync(true);
             }
 
-            var actualDeviceTelemetries = new List<LoRaDeviceTelemetry>();
+            var actualDeviceTelemetries = new ConcurrentBag<LoRaDeviceTelemetry>();
             LoRaDeviceClient
                 .Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true)
