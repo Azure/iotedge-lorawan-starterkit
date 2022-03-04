@@ -38,46 +38,21 @@ namespace LoRaWan.Tests.Integration
         public async Task When_Different_Strategies_Are_Used_Ensures_Correct_Upstream_And_Downstream_Processing(DeduplicationMode mode, bool confirmedMessages)
         {
             var messageProcessed = false;
-            var counterFctnDown = 0;
 
             foreach (var api in new[] { LoRaDeviceApi, SecondLoRaDeviceApi })
             {
                 api.Setup(x => x.ExecuteFunctionBundlerAsync(this.simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
                    .ReturnsAsync((DevEui _, FunctionBundlerRequest _) =>
                    {
-                       if (mode != DeduplicationMode.None)
+                       var result = new FunctionBundlerResult();
+                       lock (functionLock)
                        {
-                           lock (this.functionLock)
-                           {
-                               var isDup = messageProcessed;
-                               messageProcessed = true;
-                               return new FunctionBundlerResult()
-                               {
-                                   DeduplicationResult = new DeduplicationResult { IsDuplicate = isDup }
-                               };
-                           }
+                           result.NextFCntDown = messageProcessed ? (uint)0 : 1;
+                           result.DeduplicationResult = (mode != DeduplicationMode.None) ? new DeduplicationResult { IsDuplicate = messageProcessed } : null;
+                           messageProcessed = true;
                        }
-
-                       // when DeduplicationMode is None, the Bundler deduplication is not invoked
-                       return new FunctionBundlerResult();
+                       return result;
                    });
-
-                if (confirmedMessages)
-                {
-                    api.Setup(x => x.NextFCntDownAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
-                       .ReturnsAsync(() =>
-                       {
-                           lock (this.functionLock)
-                           {
-                               counterFctnDown++;
-                               return counterFctnDown switch
-                               {
-                                   1 => this.simulatedDevice.FrmCntDown + 1, // the first time the message is encountered, it gets a valid frame counter down
-                                   _ => 0                                    // any other time, it does not
-                               };
-                           }
-                       });
-                }
 
                 api.Setup(x => x.ABPFcntCacheResetAsync(It.IsAny<DevEui>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                    .ReturnsAsync(true);
