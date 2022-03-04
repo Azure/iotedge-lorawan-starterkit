@@ -187,7 +187,8 @@ or via fetching it using DeviceGetter.GetDevice). Changes are marked in **bold**
    device.
     - The reason why we do this is to ensure that LNS1 knows that the connection ownership was
     transferred to another network server and it should drop the connection. This is for the case,
-    where the upstream message does not reach LNS1.
+    where the upstream message does not reach LNS1 e.g. when the leaf device is not in its range any
+    more.
     - For that we will use a Direct Method call to the LNS module, since [modules do not yet support
       C2D
       messages](https://docs.microsoft.com/en-us/azure/iot-edge/module-development?view=iotedge-2018-06&WT.mc_id=IoT-MVP-5004034#iot-hub-primitives).
