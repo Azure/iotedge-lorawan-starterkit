@@ -2903,7 +2903,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-pino-pretty 7.5.1 - MIT
+pino-pretty 7.5.3 - MIT
 https://github.com/pinojs/pino-pretty#readme
 
 Copyright (c) 2019 the Pino team
