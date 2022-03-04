@@ -28,7 +28,7 @@ namespace LoRaTools.CommonAPI
         /// Gets the latest version released.
         /// Update this once a new API version is released.
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2020_10_09;
+        public static ApiVersion LatestVersion => Version_2022_03_04;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information.
@@ -109,6 +109,8 @@ namespace LoRaTools.CommonAPI
         /// </summary>
         public static ApiVersion Version_2020_10_09 { get; }
 
+        public static ApiVersion Version_2022_03_04 { get; }
+
         /// <summary>
         /// Gets the version that is assumed in case none is specified.
         /// </summary>
@@ -133,6 +135,7 @@ namespace LoRaTools.CommonAPI
                 yield return Version_2019_07_16;
                 yield return Version_2020_08_11;
                 yield return Version_2020_10_09;
+                yield return Version_2022_03_04;
             }
         }
 
@@ -199,6 +202,9 @@ namespace LoRaTools.CommonAPI
 
             Version_2020_10_09 = new ApiVersion("2020-10-09");
             Version_2020_10_09.MinCompatibleVersion = Version_2020_10_09;
+
+            Version_2022_03_04 = new ApiVersion("2022-03-04");
+            Version_2022_03_04.MinCompatibleVersion = Version_2022_03_04;
         }
 
         /// <summary>
