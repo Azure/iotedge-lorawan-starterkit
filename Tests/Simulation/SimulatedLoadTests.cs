@@ -22,6 +22,7 @@ namespace LoRaWan.Tests.Simulation
     using static MoreLinq.Extensions.RepeatExtension;
     using static MoreLinq.Extensions.IndexExtension;
     using static MoreLinq.Extensions.TransposeExtension;
+    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
@@ -46,7 +47,7 @@ namespace LoRaWan.Tests.Simulation
             this.simulatedBasicsStations =
                 testFixture.DeviceRange5000_BasicsStationSimulators
                            .Zip(Configuration.LnsEndpointsForSimulator.Repeat(),
-                                (tdi, lnsUrl) => new SimulatedBasicsStation(StationEui.Parse(tdi.DeviceID), lnsUrl))
+                                (tdi, lnsNameToUrl) => new SimulatedBasicsStation(StationEui.Parse(tdi.DeviceID), lnsNameToUrl.Value))
                            .ToList();
 
             Assert.True(this.simulatedBasicsStations.Count % Configuration.LnsEndpointsForSimulator.Count == 0, "Since Basics Stations are round-robin distributed to LNS, we must have the same number of stations per LNS for well-defined test assertions.");
@@ -85,6 +86,34 @@ namespace LoRaWan.Tests.Simulation
 
             await AssertIotHubMessageCountAsync(device, messageCount);
             AssertMessageAcknowledgement(device, messageCount);
+        }
+
+        [Fact]
+        public async Task Ensures_Disconnect_Happens_For_Losing_Gateway_When_Connection_Switches()
+        {
+            // arrange
+            var testDeviceInfo = TestFixtureSim.Device1003_Simulated_ABP;
+            LogTestStart(testDeviceInfo);
+
+            var messagesToSendEachLNS = 3;
+            var simulatedDevice = new SimulatedDevice(testDeviceInfo, simulatedBasicsStation: new[] { this.simulatedBasicsStations.First() }, logger: this.logger);
+            await SendConfirmedUpstreamMessages(simulatedDevice, messagesToSendEachLNS);
+
+            await Task.Delay(messagesToSendEachLNS * IntervalBetweenMessages);
+            _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
+                x => !x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal),
+                new SearchLogOptions("No connection switch should be logged") { TreatAsError = true });
+
+            // act: change basics station that the device is listened from and therefore the gateway it uses as well
+            simulatedDevice.SimulatedBasicsStations = new[] { this.simulatedBasicsStations.Last() };
+            await SendConfirmedUpstreamMessages(simulatedDevice, messagesToSendEachLNS);
+
+            // assert
+            var expectedLnsToDropConnection = Configuration.LnsEndpointsForSimulator.First().Key;
+            _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
+                x => x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
+                new SearchLogOptions($"{ModuleConnectionHost.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
+            await AssertIotHubMessageCountAsync(simulatedDevice, messagesToSendEachLNS * 2);
         }
 
         [Fact]
@@ -334,7 +363,7 @@ namespace LoRaWan.Tests.Simulation
             // Wait for messages in IoT Hub.
             if (!disableWaitForIotHub)
             {
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(100));
             }
 
             var actualMessageCounts = new Dictionary<DevEui, int>();
@@ -361,6 +390,11 @@ namespace LoRaWan.Tests.Simulation
                     DeduplicationMode.Drop => numberOfMessages,
                     var mode => throw new SwitchExpressionException(mode)
                 };
+
+                if (!string.IsNullOrEmpty(device.LoRaDevice.GatewayID))
+                {
+                    expectedMessageCount /= Configuration.LnsEndpointsForSimulator.Count;
+                }
 
                 var applicableMessageCount = correction is { } someCorrection ? expectedMessageCount * someCorrection : expectedMessageCount;
                 var actualMessageCount = actualMessageCounts[device.DevEUI];
