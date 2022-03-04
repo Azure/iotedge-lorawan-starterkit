@@ -7,8 +7,10 @@ title: Release Notes
 ### New Features
 
 - Increase scalability for [multi-gateway scenarios](./user-guide/scalability.md).
-  This eliminates several disadvantages in a [multi-LNS deployment scenario](./user-guide/deployment-scenarios.md).
+  This eliminates several disadvantages in a [multi-LNS deployment scenario](./user-guide/deployment-scenarios.md). 
+  See [ADR - 010. LNS sticky affinity over multiple sessions](./adr/010_lns_affinity.md).
 - [Standalone discovery service](./user-guide/lns-discovery.md) for dynamic LNS discovery.
+  See [ADR - 009. LoRaWAN Network Server (LNS) discovery](./adr/009_discovery.md).
 - LoRaBasicsStationModule updated to Basics Station v2.0.6:
   - Support for SX1302 ([configurable](./user-guide/station-module-configuration.md) via "CORECELL" parameter)
   - Adjustable log level ([configurable](./user-guide/station-module-configuration.md) via "LOG_LEVEL" parameter)
