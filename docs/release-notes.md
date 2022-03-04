@@ -2,6 +2,38 @@
 title: Release Notes
 ---
 
+## v2.1.0
+
+### New Features
+
+- Increase scalability for [multi-gateway scenarios](./user-guide/scalability.md).
+  This eliminates several disadvantages in a [multi-LNS deployment scenario](./user-guide/deployment-scenarios.md).
+  See [ADR - 010. LNS sticky affinity over multiple sessions](./adr/010_lns_affinity.md).
+- [Standalone discovery service](./user-guide/lns-discovery.md) for dynamic LNS discovery.
+  See [ADR - 009. LoRaWAN Network Server (LNS) discovery](./adr/009_discovery.md).
+- LoRaBasicsStationModule updated to Basics Station v2.0.6:
+  - Support for SX1302 ([configurable](./user-guide/station-module-configuration.md) via "CORECELL" parameter)
+  - Adjustable log level ([configurable](./user-guide/station-module-configuration.md) via "LOG_LEVEL" parameter)
+
+### Breaking Changes
+
+- [#1576](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1576): The default deduplication strategy is now "Drop" instead of "None". More information found in the [decision record](./adr/007_message_deduplication.md).
+
+### Quality Improvements
+
+- [#1573](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1573): Handling `ObjectDisposedException` and other exceptions by recreating the `DeviceClient`.
+- [#1564](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1564): Throttling disposal of `DeviceClient`s.
+- [#1540](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1540): Observe unobserved tasks.
+- [#1462](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1462): Tracing of AMQP/MQTT dependencies to IoT Hub in Application Insights.
+- We [enforce stricter naming conventions](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1485).
+- We change the way we make HTTP requests to conform with how to [make HTTP requests using `IHttpClientFactory` in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-6.0).
+- When using the quickstart template, we now deploy a [Workspace-based Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource) instance instead of a classic Application Insights.
+
+### Bugfixes
+
+- [#1344](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1344): Duplicate log statement.
+- [Fixing erroneous join request count metric](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1465).
+
 ## v2.0.0
 
 ### New Features
