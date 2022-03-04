@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
     using global::LoRaTools.ADR;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
@@ -22,6 +23,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         private readonly ILoRaADRManager adrManager;
         private readonly FunctionBundlerFunction functionBundler;
         private readonly ADRExecutionItem adrExecutionItem;
+        private readonly TelemetryConfiguration telemetryConfiguration;
         private readonly Random rnd = new Random();
 
         public FunctionBundlerTest()
@@ -53,9 +55,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore, NullLoggerFactory.Instance, NullLogger<LoRaADRServerManager>.Instance);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
 
+            this.telemetryConfiguration = new TelemetryConfiguration();
             var items = new IFunctionBundlerExecutionItem[]
             {
-                new DeduplicationExecutionItem(cacheStore),
+                new DeduplicationExecutionItem(cacheStore, Mock.Of<IServiceClient>(), this.telemetryConfiguration),
                 this.adrExecutionItem,
                 new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore, NullLogger<FCntCacheCheck>.Instance)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
@@ -336,7 +339,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
             var items = new IFunctionBundlerExecutionItem[]
             {
-                new DeduplicationExecutionItem(cacheStore),
+                new DeduplicationExecutionItem(cacheStore, Mock.Of<IServiceClient>(), this.telemetryConfiguration),
                 new ADRExecutionItem(this.adrManager),
                 new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore, NullLogger<FCntCacheCheck>.Instance)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
@@ -352,6 +355,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             Assert.Empty(items.GroupBy(x => x.Priority).Where(x => x.Count() > 1));
         }
 
-        public void Dispose() => this.adrStore.Dispose();
+        public void Dispose()
+        {
+            this.adrStore.Dispose();
+            this.telemetryConfiguration.Dispose();
+        }
     }
 }

@@ -40,5 +40,10 @@ namespace LoraKeysManagerFacade
 
             return ApiVersion.Parse(versionText);
         }
+
+        /// <summary>
+        /// Checks if the http status code indicates success.
+        /// </summary>
+        public static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }
