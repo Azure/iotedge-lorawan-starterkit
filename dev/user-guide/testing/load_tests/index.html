@@ -824,6 +824,33 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#march-4th-2022-load-test-of-v210-in-gateway-mode-enable_gatewaytrue" class="md-nav__link">
+    March 4th 2022, load test of v2.1.0 in gateway mode (ENABLE_GATEWAY=true)
+  </a>
+  
+    <nav class="md-nav" aria-label="March 4th 2022, load test of v2.1.0 in gateway mode (ENABLE_GATEWAY=true)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edgehub-module-configuration" class="md-nav__link">
+    edgeHub module Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lorawannetworksrvmodule-configuration" class="md-nav__link">
+    LoRaWanNetworkSrvModule Configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#january-25th-28th-2022-load-test-of-v200-beta1-in-gateway-mode-enable_gatewaytrue" class="md-nav__link">
     January 25th - 28th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
   </a>
@@ -1545,6 +1572,33 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#march-4th-2022-load-test-of-v210-in-gateway-mode-enable_gatewaytrue" class="md-nav__link">
+    March 4th 2022, load test of v2.1.0 in gateway mode (ENABLE_GATEWAY=true)
+  </a>
+  
+    <nav class="md-nav" aria-label="March 4th 2022, load test of v2.1.0 in gateway mode (ENABLE_GATEWAY=true)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edgehub-module-configuration" class="md-nav__link">
+    edgeHub module Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lorawannetworksrvmodule-configuration" class="md-nav__link">
+    LoRaWanNetworkSrvModule Configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#january-25th-28th-2022-load-test-of-v200-beta1-in-gateway-mode-enable_gatewaytrue" class="md-nav__link">
     January 25th - 28th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
   </a>
@@ -1591,6 +1645,113 @@
 </ul>
 <h2 id="example-load-tests">Example load tests</h2>
 <p>All load tests use the <code>Connected_Factory_Load_Test_Scenario</code> load test scenario. All example load tests below were tested against IoT Edge version 1.2.7.</p>
+<h3 id="march-4th-2022-load-test-of-v210-in-gateway-mode-enable_gatewaytrue">March 4th 2022, load test of v2.1.0 in gateway mode (ENABLE_GATEWAY=true)</h3>
+<p>These tests were using gateway mode - passing through the edge hub queue.
+For all tests a IoT Hub S3 instance was used, devices were issueing 3 join requests per second and 5 upstream messages per second.</p>
+<h4 id="edgehub-module-configuration">edgeHub module Configuration</h4>
+<table>
+<thead>
+<tr>
+<th>Environment Variable</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OptimizeForPerformance</td>
+<td align="right">true</td>
+</tr>
+<tr>
+<td>IotHubConnectionPoolSize</td>
+<td align="right">200</td>
+</tr>
+<tr>
+<td>OptimizeForPerformance</td>
+<td align="right">5000</td>
+</tr>
+</tbody>
+</table>
+<h4 id="lorawannetworksrvmodule-configuration">LoRaWanNetworkSrvModule Configuration</h4>
+<table>
+<thead>
+<tr>
+<th>Environment Variable</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IOTHUB_CONNECTION_POOL_SIZE</td>
+<td align="right">200</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Succeeded</th>
+<th>IoT Hub SKU</th>
+<th>Gateway count</th>
+<th>Number of devices</th>
+<th>Concentrators per gateway</th>
+<th>Duration [min]</th>
+<th>Total messages sent</th>
+<th>Receive windows missed</th>
+<th>Avg message delivery time [ms]</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>true</td>
+<td>S3</td>
+<td>2</td>
+<td>900</td>
+<td>2</td>
+<td>25</td>
+<td>7200</td>
+<td>0</td>
+<td>500</td>
+<td></td>
+</tr>
+<tr>
+<td>true</td>
+<td>S3</td>
+<td>2</td>
+<td>1000</td>
+<td>2</td>
+<td>30</td>
+<td>8000</td>
+<td>0</td>
+<td>500</td>
+<td></td>
+</tr>
+<tr>
+<td>failed</td>
+<td>S3</td>
+<td>2</td>
+<td>1500</td>
+<td>2</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>With only 4 join attempts, some devices could not join</td>
+</tr>
+<tr>
+<td>true</td>
+<td>S3</td>
+<td>2</td>
+<td>1500</td>
+<td>2</td>
+<td>45</td>
+<td>12000</td>
+<td>160 (join requests)</td>
+<td></td>
+<td>Increasing the join attempt count to 7</td>
+</tr>
+</tbody>
+</table>
 <h3 id="january-25th-28th-2022-load-test-of-v200-beta1-in-gateway-mode-enable_gatewaytrue">January 25th - 28th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)</h3>
 <p>We ran a set of load tests to ensure that we can support a certain amount of LoRa devices. These tests were performed using gateway mode - passing through the edge hub queue. By taking into account these variables and KPI, we ran several load tests successfully with the parameters we used listed below. For all tests against an IoT Hub S1 instance, we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase. For all IoT Hub S3 instances we use 3 join requests per second and 3 upstream messages per second during warm-up.</p>
 <table>
@@ -1716,7 +1877,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-31T08:01:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-31</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-03-04T15:06:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-03-04</span>
       
         <br>
         Created:
