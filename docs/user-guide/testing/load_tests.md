@@ -14,6 +14,32 @@ In `LoRaWan.Tests.Simulation` you have access to a set of load tests that can be
 
 All load tests use the `Connected_Factory_Load_Test_Scenario` load test scenario. All example load tests below were tested against IoT Edge version 1.2.7.
 
+### March 4th 2022, load test of v2.1.0 in gateway mode (ENABLE_GATEWAY=true)
+
+These tests were using gateway mode - passing through the edge hub queue.
+For all tests a IoT Hub S3 instance was used, devices were issueing 3 join requests per second and 5 upstream messages per second.
+
+#### edgeHub module Configuration
+
+| Environment Variable       | Value   |
+|----------------------------|--------:|
+| OptimizeForPerformance     | true    |
+| IotHubConnectionPoolSize   | 200     |
+| OptimizeForPerformance     | 5000    |
+
+#### LoRaWanNetworkSrvModule Configuration
+
+| Environment Variable       | Value   |
+|----------------------------|--------:|
+| IOTHUB_CONNECTION_POOL_SIZE| 200     |
+
+| Succeeded                      | IoT Hub SKU | Gateway count | Number of devices | Concentrators per gateway | Duration [min] | Total messages sent | Receive windows missed | Avg message delivery time [ms] | Note                                                         |
+| ------------------------------ | ----------- | ------------- | ----------------- | ------------------------- | -------------- | ------------------- | ---------------------- | ------------------------------ | ------------------------------------------------------------ |
+| true                           | S3          | 2             | 900               | 2                         | 25             | 7200                | 0                      | 500                            |                                                              |
+| true                           | S3          | 2             | 1000              | 2                         | 30             | 8000                | 0                      | 500                            |                                                              |
+| failed                         | S3          | 2             | 1500              | 2                         | -              | -                   | -                      | -                              | With only 4 join attempts, some devices could not join       |
+| true                           | S3          | 2             | 1500              | 2                         | 45             | 12000               | 160 (join requests)    |                                | Increasing the join attempt count to 7                       |
+
 ### January 25th - 28th 2022, load test of v2.0.0-beta1 in gateway mode (ENABLE_GATEWAY=true)
 
 We ran a set of load tests to ensure that we can support a certain amount of LoRa devices. These tests were performed using gateway mode - passing through the edge hub queue. By taking into account these variables and KPI, we ran several load tests successfully with the parameters we used listed below. For all tests against an IoT Hub S1 instance, we ran at a rate of 1 join request per second and 1 upstream message during the cache pre-warm phase. For all IoT Hub S3 instances we use 3 join requests per second and 3 upstream messages per second during warm-up.
