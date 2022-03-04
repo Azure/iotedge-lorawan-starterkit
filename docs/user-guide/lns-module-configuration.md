@@ -12,7 +12,6 @@ as environment variables for manual configuration of the
 | Environment variable name   | Description                                                                            | Mandatory                           |
 | --------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------- |
 | ENABLE_GATEWAY              | Indicates whether the edgeHub gateway should be enabled or not                         | No (defaults to `true`)             |
-| IOTEDGE_DEVICEID            | The gateway deviceId                                                                   | Yes                                 |
 | HTTPS_PROXY                 | HTTPS proxy url                                                                        | No                                  |
 | RX2_DATR                    | RX2 data rate; useful to override the default regional RX2 Data Rate at a global level | No (defaults to null, regional default value is used) |
 | RX2_FREQ                    | RX2 frequency; useful to override the default regional RX2 Frequency at a global level | No (defaults to null, regional default value is used) |
