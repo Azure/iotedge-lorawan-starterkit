@@ -637,10 +637,10 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Ensures that the device is connected. Calls the connection manager that keeps track of device connection lifetime.
+        /// Most devices won't have a connection timeout,
+        /// in that case check without lock and return a cached disposable
         /// </summary>
         internal virtual IAsyncDisposable BeginDeviceClientConnectionActivity() =>
-            // Most devices won't have a connection timeout
-            // In that case check without lock and return a cached disposable
             KeepAliveTimeout == 0
                 ? AsyncDisposable.Nop
                 : this.connectionManager.BeginDeviceClientConnectionActivity(this);
