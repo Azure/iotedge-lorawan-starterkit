@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Common
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.CommonAPI;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation;
@@ -30,7 +31,7 @@ namespace LoRaWan.Tests.Common
         private const int C2dExpiryTime = 5;
 
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
-        private RegistryManager registryManager;
+        private IDeviceRegistryManager registryManager;
         private TcpLogListener tcpLogListener;
 
         public TestConfiguration Configuration { get; }
@@ -113,9 +114,11 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        private RegistryManager GetRegistryManager()
+        private IDeviceRegistryManager GetRegistryManager()
         {
-            return this.registryManager ??= RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            return this.registryManager ??= IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
         public async Task<Twin> GetTwinAsync(string deviceId)

@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using LoraKeysManagerFacade.FunctionBundler;
+    using LoRaTools;
     using LoRaTools.ADR;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -44,7 +45,7 @@ namespace LoraKeysManagerFacade
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // Object is handled by DI container.
-            _ = builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+            _ = builder.Services.AddSingleton<IDeviceRegistryManager>(IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(iotHubConnectionString)));
 #pragma warning restore CA2000 // Dispose objects before losing scope
             builder.Services.AddAzureClients(builder =>
             {

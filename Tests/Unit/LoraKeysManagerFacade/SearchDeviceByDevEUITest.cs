@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
+    using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
@@ -28,7 +29,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview.Version}");
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<BadRequestObjectResult>(result);
@@ -39,7 +40,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI=193123");
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<BadRequestObjectResult>(result);
@@ -52,7 +53,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI=193123&{ApiVersion.QueryStringParamName}={version}");
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request);
             Assert.IsType<BadRequestObjectResult>(result);
@@ -67,7 +68,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI.ToString(format, null)}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             registryManager.Setup(x => x.GetDeviceAsync(devEUI.ToString()))
                 .ReturnsAsync((Device)null);
 
@@ -115,12 +116,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             registryManager.VerifyAll();
         }
 
-        private static (Mock<RegistryManager>, HttpRequest) SetupIotHubQuery(string devEui, string primaryKey)
+        private static (Mock<IDeviceRegistryManager>, HttpRequest) SetupIotHubQuery(string devEui, string primaryKey)
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEui}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var deviceInfo = new Device(devEui)
             {
                 Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(primaryKey)) } },
@@ -132,7 +133,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             return (registryManager, ctx.Request);
         }
 
-        private static SearchDeviceByDevEUI SetupSubject(RegistryManager registryManager) =>
+        private static SearchDeviceByDevEUI SetupSubject(IDeviceRegistryManager registryManager) =>
             new SearchDeviceByDevEUI(registryManager, NullLogger<SearchDeviceByDevEUI>.Instance);
     }
 }

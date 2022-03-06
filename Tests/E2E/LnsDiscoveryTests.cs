@@ -57,10 +57,12 @@ namespace LoRaWan.Tests.E2E
             StationInfo.GroupJoin(LnsInfo, station => station.NetworkId, lns => lns.NetworkId, (s, ls) => (s.StationEui, LnsInfo: ls))
                        .ToImmutableDictionary(x => x.StationEui, x => x.LnsInfo.ToImmutableArray());
 
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
         public LnsDiscoveryFixture() =>
-            this.registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString);
+            this.registryManager = IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString));
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         public void Dispose() =>
             this.registryManager.Dispose();

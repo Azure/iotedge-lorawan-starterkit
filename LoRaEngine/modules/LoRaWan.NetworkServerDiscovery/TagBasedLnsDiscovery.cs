@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServerDiscovery
 
         private readonly ILogger<TagBasedLnsDiscovery> logger;
         private readonly IMemoryCache memoryCache;
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly Dictionary<StationEui, Uri> lastLnsUriByStationId = new();
         private readonly object lastLnsUriByStationIdLock = new();
         private readonly SemaphoreSlim lnsByNetworkCacheSemaphore = new SemaphoreSlim(1);
@@ -45,13 +45,15 @@ namespace LoRaWan.NetworkServerDiscovery
             : this(memoryCache, InitializeRegistryManager(configuration, logger), logger)
         { }
 
-        private static RegistryManager InitializeRegistryManager(IConfiguration configuration, ILogger logger)
+        private static IDeviceRegistryManager InitializeRegistryManager(IConfiguration configuration, ILogger logger)
         {
             var iotHubConnectionString = configuration.GetConnectionString(IotHubConnectionStringName);
             if (!string.IsNullOrEmpty(iotHubConnectionString))
             {
                 logger.LogInformation("Using connection string based auth for IoT Hub.");
-                return RegistryManager.CreateFromConnectionString(iotHubConnectionString);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                return IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+#pragma warning restore CA2000 // Dispose objects before losing scope
             }
             else
             {
@@ -61,11 +63,14 @@ namespace LoRaWan.NetworkServerDiscovery
                     throw new InvalidOperationException($"Specify either 'ConnectionStrings__{IotHubConnectionStringName}' or '{HostName}'.");
 
                 logger.LogInformation("Using managed identity based auth for IoT Hub.");
-                return RegistryManager.Create(hostName, new ManagedIdentityCredential());
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                var registryManager = RegistryManager.Create(hostName, new ManagedIdentityCredential());
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                return IoTHubRegistryManager.From(registryManager);
             }
         }
 
-        internal TagBasedLnsDiscovery(IMemoryCache memoryCache, RegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)
+        internal TagBasedLnsDiscovery(IMemoryCache memoryCache, IDeviceRegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)
         {
             this.memoryCache = memoryCache;
             this.registryManager = registryManager;
