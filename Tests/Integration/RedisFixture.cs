@@ -51,8 +51,15 @@ namespace LoRaWan.Tests.Integration
                 containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
                 Console.WriteLine("listing container...");
 
-                // Download image
-                await client.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = ImageName, Tag = ImageTag }, new AuthConfig(), new Progress<JSONMessage>());
+                // Download image only if not found
+                try
+                {
+                    _ = await client.Images.InspectImageAsync($"{ImageName}:{ImageTag}");
+                }
+                catch (DockerImageNotFoundException)
+                {
+                    await client.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = ImageName, Tag = ImageTag }, new AuthConfig(), new Progress<JSONMessage>());
+                }
 
                 // Create the container
                 var config = new Config()
