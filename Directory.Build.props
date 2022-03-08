@@ -32,7 +32,7 @@
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
       <MicrosoftNETTestSdkVersion>17.1.0</MicrosoftNETTestSdkVersion>
-      <MoqVersion>4.17.1</MoqVersion>
+      <MoqVersion>4.17.2</MoqVersion>
       <XUnitVersion>2.4.1</XUnitVersion>
       <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.0</MicrosoftExtensionsConfigurationVersion>
