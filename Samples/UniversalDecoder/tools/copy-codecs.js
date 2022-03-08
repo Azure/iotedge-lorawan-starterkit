@@ -9,7 +9,7 @@ const esprima = require('esprima');
 var args = process.argv.slice(2);
 const srcDir = args[0] || './node_modules/lorawan-devices/vendor';
 const dstDir = args[1] || './codecs';
-const indexFilePath = path.join(dstDir, '../decoders.js');
+const indexFilePath = path.join(dstDir, 'index.js');
 
 const index = glob.sync(`**/*`,
   {
@@ -39,7 +39,7 @@ const index = glob.sync(`**/*`,
     }
   })
   .filter(f => f)
-  .map(f => [path.basename(f).split('.')[0], f]);
+  .map(f => [path.basename(f).split('.')[0], path.relative(dstDir, f).replace(/\\/g, '/')]);
 
 fs.writeFileSync(indexFilePath,
-  `module.exports = {\n${index.map(([k, v]) => `${JSON.stringify(k)}: require(${JSON.stringify(v)})`).join(',\n  ')}\n};\n`);
+  `module.exports = {\n${index.map(([k, v]) => `${JSON.stringify(k)}: require(${JSON.stringify('./' + v)})`).join(',\n  ')}\n};\n`);

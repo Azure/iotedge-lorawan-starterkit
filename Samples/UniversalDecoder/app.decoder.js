@@ -4,7 +4,7 @@ const {logger} = require('./app.logging');
 
 const decoders = (() => {
     try {
-        return require('./decoders');
+        return require('./codecs');
     } catch (e) {
         if (e instanceof Error && e.code === 'MODULE_NOT_FOUND') {
             return {};
