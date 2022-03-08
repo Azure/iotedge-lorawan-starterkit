@@ -1,6 +1,5 @@
 'use strict';
 
-const glob = require('glob');
 const {logger} = require('./app.logging');
 
 const decoders = (() => {
