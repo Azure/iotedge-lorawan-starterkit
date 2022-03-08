@@ -13,6 +13,7 @@
         "codecs": "rm -fR node_modules/lorawan-devices codecs/* && git clone --depth 1 https://github.com/TheThingsNetwork/lorawan-devices.git node_modules/lorawan-devices && node tools/copy-codecs.js"
     },
     "dependencies": {
+        "esprima": "^4.0.1",
         "express": "^4.17.3",
         "express-pino-logger": "^7.0.0",
         "express-validator": "^6.14.0",
@@ -27,6 +28,9 @@
     },
     "jest": {
         "testEnvironment": "node",
+        "transformIgnorePatterns": [
+            "/codecs/"
+        ],
         "coveragePathIgnorePatterns": [
             "/node_modules/"
         ]

@@ -1,11 +1,21 @@
 'use strict';
 
-const glob = require('glob');
-const path = require('path');
 const {logger} = require('./app.logging');
 
+const decoders = (() => {
+    try {
+        return require('./codecs');
+    } catch (e) {
+        if (e instanceof Error && e.code === 'MODULE_NOT_FOUND') {
+            return {};
+        } else {
+            throw e;
+        }
+    }
+})();
+
 function getAllDecoders() {
-    return glob.sync(`./codecs/**/*.js`).map(d => path.basename(d).split('.')[0]);
+    return Object.keys(decoders);
 }
 
 // gets decoder by name
@@ -16,16 +26,11 @@ function getDecoder(decoderName) {
             decodeUplink: (input) => { return { data: input.bytes.join('') } }
         }
     }
-
-    // search for codec in "codecs" directory
-    const files = glob.sync(`./codecs/**/${decoderName}.js`);
-    if (files.length === 0) {
+    const decoder = decoders[decoderName];
+    if (!decoder) {
         throw new Error(`No codec found: ${decoderName}`);
-    } else if (files.length > 1) {
-        throw new Error(`Multiple codecs found: ${JSON.stringify(files)}`);
     }
-
-    return require(files[0]);
+    return decoder;
 }
 
 function decode(decoderName, payload, fPort) {
