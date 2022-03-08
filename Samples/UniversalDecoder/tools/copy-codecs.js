@@ -28,6 +28,8 @@ const index = glob.sync(`**/*`,
     fse.copySync(srcPath, dstPath);
 
     if (f.endsWith(".js")) {
+      // Sniff a top-level declaration for a function named "decodeUplink"
+      // and include the decoder if only one is found.
       const tree = esprima.parseScript(fs.readFileSync(srcPath).toString());
       if (tree.body.find(n => n.type === 'FunctionDeclaration' && n.id.name === 'decodeUplink')) {
         fs.appendFile(dstPath, '\nmodule.exports={decodeUplink};', function (err) {
