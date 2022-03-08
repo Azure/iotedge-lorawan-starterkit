@@ -28,6 +28,9 @@
     },
     "jest": {
         "testEnvironment": "node",
+        "transformIgnorePatterns": [
+            "/codecs/"
+        ],
         "coveragePathIgnorePatterns": [
             "/node_modules/"
         ]
