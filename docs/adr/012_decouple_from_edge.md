@@ -60,6 +60,8 @@ Except for ModuleConnectionHost, the other difference is concerning the ability 
 
 As of v2.1.0, the LNS code is already able to understand whether it is running as IoT Edge Module or not. The availability of the "IOTEDGE_APIVERSION" environment variable is checked. This variable is injected by the "Edge Agent" component at the moment of module creation and startup, therefore if the variable is not there we can safely assume that the LNS is not running in a Edge environment.
 
+In order to make this choice more reliable, it is suggested to **identify whether LNS is running as IoT Edge Module or not by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)**
+
 When a leaf device message is sent and processed, the device twin gets updated with the "GatewayID", currently being set to the "IOTEDGE_DEVICEID" environment variable.
 
 This information might be used by the Azure Function:
@@ -138,6 +140,7 @@ In addition, the load of the potentially multiple LNS instances in the same sing
 
 ## Summary of the required and proposed changes
 
+- Identify whether LNS is running as IoT Edge Module or not by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)
 - Check that ENABLE_GATEWAY environment variable is not set to true when not running as Edge module
 - Conditionally set the "GatewayID" parameter depending on whether it is running on Edge or not
 - Make use of "[Azure App Configuration](https://docs.microsoft.com/en-us/azure/azure-app-configuration/overview)", in "Cloud"  deployment mode, for gathering static and dynamic configuration parameters
