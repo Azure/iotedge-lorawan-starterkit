@@ -15,6 +15,7 @@ When it comes to LNS, IoT Edge based deployments allow interesting features such
 - store and forward processing of leaf-device messages that need to be routed upstream
 - management of configuration through [module twins](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-module-twins) and desired property updates
 - ability to "[invoke direct methods from IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods)"
+- on prem data processing
 
 With v2.0.0, the LoRaWAN Starter Kit moved from [Packet Forwarder](https://github.com/Lora-net/packet_forwarder) to a more reliable (WebSockets/TCP) and secure (mTLS capable) [Basics Station](https://github.com/lorabasics/basicstation).
 
@@ -54,7 +55,7 @@ The main difference comes to "ModuleConnectionHost", which is responsible for:
   - Closing DeviceClient connections for avoiding "ping-pong" as described in [ADR 010](./010_lns_affinity.md)
   - Sending Cloud to Device messages for Class-C devices
 
-Except for ModuleConnectionHost, the other difference is concerning the ability to "proxy" leaf-device messages through Edge Hub. By default the "ENABLE_GATEWAY" environment variable is set to true, we need to make sure that **ENABLE_GATEWAY can't be set to true when not running as Edge module**
+Except for ModuleConnectionHost, the other difference is concerning the ability to "proxy" leaf-device messages through Edge Hub. By default the "ENABLE_GATEWAY" environment variable is set to true, we need to make sure that **ENABLE_GATEWAY can't be set to true when not running as Edge module**.
 
 ### Differentiate Edge from Cloud deployments
 
@@ -67,7 +68,7 @@ This information might be used by the Azure Function:
 - for sending the LNS a command to close the device client connection for such leaf device
 - for sending a C2D message for a Class-C device through a "direct method invocation"
 
-We need to **conditionally set the "GatewayID" parameter depending on whether the LNS is running on Edge or not**
+We need to be able to identify in the function, **if a particular LNS is running standalone or deployed on edge**, to be able to address the LNS through different channels (edge->IoT Hub, standalone->topic).
 
 The proposal is to:
 
