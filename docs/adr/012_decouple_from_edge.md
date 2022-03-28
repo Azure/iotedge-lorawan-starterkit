@@ -110,14 +110,13 @@ As previously mentioned, IoT Edge is allowing the functionality of "direct metho
 
 When decoupling LNS from Azure IoT Edge, there are different possibilities for handling the scenarios covered by direct method invocation.
 
-As stated in previous paragraphs, the "Facade" Azure Function has to differentiate between LNS deployment modes depending on the "LNS device id".
+We want an Azure IoT Edge device to still be using the direct method invocations provided by IoT Hub whereas the "cloud" deployments to use a new, different, mechanism.
 
-This means that an Azure IoT Edge device will still be using the direct method invocations provided by IoT Hub whereas the "cloud" deployments will use a new, different, mechanism.
-
-For "cloud" deployments, such mechanism consists in using Redis Pub/Sub to publish the method invocation events on a topic, to which all the LNS instances are subscribing and filtering based on their "hostname".
+For "cloud" deployments, such mechanism consists in using Pub/Sub to publish the method invocation events on a topic, to which all the LNS instances are subscribing and filtering based on their "hostname".
 
 The decision is to:
 
+- Abstract the logic for calling a "direct method" and provide two implementations, one based on existing IoT Hub code and another one based on Pub/Sub mechanism (while still abstracting the actual service used for Pub/Sub)
 - Reuse [Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview) instance that it's already being deployed in the solution as it allows the usage of [Redis Pub/Sub functionality](https://redis.io/docs/manual/pubsub/)
 - As a stretch goal, useful for high scale and testing scenarios, implement a new function for clearing cache of all the LNS subscribed to the topic
 
