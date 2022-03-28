@@ -104,7 +104,9 @@ An advantage of such alternative is the fact that there's no need to use any pre
 
 A disadvantage, though, comes from the request quota limits on IoT Hub Device Registry operations which could be cause of throttling and instability for other pieces of the LNS itself.
 
-Another alternative is to not have mixed-mode deployments and therefore avoiding to have to differentiate the LNS instances at all. This is described in "[mutually exclusive deployment modes](#mutually-exclusive-deployment-modes)" section above.
+Another alternative could be to extend the Function-exposed APIs by allowing an optional parameter that indicates the deployment model of the LNS. The parameter (i.e. "cloudDeployment") would default to "false" to let everything be retro-compatible with existing deployments. For cloud deployed LNS the parameter would be set to true.
+
+A disadvantage of this approach is that all the current and future APIs that will need to act like a "direct method" will need to take the difference into account and provide the option to specify this optional parameter.
 
 #### Direct method invocation
 
