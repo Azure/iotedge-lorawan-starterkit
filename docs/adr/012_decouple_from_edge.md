@@ -170,13 +170,13 @@ Ideally, the LoRa Basics Station could point to a ["vNext" discovery service](./
 
 In addition, the load of the potentially multiple LNS instances in the same single cluster could be balanced by routing based on the number of "stations" already connected to the server instances (by leveraging the already existing metric being exported in Prometheus format)
 
-## Summary of the required and proposed changes
+## Summary of the required and decided changes
 
 - Identify whether LNS is running as IoT Edge Module or not by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)
 - Check that ENABLE_GATEWAY environment variable is not set to true when not running as Edge module
-- Conditionally set the "GatewayID" parameter depending on whether it is running on Edge or not
-- Make use of "[Azure App Configuration](https://docs.microsoft.com/en-us/azure/azure-app-configuration/overview)", in "Cloud"  deployment mode, for gathering static and dynamic configuration parameters
+- Prefix the "GatewayID" depending on whether it is running "standalone" or on edge
+- Keep configuration simple and require a reboot for changing configuration parameters
 - Make use of Redis Pub/Sub functionality, in "Cloud" deployment mode, to handle remote invocation of methods
 - In Facade Azure Function, differentiate the mechanism used for remotely invoke methods depending on the "LNS device id"
   - In case of "Cloud" LNS deployment, publish invocation of methods as messages in Redis Pub/Sub
-  - Only for "Cloud" LNS deployments, implement a new function for clearing cache of all the LNS subscribed to the topic
+  - (stretch) only for "Cloud" LNS deployments, implement a new function for clearing cache of all the LNS subscribed to the topic
