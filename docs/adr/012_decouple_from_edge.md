@@ -69,7 +69,6 @@ The easiest possibility, is to deploy the Azure Function in such a way that it i
 
 This would require the introduction of an environment variable, i.e. "TARGET_CLOUD_LNS", which would allow to inject different implementations of the IServiceClient interface, currently responsible for both handling direct method invocations and sending c2d messages (both class-a and class-c devices).
 
-
 The new "cloud only" implementation, would need to make use an alternative for invoking such methods. This is described in ["Direct method invocation"](#direct-method-invocation) section
 
 This alternative is discarded in favor of allowing mixed deployment modes in order to maximize the flexibility of this starter kit.
