@@ -52,29 +52,79 @@ The main difference comes to "ModuleConnectionHost", which is responsible for:
 - Setting a callback on "direct method invocation" for handling:
   - Clearing LNS device registry cache
   - Closing DeviceClient connections for avoiding "ping-pong" as described in [ADR 010](./010_lns_affinity.md)
-  - Sending Cloud to Device messages for Class-C devices
+  - Sending Cloud to Device (c2d) messages for Class-C devices
 
 Except for ModuleConnectionHost, the other difference is concerning the ability to "proxy" leaf-device messages through Edge Hub. By default the "ENABLE_GATEWAY" environment variable is set to true, we need to make sure that **ENABLE_GATEWAY can't be set to true when not running as Edge module**
 
-### Differentiate Edge from Cloud deployments
+### Addressing and routing requests to a specific LNS
 
-As of v2.1.0, the LNS code is already able to understand whether it is running as IoT Edge Module or not. The availability of the "IOTEDGE_APIVERSION" environment variable is checked. This variable is injected by the "Edge Agent" component at the moment of module creation and startup, therefore if the variable is not there we can safely assume that the LNS is not running in a Edge environment.
+The biggest concern in this section is regarding how the Azure Function is addressing and routing a specific LNS with the new deployment model.
 
-In order to make this choice more reliable, it is suggested to **identify whether LNS is running as IoT Edge Module or not by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)**
+When running parallel instances of the LNS, it is crucial to identify a very specific instance for properly routing method invocations like cache clear, connection closes and class-c cloud-to-device messages sends.
 
-When a leaf device message is sent and processed, the device twin gets updated with the "GatewayID", currently being set to the "IOTEDGE_DEVICEID" environment variable.
+#### Mutually exclusive deployment modes
 
-This information might be used by the Azure Function:
+The easiest possibility, is to deploy the Azure Function in such a way that it is mutually exclusive whether to target "Edge" or "Cloud" deployments.
 
-- for sending the LNS a command to close the device client connection for such leaf device
-- for sending a C2D message for a Class-C device through a "direct method invocation"
+This would require the introduction of an environment variable, i.e. "TARGET_CLOUD_LNS", which would allow to inject different implementations of the IServiceClient interface, currently responsible for both handling direct method invocations and sending c2d messages (both class-a and class-c devices).
 
-We need to **conditionally set the "GatewayID" parameter depending on whether the LNS is running on Edge or not**
+The new "cloud only" implementation, would need to make use an alternative for invoking such methods. This is described in ["Direct method invocation"](#direct-method-invocation) section
 
-The proposal is to:
+This alternative is discarded in favor of allowing mixed deployment modes in order to maximize the flexibility of this starter kit.
 
-- Prefix the "GatewayID" with "standalone-" for non-Edge deployments
-- Use the "Hostname" environment variable as a default for GatewayID field
+All the following sections are therefore thought for a "mixed-deployment" scenario where both Edge LNS and Cloud LNS are running at the same time and targeting/being targeted by the same set of Azure Functions.
+
+#### Identifying whether a LNS is running in edge or cloud mode
+
+As of v2.1.0, the LNS code is able to understand whether it is running as IoT Edge Module or not. Currently, the availability of the "IOTEDGE_APIVERSION" environment variable is checked. This variable is injected by the "Edge Agent" component at the moment of module creation and startup, therefore if the variable is not there we can safely assume that the LNS is not running in a Edge environment.
+
+It is decided to **identify whether LNS is running as IoT Edge Module or not by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)**
+
+While we do not expect "IOTEDGE_APIVERSION" to change in the immediate future and, even if we are adding another environment variable, the decision is taken in order to make the identification more reliable and not depending on IoT Edge.
+
+As an alternative we could still use "IOTEDGE_APIVERSION" and eventually react on future changes.
+
+#### Differentiating LNS instances in mixed-mode deployments
+
+When a leaf device sends a message, its twin gets updated from the LNS with the "GatewayID" variable content, currently being set to the "IOTEDGE_DEVICEID" environment variable (defaulting to an empty string when variable is not set in the environment)
+
+This is the way the "Facade" Azure function has to identify and target a specific LNS instance for closing device client connections or sending C2D messages for class-c devices.
+
+The decision is to:
+
+- Prefix the **"GatewayID" with "cloud-"** for non-Edge deployments
+- Use the **"Hostname" environment variable as a default** for GatewayID field
+
+An alternative considered is to identify the difference in deployment model by querying IoT Hub for availability of a "IoT Edge" capable device and cache that result.
+
+An advantage of such alternative is the fact that there's no need to use any prefix for GatewayID which would also not tamper the observability part.
+
+A disadvantage, though, comes from the request quota limits on IoT Hub Device Registry operations which could be cause of throttling and instability for other pieces of the LNS itself.
+
+#### Direct method invocation
+
+As previously mentioned, IoT Edge is allowing the functionality of "direct method invocations" giving the possiblity to remotely invoke some functions on the LNS.
+
+When decoupling LNS from Azure IoT Edge, there are different possibilities for handling the scenarios covered by direct method invocation.
+
+As stated in previous paragraphs, the "Facade" Azure Function has to differentiate between LNS deployment modes depending on the "LNS device id".
+
+This means that an Azure IoT Edge device will still be using the direct method invocations provided by IoT Hub whereas the "cloud" deployments will use a new, different, mechanism.
+
+For "cloud" deployments, such mechanism consists in using Redis Pub/Sub to publish the method invocation events on a topic, to which all the LNS instances are subscribing and filtering based on their "hostname".
+
+The decision is to:
+
+- Reuse [Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview) instance that it's already being deployed in the solution as it allows the usage of [Redis Pub/Sub functionality](https://redis.io/docs/manual/pubsub/)
+- As a stretch goal, useful for high scale and testing scenarios, implement a new function for clearing cache of all the LNS subscribed to the topic
+
+An alternative to "Azure Cache for Redis" for the Pub/Sub functionality is to use "Azure Service Bus". While this would allow higher resiliency, the alternative has been discarded to avoid provisioning another additional service.
+
+One alternative to the Pub/Sub functionality instead, might be to expose REST endpoints on the LNS.
+
+The advantages of this alternative, are definitely the easy implementation and the potential simplification of "manual" invocation of such methods.
+
+At the same time, the disadvantage comes from the fact that, when scaling out, depending on the platform where the replicas of the LNS are hosted, you might have different ways to target exactly one replica; on Kubernetes, for instance, this might be achieved by using a service mesh, but this requires additional configuration
 
 ### Managing configuration and its changes
 
@@ -89,40 +139,18 @@ If using Azure App Service, you might just set the environment variables in the 
 
 While these solutions are great for "static" configuration (i.e.: those values that require a restart for being changed), the LNS is coded in such a way that some configuration might be changed dynamically without having to restart the entire network server.
 
-The proposal is to **make use of "[Azure App Configuration](https://docs.microsoft.com/en-us/azure/azure-app-configuration/overview)"** to centrally manage application settings and keep [dynamic configuration using poll model](https://docs.microsoft.com/en-us/azure/azure-app-configuration/enable-dynamic-configuration-aspnet-core?tabs=core5x)
+The decision is to **rely on static environment variable configuration, requiring a restart of the module for any configuration change**.
 
-### Direct method invocation
+Reasons for this decision are:
 
-As previously mentioned, IoT Edge is allowing the functionality of "direct method invocations" giving the possiblity to remotely invoke some functions on the LNS.
+- small amount of "dynamic" variables in the system and their nature (i.e. Azure Function URL and Auth changes mean that a system re-deployment is taking place)
+- allow to keep the number of deployed Azure services to a minimum, given the "Starter Kit" nature of this repository
 
-When decoupling LNS from Azure IoT Edge, there are two possibilities available for handling the scenarios covered by direct method invocation.
+As an alternative, especially when it comes to dynamic configuration, it could be possible to make use of "[Azure App Configuration](https://docs.microsoft.com/en-us/azure/azure-app-configuration/overview)".
 
-For both mechanisms the "Facade" Azure Function bundled with the Starter Kit, has to differentiate between a "edge" or "cloud" deployment of LNS. The proposal is to **differentiate the mechanism used for remotely invoke methods depending on the "LNS device id"**. This means that an Azure IoT Edge device will still be using the direct method invocations provided by IoT Hub whereas the "cloud" deployments will use a new, different, mechanism.
+The service allows to centrally manage application settings and reload any [dynamic configuration using poll model](https://docs.microsoft.com/en-us/azure/azure-app-configuration/enable-dynamic-configuration-aspnet-core?tabs=core5x).
 
-#### Expose REST endpoints on the LNS
-
-One alternative might be to expose some REST endpoints on the LNS. This is the easiest approach to take and would simplify the "manual" invocation of such methods, even though this is not in scope of this document.
-
-The scenarios covered by these method invocations are meant to target exactly one desired LNS instance and not any of them.
-
-As an example, let's assume the scenario where we want to send a cloud-to-device message to a specific class-c leaf device. In this scenario we need to target the exact LNS which is managing the connection with the LoRa Basics Station in reach of the class-c device we want to target.
-
-It would be counterproductive to invoke this method on all instances we are managing and just filter it out later (depending on the DeviceID/Hostname).
-
-When scaling out, depending on the platform where the replicas of the LNS are hosted, you might have different ways to target exactly one replica.
-
-On Kubernetes, for instance, this might be achieved by using a service mesh, but this requires additional configuration
-
-#### Handle events in a Pub/Sub fashion
-
-Another alternative might be to publish the invocation events on a topic, to which all the LNS instances are subscribing and filtering based on their "hostname".
-
-This "polling" mechanism, compared to the "push" mechanism described before, might require some additional setup to "manually" invoke the methods, even though this is not the suggested way of invoking such methods.
-
-The solution might be implemented using an additional service like Azure Service Bus, or by reusing the [Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview) instance that it's already being deployed in the solution as it allows the usage of [Redis Pub/Sub functionality](https://redis.io/docs/manual/pubsub/)
-
-The proposal is to **make use of Redis Pub/Sub functionality to handle remote invocation of methods in LNS**
-In addition, for high scale scenarios it could be useful to **implement a new function for clearing cache of all the LNS subscribed to the topic**
+This has been discarded because dynamic configuration is a nice-to-have, not strictly needed for decoupling LNS from Edge, and it requires the deployment and configuration of an additional service.
 
 ## Sample "cloud" deployment scenario
 
