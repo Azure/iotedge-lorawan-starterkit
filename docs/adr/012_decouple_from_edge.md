@@ -104,6 +104,8 @@ An advantage of such alternative is the fact that there's no need to use any pre
 
 A disadvantage, though, comes from the request quota limits on IoT Hub Device Registry operations which could be cause of throttling and instability for other pieces of the LNS itself.
 
+Another alternative is to not have mixed-mode deployments and therefore avoiding to have to differentiate the LNS instances at all. This is described in "[mutually exclusive deployment modes](#mutually-exclusive-deployment-modes)" section above.
+
 #### Direct method invocation
 
 As previously mentioned, IoT Edge is allowing the functionality of "direct method invocations" giving the possiblity to remotely invoke some functions on the LNS.
