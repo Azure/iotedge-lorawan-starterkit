@@ -15,6 +15,7 @@ When it comes to LNS, IoT Edge based deployments allow interesting features such
 - store and forward processing of leaf-device messages that need to be routed upstream
 - management of configuration through [module twins](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-module-twins) and desired property updates
 - ability to "[invoke direct methods from IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods)"
+- on prem data processing
 
 With v2.0.0, the LoRaWAN Starter Kit moved from [Packet Forwarder](https://github.com/Lora-net/packet_forwarder) to a more reliable (WebSockets/TCP) and secure (mTLS capable) [Basics Station](https://github.com/lorabasics/basicstation).
 
@@ -54,7 +55,7 @@ The main difference comes to "ModuleConnectionHost", which is responsible for:
   - Closing DeviceClient connections for avoiding "ping-pong" as described in [ADR 010](./010_lns_affinity.md)
   - Sending Cloud to Device (c2d) messages for Class-C devices
 
-Except for ModuleConnectionHost, the other difference is concerning the ability to "proxy" leaf-device messages through Edge Hub. By default the "ENABLE_GATEWAY" environment variable is set to true, we need to make sure that **ENABLE_GATEWAY can't be set to true when not running as Edge module**
+Except for ModuleConnectionHost, the other difference is concerning the ability to "proxy" leaf-device messages through Edge Hub. By default the "ENABLE_GATEWAY" environment variable is set to true, we need to make sure that **ENABLE_GATEWAY can't be set to true when not running as Edge module**.
 
 ### Addressing and routing requests to a specific LNS
 
@@ -68,6 +69,7 @@ The easiest possibility, is to deploy the Azure Function in such a way that it i
 
 This would require the introduction of an environment variable, i.e. "TARGET_CLOUD_LNS", which would allow to inject different implementations of the IServiceClient interface, currently responsible for both handling direct method invocations and sending c2d messages (both class-a and class-c devices).
 
+
 The new "cloud only" implementation, would need to make use an alternative for invoking such methods. This is described in ["Direct method invocation"](#direct-method-invocation) section
 
 This alternative is discarded in favor of allowing mixed deployment modes in order to maximize the flexibility of this starter kit.
@@ -78,7 +80,9 @@ All the following sections are therefore thought for a "mixed-deployment" scenar
 
 As of v2.1.0, the LNS code is able to understand whether it is running as IoT Edge Module or not. Currently, the availability of the "IOTEDGE_APIVERSION" environment variable is checked. This variable is injected by the "Edge Agent" component at the moment of module creation and startup, therefore if the variable is not there we can safely assume that the LNS is not running in a Edge environment.
 
-It is decided to **identify whether LNS is running as IoT Edge Module or not by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)**
+We need to be able to identify in the function, **if a particular LNS is running standalone or deployed on edge**, to be able to address the LNS through different channels (edge->IoT Hub, standalone->topic).
+
+It is therefore decided to **identify if a LNS is running standalone or on edge by using a new "CLOUD_DEPLOYMENT" environment variable (defaults to false)**
 
 While we do not expect "IOTEDGE_APIVERSION" to change in the immediate future and, even if we are adding another environment variable, the decision is taken in order to make the identification more reliable and not depending on IoT Edge.
 
