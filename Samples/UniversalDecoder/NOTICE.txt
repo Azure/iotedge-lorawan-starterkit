@@ -209,6 +209,38 @@ Copyright (c) 2019 The Things Network Foundation, The Things Industries B.V.
 
 ---------------------------------------------------------
 
+esprima 4.0.1 - BSD-2-Clause
+http://esprima.org/
+
+Copyright JS Foundation and other contributors, https://js.foundation
+
+Copyright JS Foundation and other contributors, https://js.foundation/
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 qs 6.9.7 - BSD-3-Clause
 https://github.com/ljharb/qs
 
@@ -1739,9 +1771,10 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-fast-redact 3.0.2 - MIT
+fast-redact 3.1.1 - MIT
 https://github.com/davidmarkclements/fast-redact#readme
 
+Copyright (c) 2019-2020 David Mark Clements
 
 The MIT License (MIT)
 
@@ -2802,7 +2835,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-pino 7.8.0 - MIT
+pino 7.8.1 - MIT
 http://getpino.io/
 
 Copyright (c) 2016-2019 Matteo Collina, David Mark Clements and the Pino contributors
@@ -3424,7 +3457,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-safe-stable-stringify 2.2.0 - MIT
+safe-stable-stringify 2.3.1 - MIT
 https://github.com/BridgeAR/safe-stable-stringify#readme
 
 Copyright (c) Ruben Bridgewater
@@ -3750,9 +3783,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-thread-stream 0.13.0 - MIT
+thread-stream 0.13.2 - MIT
 https://github.com/mcollina/thread-stream#readme
 
+Copyright (c) 2021 Matteo Collina
 
 MIT License
 
