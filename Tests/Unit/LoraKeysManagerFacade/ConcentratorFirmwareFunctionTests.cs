@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
@@ -79,7 +80,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
             using var blobContentStream = new MemoryStream(blobBytes);
             using var streamingResult = BlobsModelFactory.BlobDownloadStreamingResult(blobContentStream);
-            this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, It.IsAny<CancellationToken>()))
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, null, It.IsAny<CancellationToken>()))
                            .Returns(Task.FromResult(Response.FromValue(streamingResult, new Mock<Response>().Object)));
 
             this.blobClient.Setup(m => m.GetPropertiesAsync(null, It.IsAny<CancellationToken>()))
@@ -204,7 +205,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult(twin));
 
-            this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<HttpRange>(), It.IsAny<BlobRequestConditions>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<HttpRange>(),
+                                                                It.IsAny<BlobRequestConditions>(),
+                                                                It.IsAny<bool>(),
+                                                                It.IsAny<IProgress<long>>(),
+                                                                It.IsAny<CancellationToken>()))
                            .ThrowsAsync(new RequestFailedException("download failed"));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
