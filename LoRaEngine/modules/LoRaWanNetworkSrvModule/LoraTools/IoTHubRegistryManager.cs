@@ -9,7 +9,7 @@ namespace LoRaTools
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
 
-    public sealed class IoTHubRegistryManager : IDeviceRegistryManager
+    public sealed class IoTHubRegistryManager : IDeviceRegistryManager, IDisposable
     {
         private readonly RegistryManager instance;
 

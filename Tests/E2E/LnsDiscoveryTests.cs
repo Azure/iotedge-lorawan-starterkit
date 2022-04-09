@@ -62,8 +62,9 @@ namespace LoRaWan.Tests.E2E
         public LnsDiscoveryFixture() =>
             this.registryManager = IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString));
 
-        public void Dispose() =>
-            this.registryManager.Dispose();
+        public void Dispose()
+        {
+        }
 
         public Task DisposeAsync() =>
             Task.WhenAll(from deviceId in LnsInfo.Select(l => l.DeviceId.ToString())

@@ -3,13 +3,12 @@
 
 namespace LoRaTools
 {
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
 
-    public interface IDeviceRegistryManager : IDisposable
+    public interface IDeviceRegistryManager
     {
         Task<Twin> GetTwinAsync(string deviceId, CancellationToken cancellationToken);
         Task<Device> GetDeviceAsync(string deviceId);

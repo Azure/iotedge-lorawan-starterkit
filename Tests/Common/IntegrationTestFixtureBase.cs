@@ -445,8 +445,6 @@ namespace LoRaWan.Tests.Common
                     AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
 
                     IoTHubMessages = null;
-                    this.registryManager?.Dispose();
-                    this.registryManager = null;
 
                     this.tcpLogListener?.Dispose();
                     this.tcpLogListener = null;
