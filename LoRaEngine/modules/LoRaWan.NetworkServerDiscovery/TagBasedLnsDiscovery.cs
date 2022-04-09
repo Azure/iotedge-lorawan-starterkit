@@ -51,23 +51,18 @@ namespace LoRaWan.NetworkServerDiscovery
             if (!string.IsNullOrEmpty(iotHubConnectionString))
             {
                 logger.LogInformation("Using connection string based auth for IoT Hub.");
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                return IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
-#pragma warning restore CA2000 // Dispose objects before losing scope
+                return IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(iotHubConnectionString));
             }
-            else
-            {
-                var hostName = configuration.GetValue<string>(HostName);
 
-                if (string.IsNullOrEmpty(hostName))
-                    throw new InvalidOperationException($"Specify either 'ConnectionStrings__{IotHubConnectionStringName}' or '{HostName}'.");
+            var hostName = configuration.GetValue<string>(HostName);
 
-                logger.LogInformation("Using managed identity based auth for IoT Hub.");
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                var registryManager = RegistryManager.Create(hostName, new ManagedIdentityCredential());
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                return IoTHubRegistryManager.From(registryManager);
-            }
+            if (string.IsNullOrEmpty(hostName))
+                throw new InvalidOperationException($"Specify either 'ConnectionStrings__{IotHubConnectionStringName}' or '{HostName}'.");
+
+            logger.LogInformation("Using managed identity based auth for IoT Hub.");
+
+            return IoTHubRegistryManager.CreateWithProvider(() =>
+                RegistryManager.Create(hostName, new ManagedIdentityCredential()));
         }
 
         internal TagBasedLnsDiscovery(IMemoryCache memoryCache, IDeviceRegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)

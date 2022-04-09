@@ -116,9 +116,7 @@ namespace LoRaWan.Tests.Common
 
         private IDeviceRegistryManager GetRegistryManager()
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            return this.registryManager ??= IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            return this.registryManager ??= IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
         }
 
         public async Task<Twin> GetTwinAsync(string deviceId)

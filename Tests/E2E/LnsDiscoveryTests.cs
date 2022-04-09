@@ -59,10 +59,8 @@ namespace LoRaWan.Tests.E2E
 
         private readonly IDeviceRegistryManager registryManager;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
         public LnsDiscoveryFixture() =>
-            this.registryManager = IoTHubRegistryManager.From(RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString));
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            this.registryManager = IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString));
 
         public void Dispose() =>
             this.registryManager.Dispose();

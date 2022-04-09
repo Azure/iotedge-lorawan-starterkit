@@ -3,6 +3,7 @@
 
 namespace LoRaTools
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
@@ -12,14 +13,16 @@ namespace LoRaTools
     {
         private readonly RegistryManager instance;
 
-        public static IDeviceRegistryManager From(RegistryManager instance)
+        public static IDeviceRegistryManager CreateWithProvider(Func<RegistryManager> registryManagerProvider)
         {
-            return new IoTHubRegistryManager(instance);
+            return registryManagerProvider == null
+                ? throw new ArgumentNullException(nameof(registryManagerProvider))
+                : (IDeviceRegistryManager)new IoTHubRegistryManager(registryManagerProvider);
         }
 
-        private IoTHubRegistryManager(RegistryManager instance)
+        private IoTHubRegistryManager(Func<RegistryManager> registryManagerProvider)
         {
-            this.instance = instance;
+            this.instance = registryManagerProvider() ?? throw new InvalidOperationException("RegistryManager provider provided a null RegistryManager.");
         }
 
         public Task<Configuration> AddConfigurationAsync(Configuration configuration)
