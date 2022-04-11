@@ -20,7 +20,7 @@ namespace LoRaTools
                 : (IDeviceRegistryManager)new IoTHubRegistryManager(registryManagerProvider);
         }
 
-        private IoTHubRegistryManager(Func<RegistryManager> registryManagerProvider)
+        internal IoTHubRegistryManager(Func<RegistryManager> registryManagerProvider)
         {
             this.instance = registryManagerProvider() ?? throw new InvalidOperationException("RegistryManager provider provided a null RegistryManager.");
         }
