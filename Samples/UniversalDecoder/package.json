@@ -17,7 +17,7 @@
         "express": "^4.17.3",
         "express-pino-logger": "^7.0.0",
         "express-validator": "^6.14.0",
-        "fs-extra": "^10.0.1",
+        "fs-extra": "^10.1.0",
         "glob": "^7.1.7",
         "pino": "^7.9.2",
         "pino-pretty": "^7.6.1"
