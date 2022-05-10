@@ -3,6 +3,8 @@ updates:
   # Maintain dependencies the LoRa Engine
   - package-ecosystem: "nuget"
     directory: "/"
+    labels:
+      - "fullci"
     schedule:
       interval: "daily"
     # Maintain dependencies for universal decoder
