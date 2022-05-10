@@ -13,10 +13,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
     using global::LoraKeysManagerFacade;
+    using global::LoRaTools;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
         private readonly StationEui testStationEui = StationEui.Parse("11-11-11-11-11-11-11-11");
 
-        private readonly Mock<RegistryManager> registryManager;
+        private readonly Mock<IDeviceRegistryManager> registryManager;
         private readonly Mock<BlobClient> blobClient;
         private readonly ConcentratorFirmwareFunction concentratorFirmware;
 
@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             azureClientFactory.Setup(m => m.CreateClient(FacadeStartup.WebJobsStorageClientName))
                               .Returns(blobServiceClient.Object);
 
-            this.registryManager = new Mock<RegistryManager>();
+            this.registryManager = new Mock<IDeviceRegistryManager>();
 
             this.concentratorFirmware = new ConcentratorFirmwareFunction(this.registryManager.Object, azureClientFactory.Object, NullLogger<ConcentratorFirmwareFunction>.Instance);
         }

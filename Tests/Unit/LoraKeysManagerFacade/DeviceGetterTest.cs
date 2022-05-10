@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System;
     using System.Text;
     using global::LoraKeysManagerFacade;
+    using global::LoRaTools;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -30,9 +31,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.Equal(devEui, items[0].DevEUI);
         }
 
-        private static RegistryManager InitRegistryManager(DevEui devEui)
+        private static IDeviceRegistryManager InitRegistryManager(DevEui devEui)
         {
-            var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             mockRegistryManager
                 .Setup(x => x.GetDeviceAsync(It.Is(devEui.ToString(), StringComparer.Ordinal)))

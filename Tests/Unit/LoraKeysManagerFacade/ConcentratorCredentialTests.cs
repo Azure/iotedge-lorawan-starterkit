@@ -12,11 +12,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
     using global::LoraKeysManagerFacade;
+    using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
     public class ConcentratorCredentialTests
     {
-        private readonly Mock<RegistryManager> registryManager;
+        private readonly Mock<IDeviceRegistryManager> registryManager;
         private readonly Mock<IAzureClientFactory<BlobServiceClient>> azureClientFactory;
         private readonly ConcentratorCredentialsFunction concentratorCredential;
         private readonly StationEui stationEui = StationEui.Parse("001122FFFEAABBCC");
@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
         public ConcentratorCredentialTests()
         {
-            this.registryManager = new Mock<RegistryManager>();
+            this.registryManager = new Mock<IDeviceRegistryManager>();
             this.azureClientFactory = new Mock<IAzureClientFactory<BlobServiceClient>>();
             this.concentratorCredential = new ConcentratorCredentialsFunction(registryManager.Object, azureClientFactory.Object, NullLogger<ConcentratorCredentialsFunction>.Instance);
         }
