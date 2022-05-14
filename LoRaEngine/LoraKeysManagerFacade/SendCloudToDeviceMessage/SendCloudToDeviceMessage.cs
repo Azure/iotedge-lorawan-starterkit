@@ -133,15 +133,15 @@ namespace LoraKeysManagerFacade
                     var reportedReader = new TwinCollectionReader(twin.Properties.Reported, this.log);
 
                     // the device must have a DevAddr
-                    if (!desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out DevAddr _) && !reportedReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, out DevAddr _))
+                    if (!desiredReader.TryRead(TwinPropertiesConstants.DevAddr, out DevAddr _) && !reportedReader.TryRead(TwinPropertiesConstants.DevAddr, out DevAddr _))
                     {
                         return new BadRequestObjectResult("Device DevAddr is unknown. Ensure the device has been correctly setup as a LoRa device and that it has connected to network at least once.");
                     }
 
-                    if (desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_ClassType, out string deviceClass) && string.Equals("c", deviceClass, StringComparison.OrdinalIgnoreCase))
+                    if (desiredReader.TryRead(TwinPropertiesConstants.ClassType, out string deviceClass) && string.Equals("c", deviceClass, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((reportedReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID, out string gatewayID)
-                            || desiredReader.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID, out gatewayID))
+                        if ((reportedReader.TryRead(TwinPropertiesConstants.PreferredGatewayID, out string gatewayID)
+                            || desiredReader.TryRead(TwinPropertiesConstants.GatewayID, out gatewayID))
                             && !string.IsNullOrEmpty(gatewayID))
                         {
                             // add it to cache (if it does not exist)

@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit
 {
     using System.Threading;
     using System.Threading.Tasks;
-    using global::LoRaTools;
+    using global::LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
@@ -79,11 +79,11 @@ namespace LoRaWan.Tests.Unit
             using (var manager = this.CreateManager())
             {
                 var device = new Device("deviceid");
-                var twin = new Twin("deviceid");
+                var twin = new IoTHubDeviceTwin(new Twin("deviceid"));
 
                 this.mockRegistryManager.Setup(c => c.AddDeviceWithTwinAsync(
                         It.Is<Device>(x => x == device),
-                        It.Is<Twin>(x => x == twin)))
+                        It.Is<Twin>(x => x == twin.TwinInstance)))
                     .ReturnsAsync(new BulkRegistryOperationResult
                     {
                         IsSuccessful = true
@@ -234,7 +234,7 @@ namespace LoRaWan.Tests.Unit
                 var result = await manager.GetTwinAsync(deviceId, cancellationToken);
 
                 // Assert
-                Assert.Equal(twin, result);
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
             }
 
             this.mockRepository.VerifyAll();
@@ -257,7 +257,7 @@ namespace LoRaWan.Tests.Unit
                 var result = await manager.GetTwinAsync(deviceId);
 
                 // Assert
-                Assert.Equal(twin, result);
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
             }
 
             this.mockRepository.VerifyAll();
@@ -271,15 +271,15 @@ namespace LoRaWan.Tests.Unit
             {
                 var deviceId = "deviceid";
                 var moduleId = "moduleid";
-                var deviceTwin = new Twin();
+                var deviceTwin = new IoTHubDeviceTwin(new Twin());
                 var eTag = "eTag";
 
                 this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
                         It.Is<string>(x => x == deviceId),
                         It.Is<string>(x => x == moduleId),
-                        It.Is<Twin>(x => x == deviceTwin),
+                        It.Is<Twin>(x => x == deviceTwin.TwinInstance),
                         It.Is<string>(x => x == eTag)))
-                    .ReturnsAsync(deviceTwin);
+                    .ReturnsAsync(deviceTwin.TwinInstance);
 
                 // Act
                 var result = await manager.UpdateTwinAsync(deviceId, moduleId, deviceTwin, eTag);
@@ -298,16 +298,16 @@ namespace LoRaWan.Tests.Unit
             using (var manager = this.CreateManager())
             {
                 var deviceId = "deviceid";
-                var deviceTwin = new Twin();
+                var deviceTwin = new IoTHubDeviceTwin(new Twin());
                 var eTag = "eTag";
                 var cancellationToken = CancellationToken.None;
 
                 this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
                         It.Is<string>(x => x == deviceId),
-                        It.Is<Twin>(x => x == deviceTwin),
+                        It.Is<Twin>(x => x == deviceTwin.TwinInstance),
                         It.Is<string>(x => x == eTag),
                         It.Is<CancellationToken>(x => x == cancellationToken)))
-                    .ReturnsAsync(deviceTwin);
+                    .ReturnsAsync(deviceTwin.TwinInstance);
 
                 // Act
                 var result = await manager.UpdateTwinAsync(deviceId, deviceTwin, eTag, cancellationToken);
@@ -326,14 +326,14 @@ namespace LoRaWan.Tests.Unit
             using (var manager = this.CreateManager())
             {
                 var deviceId = "deviceid";
-                var deviceTwin = new Twin();
+                var deviceTwin =  new IoTHubDeviceTwin(new Twin());
                 var eTag = "eTag";
 
                 this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
                         It.Is<string>(x => x == deviceId),
-                        It.Is<Twin>(x => x == deviceTwin),
+                        It.Is<Twin>(x => x == deviceTwin.TwinInstance),
                         It.Is<string>(x => x == eTag)))
-                    .ReturnsAsync(deviceTwin);
+                    .ReturnsAsync(deviceTwin.TwinInstance);
 
                 // Act
                 var result = await manager.UpdateTwinAsync(deviceId, deviceTwin, eTag);
@@ -353,17 +353,17 @@ namespace LoRaWan.Tests.Unit
             {
                 var deviceId = "deviceid";
                 var moduleId = "moduleid";
-                var deviceTwin = new Twin();
+                var deviceTwin = new IoTHubDeviceTwin(new Twin());
                 var eTag = "eTag";
                 var cancellationToken = CancellationToken.None;
 
                 this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
                         It.Is<string>(x => x == deviceId),
                         It.Is<string>(x => x == moduleId),
-                        It.Is<Twin>(x => x == deviceTwin),
+                        It.Is<Twin>(x => x == deviceTwin.TwinInstance),
                         It.Is<string>(x => x == eTag),
                         It.Is<CancellationToken>(x => x == cancellationToken)))
-                    .ReturnsAsync(deviceTwin);
+                    .ReturnsAsync(deviceTwin.TwinInstance);
 
                 // Act
                 var result = await manager.UpdateTwinAsync(

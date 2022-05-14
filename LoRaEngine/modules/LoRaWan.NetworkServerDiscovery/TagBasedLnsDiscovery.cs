@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServerDiscovery
     using System.Threading.Tasks;
     using Azure.Identity;
     using LoRaTools;
+    using LoRaTools.IoTHubImpl;
     using LoRaTools.NetworkServerDiscovery;
     using LoRaTools.Utils;
     using LoRaWan;

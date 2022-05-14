@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Text;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools;
+    using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -41,7 +42,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             mockRegistryManager
                 .Setup(x => x.GetTwinAsync(It.Is(devEui.ToString(), StringComparer.Ordinal)))
-                .ReturnsAsync((string deviceId) => new Twin(deviceId));
+                .ReturnsAsync((string deviceId) => new IoTHubDeviceTwin(new Twin(deviceId)));
 
             return mockRegistryManager.Object;
         }

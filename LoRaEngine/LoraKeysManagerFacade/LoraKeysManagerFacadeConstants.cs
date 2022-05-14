@@ -5,11 +5,6 @@ namespace LoraKeysManagerFacade
 {
     internal static class LoraKeysManagerFacadeConstants
     {
-        internal const string TwinProperty_GatewayID = "GatewayID";
-        internal const string TwinProperty_ClassType = "ClassType";
-        internal const string TwinProperty_PreferredGatewayID = "PreferredGatewayID";
-        internal const string TwinProperty_DevAddr = "DevAddr";
-        internal const string TwinProperty_NwkSKey = "NwkSKey";
         internal const string NetworkServerModuleId = "LoRaWanNetworkSrvModule";
         internal const string ClearCacheMethodName = "clearcache";
         internal const string CloudToDeviceMessageMethodName = "cloudtodevicemessage";

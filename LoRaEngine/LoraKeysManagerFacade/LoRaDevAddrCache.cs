@@ -235,8 +235,8 @@ namespace LoraKeysManagerFacade
                 {
                     if (twin.DeviceId != null)
                     {
-                        if (!twin.Properties.Desired.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out DevAddr devAddr) &&
-                            !twin.Properties.Reported.TryRead(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr, this.logger, out devAddr))
+                        if (!twin.Properties.Desired.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out DevAddr devAddr) &&
+                            !twin.Properties.Reported.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out devAddr))
                         {
                             continue;
                         }
