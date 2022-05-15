@@ -86,6 +86,7 @@ nav:
     - user-guide/ci-setup.md
   - 'Samples':
     - samples/arduino.md
+    - samples/co2.md
     - 'Decoders':
       - samples/decoders/decoder.md
       - samples/decoders/universal.md
