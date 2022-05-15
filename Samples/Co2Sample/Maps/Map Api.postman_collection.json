@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "bc0ade75-9541-42f5-aab1-f41bb7da6e1a",
+		"name": "Map Api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Data Upload",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/C:/Users/chmikhai/Downloads/Sample - Contoso Drawing Package.zip"
+					}
+				},
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/mapData?api-version=2.0&dataFormat=dwgzippackage&subscription-key={{ apiKey}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"mapData"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "dataFormat",
+							"value": "dwgzippackage"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{ apiKey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Data Upload Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/mapData/operations/c0fb0153-a505-4e71-ba1b-8c6ed476218b?api-version=2.0&subscription-key={{ apiKey}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"mapData",
+						"operations",
+						"c0fb0153-a505-4e71-ba1b-8c6ed476218b"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{ apiKey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Convert Drawing Package",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/conversions?subscription-key={{api_key}}&api-version=2.0&udid=1b8be6ee-5184-b844-32d1-a92a3026f287&inputType=DWG&outputOntology=facility-2.0",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"conversions"
+					],
+					"query": [
+						{
+							"key": "subscription-key",
+							"value": "{{api_key}}"
+						},
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "udid",
+							"value": "1b8be6ee-5184-b844-32d1-a92a3026f287"
+						},
+						{
+							"key": "inputType",
+							"value": "DWG"
+						},
+						{
+							"key": "outputOntology",
+							"value": "facility-2.0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conversion Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/conversions/operations/6e91bc78-4de6-4331-abe0-b95597d62491?api-version=2.0&subscription-key={{ apiKey}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"conversions",
+						"operations",
+						"6e91bc78-4de6-4331-abe0-b95597d62491"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{ apiKey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dataset Create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/datasets?api-version=2.0&conversionId=947df578-0af0-7810-a3bf-caef091313a0&subscription-key={{ apiKey}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"datasets"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "conversionId",
+							"value": "947df578-0af0-7810-a3bf-caef091313a0"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{ apiKey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dataset Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/datasets/operations/cadf66bd-b67c-41d4-bc0e-e4c5318c69b7?api-version=2.0&subscription-key={{api_key}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"datasets",
+						"operations",
+						"cadf66bd-b67c-41d4-bc0e-e4c5318c69b7"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{api_key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tileset Create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "Tileset Create",
+					"host": [
+						"Tileset Create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tileset Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/tilesets/operations/04bc623b-e6bb-49da-a431-b42e232a1c18?api-version=2.0&subscription-key={{ apiKey}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"tilesets",
+						"operations",
+						"04bc623b-e6bb-49da-a431-b42e232a1c18"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{ apiKey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "StateSet Create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"styles\":[\r\n      {\r\n         \"keyname\":\"co2\",\r\n         \"type\":\"number\",\r\n         \"rules\":[\r\n         ]\r\n      }\r\n   ]\r\n}\r\n\r\n{\r\n    \"states\": [\r\n        {\r\n            \"keyName\": \"occupied\",\r\n            \"value\": true,\r\n            \"eventTimestamp\": \"2020-11-14T17:10:20\"\r\n        },\r\n         {\r\n            \"keyName\": \"occupied\",\r\n            \"value\": true,\r\n            \"eventTimestamp\": \"2020-11-14T17:10:20\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/featurestatesets?api-version=2.0&datasetId=81ddcb9c-6918-d975-e9f3-ecd499b78d35&subscription-key={{api_key}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"featurestatesets"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "datasetId",
+							"value": "81ddcb9c-6918-d975-e9f3-ecd499b78d35"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{api_key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Data",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"states\": [\r\n        {\r\n            \"keyName\": \"occupied\",\r\n            \"value\": true,\r\n            \"eventTimestamp\": \"2021-11-14T17:10:24\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://eu.atlas.microsoft.com/featurestatesets/a2fc01f9-0302-d4f1-b233-55d2a686ff20/featureStates/UNIT40?api-version=2.0&subscription-key={{api_key}}",
+					"protocol": "https",
+					"host": [
+						"eu",
+						"atlas",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"featurestatesets",
+						"a2fc01f9-0302-d4f1-b233-55d2a686ff20",
+						"featureStates",
+						"UNIT40"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2.0"
+						},
+						{
+							"key": "subscription-key",
+							"value": "{{api_key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api_key",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
