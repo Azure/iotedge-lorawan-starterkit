@@ -90,12 +90,8 @@ namespace LoRaWan.Tests.Integration
                             DeviceId = devaddrItem.DevEUI.Value.ToString(),
                             Properties = new TwinProperties()
                             {
-<<<<<<< HEAD
                                 Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
                                 Reported = new TwinCollection($"{{}}", $"{{\"$lastUpdated\": \"0001-01-01T00:00:00Z\"}}"),
-=======
-                                Desired = new TwinCollection($"{{\"{TwinPropertiesConstants.DevAddr}\": \"{devaddrItem.DevAddr}\", \"{TwinPropertiesConstants.GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
->>>>>>> Add IDeviceTwin interface + IoT Hub Device Twin wrapper on it
                             }
                         };
 

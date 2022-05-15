@@ -231,9 +231,10 @@ namespace LoraKeysManagerFacade
             {
                 var page = await query.GetNextAsTwinAsync();
 
-                foreach (var twin in page)
+                foreach (var twin in page.Where(twin => twin.DeviceId != null))
                 {
-                    if (twin.DeviceId != null)
+                    if (!twin.Properties.Desired.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out DevAddr devAddr) &&
+                        !twin.Properties.Reported.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out devAddr))
                     {
                         if (!twin.Properties.Desired.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out DevAddr devAddr) &&
                             !twin.Properties.Reported.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out devAddr))
@@ -257,6 +258,15 @@ namespace LoraKeysManagerFacade
                             lastDeltaUpdateFromCacheTicks = Math.Max(lastDeltaUpdateFromCacheTicks.Value, Math.Max(desiredUpdateTime.Ticks, reportedUpdateTime.Ticks));
                         }
                     }
+
+                    devAddrCacheInfos.Add(new DevAddrCacheInfo()
+                    {
+                        DevAddr = devAddr,
+                        DevEUI = DevEui.Parse(twin.DeviceId),
+                        GatewayId = twin.GetGatewayID(),
+                        NwkSKey = twin.GetNwkSKey(),
+                        LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
+                    });
                 }
             }
 
