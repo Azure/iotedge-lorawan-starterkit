@@ -38,6 +38,40 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
 
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public void Should_Throw_On_Invalid_Cloud_Configuration_When_Redis_Connection_String_Not_Set(bool shouldSetRedisString, bool isCloudDeployment)
+        {
+            // arrange
+            var cloudDeploymentKey = "CLOUD_DEPLOYMENT";
+            var key = "REDIS_CONNECTION_STRING";
+            var value = "someValue";
+            var lnsConfigurationCreation = () => NetworkServerConfiguration.CreateFromEnvironmentVariables();
+
+            if (isCloudDeployment)
+                Environment.SetEnvironmentVariable(cloudDeploymentKey, true.ToString());
+
+            if (shouldSetRedisString)
+                Environment.SetEnvironmentVariable(key, value);
+
+            // act and assert
+            if (isCloudDeployment && !shouldSetRedisString)
+            {
+                _ = Assert.Throws<InvalidOperationException>(lnsConfigurationCreation);
+            }
+            else
+            {
+                _ = lnsConfigurationCreation();
+            }
+
+            Environment.SetEnvironmentVariable(key, string.Empty);
+            Environment.SetEnvironmentVariable(cloudDeploymentKey, string.Empty);
+        }
+
+
         public static TheoryData<string, DevAddr[]> AllowedDevAddressesInput =>
             TheoryDataFactory.From(("0228B1B1;", new[] { new DevAddr(0x0228b1b1) }),
                                    ("0228B1B1;0228B1B2", new DevAddr[] { new DevAddr(0x0228b1b1), new DevAddr(0x0228b1b2) }),
