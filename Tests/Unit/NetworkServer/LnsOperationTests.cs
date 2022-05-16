@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public static TheoryData<string, string> DropConnectionInvalidMessages =>
             TheoryDataFactory.From(
                 (string.Empty, "Unable to parse Json when attempting to close"),
-                ("null", "Unable to parse Json when attempting to close"),
+                ("null", "Missing payload when attempting to close the"),
                 (JsonSerializer.Serialize(new { DevEui = (string)null, Fport = 1 }), "DevEUI missing"),
                 (JsonSerializer.Serialize(new { DevEui = new DevEui(0).ToString(), Fport = 1, MessageId = 123 }), "Unable to parse Json"));
 
