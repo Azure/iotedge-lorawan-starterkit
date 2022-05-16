@@ -60,5 +60,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 Assert.NotNull(result);
             }
         }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public void EnableGatewayTrue_IoTModuleFalse_IsNotSupported(bool cloud_deployment, bool enable_gateway)
+        {
+            // arrange
+            Environment.SetEnvironmentVariable("CLOUD_DEPLOYMENT", cloud_deployment.ToString());
+            Environment.SetEnvironmentVariable("ENABLE_GATEWAY", enable_gateway.ToString());
+            var services = new ServiceCollection();
+            var config = new ConfigurationBuilder().Build();
+
+            // act + assert
+            if (cloud_deployment && enable_gateway)
+            {
+                Assert.Throws<NotSupportedException>(() => {
+                    var startup = new BasicsStationNetworkServerStartup(config);
+                });
+            }
+            else
+            {
+                var startup = new BasicsStationNetworkServerStartup(config);
+                startup.ConfigureServices(services);
+            }
+
+        }
     }
 }
