@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
     using System.Net;
-    using System.Text;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
@@ -13,7 +12,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
@@ -56,7 +54,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             });
 
             // act
-            _ = await this.subject.CloseConnectionAsync(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(c2d)));
+            _ = await this.subject.CloseConnectionAsync(c2d, CancellationToken.None);
 
             // assert
             this.loRaDeviceRegistry.VerifyAll();
@@ -79,8 +77,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public static TheoryData<string, string> DropConnectionInvalidMessages =>
             TheoryDataFactory.From(
-                (string.Empty, "Missing payload"),
-                ("null", "Missing payload"),
+                (string.Empty, "Unable to parse Json when attempting to close"),
+                ("null", "Unable to parse Json when attempting to close"),
                 (JsonSerializer.Serialize(new { DevEui = (string)null, Fport = 1 }), "DevEUI missing"),
                 (JsonSerializer.Serialize(new { DevEui = new DevEui(0).ToString(), Fport = 1, MessageId = 123 }), "Unable to parse Json"));
 
@@ -89,7 +87,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task CloseConnectionAsync_Should_Return_Bad_Request_When_Invalid_Message(string json, string expectedLogPattern)
         {
             // act
-            var response = await this.subject.CloseConnectionAsync(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(json)));
+            var response = await this.subject.CloseConnectionAsync(json, CancellationToken.None);
 
             // assert
             Assert.Equal(HttpStatusCode.BadRequest, response);
@@ -106,7 +104,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var c2d = JsonSerializer.Serialize(new { DevEui = devEui.ToString(), Fport = 1 });
 
             // act
-            var response = await this.subject.CloseConnectionAsync(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(c2d)));
+            var response = await this.subject.CloseConnectionAsync(c2d, CancellationToken.None);
 
             // assert
             Assert.Equal(HttpStatusCode.NotFound, response);
@@ -122,41 +120,27 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var c2d = "{\"test\":\"asd\"}";
 
             // act
-            var response = await this.subject.SendCloudToDeviceMessageAsync(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(c2d), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)));
+            var response = await this.subject.SendCloudToDeviceMessageAsync(c2d, CancellationToken.None);
 
             // assert
             Assert.Equal(HttpStatusCode.OK, response);
         }
 
-        [Fact]
-        public async Task SendCloudToDeviceMessageAsync_When_Incorrect_Should_Return_NotFound()
-        {
-            // arrange
-            var c2d = "{\"test\":\"asd\"}";
-
-            // act
-            var response = await this.subject.SendCloudToDeviceMessageAsync(new MethodRequest(this.faker.Random.String2(8), Encoding.UTF8.GetBytes(c2d)));
-
-            // assert
-            Assert.Equal(HttpStatusCode.BadRequest, response);
-        }
-
-        [Fact]
-        public async Task SendCloudToDeviceMessageAsync_When_ClassC_Msg_Is_Null_Or_Empty_Should_Return_Not_Found()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task SendCloudToDeviceMessageAsync_When_ClassC_Msg_Is_Null_Or_Empty_Should_Return_Not_Found(string json)
         {
             this.classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-            var response = await this.subject.SendCloudToDeviceMessageAsync(new MethodRequest(Constants.CloudToDeviceDecoderElementName, null));
+            var response = await this.subject.SendCloudToDeviceMessageAsync(json, CancellationToken.None);
             Assert.Equal(HttpStatusCode.BadRequest, response);
-
-            var response2 = await this.subject.SendCloudToDeviceMessageAsync(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Array.Empty<byte>()));
-            Assert.Equal(HttpStatusCode.BadRequest, response2);
         }
 
         [Fact]
         public async Task SendCloudToDeviceMessageAsync_When_ClassC_Msg_Is_Not_CorrectJson_Should_Return_Not_Found()
         {
-            var response = await this.subject.SendCloudToDeviceMessageAsync(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(this.faker.Random.String2(10))));
+            var response = await this.subject.SendCloudToDeviceMessageAsync(this.faker.Random.String2(10), CancellationToken.None);
             Assert.Equal(HttpStatusCode.BadRequest, response);
         }
     }

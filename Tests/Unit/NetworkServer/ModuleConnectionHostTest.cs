@@ -15,7 +15,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq;
     using System;
     using System.Configuration;
-    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Text.Json;
@@ -239,26 +238,28 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task OnDirectMethodCall_Should_Invoke_DropConnection()
         {
             // arrange
-            var methodRequest = new MethodRequest(Constants.CloudToDeviceCloseConnection, Array.Empty<byte>());
+            var json = @"{""foo"":""bar""}";
+            var methodRequest = new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(json));
 
             // act
             await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
-            this.lnsOperation.Verify(l => l.CloseConnectionAsync(methodRequest), Times.Once);
+            this.lnsOperation.Verify(l => l.CloseConnectionAsync(json, CancellationToken.None), Times.Once);
         }
 
         [Fact]
         public async Task OnDirectMethodCall_Should_Invoke_SendCloudToDeviceMessageAsync()
         {
             // arrange
-            var methodRequest = new MethodRequest(Constants.CloudToDeviceDecoderElementName, Array.Empty<byte>());
+            var json = @"{""foo"":""bar""}";
+            var methodRequest = new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(json));
 
             // act
             var result = await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
-            this.lnsOperation.Verify(l => l.SendCloudToDeviceMessageAsync(methodRequest), Times.Once);
+            this.lnsOperation.Verify(l => l.SendCloudToDeviceMessageAsync(json, CancellationToken.None), Times.Once);
         }
 
         [Fact]

@@ -88,17 +88,20 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             try
             {
+                using var cts = methodRequest.ResponseTimeout is { } someResponseTimeout ? new CancellationTokenSource(someResponseTimeout) : null;
+                var token = cts?.Token ?? CancellationToken.None;
+
                 if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     return AsMethodResponse(await this.lnsOperation.ClearCacheAsync());
                 }
                 else if (string.Equals(Constants.CloudToDeviceCloseConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return AsMethodResponse(await this.lnsOperation.CloseConnectionAsync(methodRequest));
+                    return AsMethodResponse(await this.lnsOperation.CloseConnectionAsync(methodRequest.DataAsJson, token));
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return AsMethodResponse(await this.lnsOperation.SendCloudToDeviceMessageAsync(methodRequest));
+                    return AsMethodResponse(await this.lnsOperation.SendCloudToDeviceMessageAsync(methodRequest.DataAsJson, token));
                 }
 
                 this.logger.LogError($"Unknown direct method called: {methodRequest.Name}");
