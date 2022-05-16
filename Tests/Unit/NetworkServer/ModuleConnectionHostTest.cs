@@ -5,12 +5,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using Bogus;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
@@ -23,51 +23,48 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using Xunit;
 
-    public class ModuleConnectionHostTest
+    public sealed class ModuleConnectionHostTest : IAsyncDisposable
     {
-
+        private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly Mock<ILoRaModuleClientFactory> loRaModuleClientFactory = new();
         private readonly Mock<ILoraModuleClient> loRaModuleClient = new();
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiServiceBase = Mock.Of<LoRaDeviceAPIServiceBase>();
         private readonly Faker faker = new Faker();
+        private readonly Mock<ILnsOperation> lnsOperation;
+        private readonly ModuleConnectionHost subject;
 
         public ModuleConnectionHostTest()
         {
+            this.networkServerConfiguration = new NetworkServerConfiguration();
             this.loRaModuleClient.Setup(x => x.DisposeAsync());
             this.loRaModuleClientFactory.Setup(x => x.CreateAsync()).ReturnsAsync(loRaModuleClient.Object);
+            this.lnsOperation = new Mock<ILnsOperation>();
+            this.subject = new ModuleConnectionHost(this.networkServerConfiguration,
+                                                    this.loRaModuleClientFactory.Object,
+                                                    this.loRaDeviceApiServiceBase,
+                                                    this.lnsOperation.Object,
+                                                    NullLogger<ModuleConnectionHost>.Instance,
+                                                    TestMeter.Instance);
         }
 
         [Fact]
         public void When_Constructor_Receives_Null_Parameters_Should_Throw()
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
-            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
-            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
-
             // ASSERT
             ArgumentNullException ex;
-            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(null, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(null, this.loRaModuleClientFactory.Object, this.loRaDeviceApiServiceBase, this.lnsOperation.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
             Assert.Equal("networkServerConfiguration", ex.ParamName);
-            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, null, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
-            Assert.Equal("defaultClassCDevicesMessageSender", ex.ParamName);
-            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, null, this.loRaDeviceApiServiceBase, this.lnsOperation.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
             Assert.Equal("loRaModuleClientFactory", ex.ParamName);
-            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, null, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
-            Assert.Equal("loRaDeviceRegistry", ex.ParamName);
-            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, null, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, null, this.lnsOperation.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
             Assert.Equal("loRaDeviceAPIService", ex.ParamName);
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, this.loRaDeviceApiServiceBase, null, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
+            Assert.Equal("lnsOperation", ex.ParamName);
         }
 
         [Fact]
         public async Task On_Desired_Properties_Correct_Update_Should_Update_Api_Service_Configuration()
         {
-            var networkServerConfiguration = Mock.Of<NetworkServerConfiguration>();
-            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
-            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
-            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
             var url1 = this.faker.Internet.Url();
             var authCode = this.faker.Internet.Password();
 
@@ -77,7 +74,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 FacadeAuthCode = authCode,
             });
 
-            await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(input), null);
+            await this.subject.OnDesiredPropertiesUpdate(new TwinCollection(input), null);
             Assert.Equal(url1 + "/", loRaDeviceApiServiceBase.URL.ToString());
             var url2 = this.faker.Internet.Url();
             var input2 = JsonSerializer.Serialize(new
@@ -85,7 +82,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 FacadeServerUrl = url2,
                 FacadeAuthCode = authCode,
             });
-            await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(input2), null);
+            await this.subject.OnDesiredPropertiesUpdate(new TwinCollection(input2), null);
             Assert.Equal(url2 + "/", loRaDeviceApiServiceBase.URL.ToString());
             Assert.Equal(authCode, loRaDeviceApiServiceBase.AuthCode.ToString());
         }
@@ -105,11 +102,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             var localLoRaDeviceApiServiceBase = new LoRaDeviceAPIService(networkServerConfiguration, Mock.Of<IHttpClientFactory>(), NullLogger<LoRaDeviceAPIService>.Instance, TestMeter.Instance);
-            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
-            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
-            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
-
-            await using var moduleClientFactory = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, localLoRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            await using var moduleClientFactory = new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, localLoRaDeviceApiServiceBase, this.lnsOperation.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
 
             await moduleClientFactory.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
             Assert.Equal(facadeUri + "/", localLoRaDeviceApiServiceBase.URL.ToString());
@@ -123,13 +116,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1000)]
         public async Task On_Desired_Properties_Correct_Update_Should_Update_Processing_Delay(int processingDelay)
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
-            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
-            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-
             Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
 
             var input = JsonSerializer.Serialize(new
@@ -137,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 ProcessingDelayInMilliseconds = processingDelay,
             });
 
-            await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(input), null);
+            await this.subject.OnDesiredPropertiesUpdate(new TwinCollection(input), null);
             Assert.Equal(processingDelay, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
@@ -147,26 +133,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("{ ProcessingDelay: 200 }")]
         public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update_Processing_Delay(string twinUpdate)
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
-            var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
-            var loRaModuleClientFactory = Mock.Of<ILoRaModuleClientFactory>();
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaModuleClientFactory, loRaDeviceRegistry, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-
-            await moduleClient.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
+            await this.subject.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
             Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Fact]
         public async Task InitModuleAsync_Update_Should_Perform_Happy_Path()
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            var networkServerConfiguration = new NetworkServerConfiguration()
+            {
+                // Change the iot edge timeout.
+                IoTEdgeTimeout = 5
+            };
 
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
             var facadeUri = this.faker.Internet.Url();
             var facadeCode = this.faker.Internet.Password();
             var processingDelay = 1000;
@@ -183,7 +162,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             
             loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, loRaDeviceApiServiceBase, this.lnsOperation.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
             await moduleClient.CreateAsync(CancellationToken.None);
             Assert.Equal(facadeUri + "/", loRaDeviceApiServiceBase.URL.ToString());
             Assert.Equal(facadeCode, loRaDeviceApiServiceBase.AuthCode);
@@ -195,9 +174,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("{ FacadeAuthCode: 'asdasdada' }")]
         public async Task InitModuleAsync_Fails_When_Required_Twins_Are_Not_Set(string twin)
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
             var loRaModuleClient = new Mock<ILoraModuleClient>();
             loRaModuleClient.Setup(x => x.DisposeAsync());
             var loRaModuleClientFactory = new Mock<ILoRaModuleClientFactory>();
@@ -210,7 +186,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
             loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            await using var moduleClient = new ModuleConnectionHost(this.networkServerConfiguration, this.loRaModuleClientFactory.Object, loRaDeviceApiServiceBase, this.lnsOperation.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
             await Assert.ThrowsAsync<ConfigurationErrorsException>(() => moduleClient.CreateAsync(CancellationToken.None));
         }
 
@@ -221,11 +197,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("invalidDelay")]
         public async Task InitModuleAsync_Does_Not_Fail_When_Processing_Delay_Missing_Or_Incorrect(string processingDelay)
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-
-            //networkServerConfiguration.IoTEdgeTimeout = 5;
             var facadeUri = this.faker.Internet.Url();
             var facadeCode = this.faker.Internet.Password();
             var twinProperty = new TwinProperties
@@ -239,207 +210,63 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                     }))
             };
 
-            loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
+            this.loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            await moduleClient.CreateAsync(CancellationToken.None);
+            await this.subject.CreateAsync(CancellationToken.None);
             Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Fact]
         public async Task InitModuleAsync_Fails_When_Fail_IoT_Hub_Communication()
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-
             // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
+            this.networkServerConfiguration.IoTEdgeTimeout = 5;
 
-            loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).Throws<IotHubCommunicationException>();
+            this.loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).Throws<IotHubCommunicationException>();
 
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => moduleClient.CreateAsync(CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.CreateAsync(CancellationToken.None));
             Assert.Equal(LoRaProcessingErrorCode.TwinFetchFailed, ex.ErrorCode);
         }
 
         [Fact]
-        public async Task OnDirectMethodCall_ClearCache_When_Correct_Should_Work()
+        public async Task OnDirectMethodCall_Should_Invoke_ClearCache()
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-            loRaDeviceRegistry.Setup(x => x.ResetDeviceCacheAsync()).Returns(Task.CompletedTask);
-
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceClearCache), null);
-            loRaDeviceRegistry.VerifyAll();
+            await this.subject.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceClearCache), null);
+            this.lnsOperation.Verify(l => l.ClearCacheAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task OnDirectMethodCall_DropConnection_Should_Work_As_Expected()
+        public async Task OnDirectMethodCall_Should_Invoke_DropConnection()
         {
             // arrange
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-            var devEui = new DevEui(0);
-            var mockedDevice = new Mock<LoRaDevice>(null, devEui, null);
-            _ = loRaDeviceRegistry.Setup(x => x.GetDeviceByDevEUIAsync(devEui)).ReturnsAsync(mockedDevice.Object);
-            var c2d = JsonSerializer.Serialize(new
-            {
-                DevEui = devEui.ToString(),
-                Fport = 1,
-                MessageId = Guid.NewGuid(),
-            });
+            var methodRequest = new MethodRequest(Constants.CloudToDeviceCloseConnection, Array.Empty<byte>());
 
             // act
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(c2d)), null);
+            await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
-            loRaDeviceRegistry.VerifyAll();
-            mockedDevice.Verify(x => x.CloseConnectionAsync(It.IsAny<CancellationToken>(), true), Times.Once);
-        }
-
-        public static TheoryData<string, string> DropConnectionInvalidMessages =>
-            TheoryDataFactory.From(
-                (string.Empty, "Missing payload"),
-                ("null", "Missing payload"),
-                (JsonSerializer.Serialize(new { DevEui = (string)null, Fport = 1 }), "DevEUI missing"),
-                (JsonSerializer.Serialize(new { DevEui = new DevEui(0).ToString(), Fport = 1, MessageId = 123 }), "Unable to parse Json"));
-
-        [Theory]
-        [MemberData(nameof(DropConnectionInvalidMessages))]
-        public async Task OnDirectMethodCall_DropConnection_Should_Return_Bad_Request_When_Invalid_Message(string json, string expectedLogPattern)
-        {
-            // arrange
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-            var loggerMock = new Mock<ILogger<ModuleConnectionHost>>();
-
-            // act
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, loggerMock.Object, TestMeter.Instance);
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(json)), null);
-
-            // assert
-            Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
-            var log = Assert.Single(loggerMock.GetLogInvocations());
-            Assert.Matches(expectedLogPattern, log.Message);
-            loRaDeviceRegistry.VerifyNoOtherCalls();
+            this.lnsOperation.Verify(l => l.CloseConnectionAsync(methodRequest), Times.Once);
         }
 
         [Fact]
-        public async Task OnDirectMethodCall_DropConnection_Should_Return_NotFound_When_Device_Not_Found()
+        public async Task OnDirectMethodCall_Should_Invoke_SendCloudToDeviceMessageAsync()
         {
             // arrange
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>();
-            var devEui = new DevEui(0);
-            var c2d = JsonSerializer.Serialize(new { DevEui = devEui.ToString(), Fport = 1 });
+            var methodRequest = new MethodRequest(Constants.CloudToDeviceDecoderElementName, Array.Empty<byte>());
 
             // act
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(c2d)), null);
+            var result = await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
-            Assert.Equal((int)HttpStatusCode.NotFound, response.Status);
-            loRaDeviceRegistry.Verify(x => x.GetDeviceByDevEUIAsync(devEui), Times.Once);
-            loRaDeviceRegistry.VerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public async Task OnDirectMethodCall_CloudToDeviceDecoderElementName_When_Correct_Should_Work()
-        {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-
-            var c2d = "{\"test\":\"asd\"}";
-
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(c2d), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)), null);
-            Assert.Equal((int)HttpStatusCode.OK, response.Status);
+            this.lnsOperation.Verify(l => l.SendCloudToDeviceMessageAsync(methodRequest), Times.Once);
         }
 
         [Fact]
         public async Task OnDirectMethodCall_When_Null_Or_Empty_MethodName_Should_Throw()
         {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-
-            await Assert.ThrowsAnyAsync<ArgumentNullException>(async () => await moduleClient.OnDirectMethodCalled(null, null));
+            await Assert.ThrowsAnyAsync<ArgumentNullException>(async () => await this.subject.OnDirectMethodCalled(null, null));
         }
 
-        [Fact]
-        public async Task OnDirectMethodCall_CloudToDeviceDecoderElementName_When_Incorrect_Should_Return_NotFound()
-        {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
-
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-            var c2d = "{\"test\":\"asd\"}";
-
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(this.faker.Random.String2(8), Encoding.UTF8.GetBytes(c2d)), null);
-            Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
-        }
-
-        [Fact]
-        public async Task SendCloudToDeviceMessageAsync_When_ClassC_Msg_Is_Null_Or_Empty_Should_Return_Not_Found()
-        {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-            var loRaModuleClient = new Mock<ILoraModuleClient>();
-            loRaModuleClient.Setup(x => x.DisposeAsync());
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, null), null);
-            Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
-
-            var response2 = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Array.Empty<byte>()), null);
-            Assert.Equal((int)HttpStatusCode.BadRequest, response2.Status);
-        }
-
-        [Fact]
-        public async Task SendCloudToDeviceMessageAsync_When_ClassC_Msg_Is_Not_CorrectJson_Should_Return_Not_Found()
-        {
-            var networkServerConfiguration = new NetworkServerConfiguration();
-            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
-            classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
-
-            // Change the iot edge timeout.
-            networkServerConfiguration.IoTEdgeTimeout = 5;
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, this.loRaModuleClientFactory.Object, loRaDeviceRegistry.Object, loRaDeviceApiServiceBase, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
-
-            var response = await moduleClient.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(faker.Random.String2(10))), null);
-            Assert.Equal((int)HttpStatusCode.BadRequest, response.Status);
-        }
+        public async ValueTask DisposeAsync() => await this.subject.DisposeAsync();
     }
 }
