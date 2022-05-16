@@ -131,6 +131,11 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string LnsVersion { get; private set; }
 
+        /// <summary>
+        /// Gets the connection string of Redis server for Pub/Sub functionality in Cloud only deployments.
+        /// </summary>
+        public string RedisConnectionString { get; private set; }
+
         /// Specifies the pool size for upstream AMQP connection
         /// </summary>
         public uint IotHubConnectionPoolSize { get; internal set; } = 1;
@@ -183,6 +188,10 @@ namespace LoRaWan.NetworkServer
                                               && size < AmqpConnectionPoolSettings.AbsoluteMaxPoolSize
                                               ? size
                                               : throw new NotSupportedException($"'IOTHUB_CONNECTION_POOL_SIZE' needs to be between 1 and {AmqpConnectionPoolSettings.AbsoluteMaxPoolSize}.");
+
+            config.RedisConnectionString = envVars.GetEnvVar("REDIS_CONNECTION_STRING", string.Empty);
+            if (!config.RunningAsIoTEdgeModule && string.IsNullOrEmpty(config.RedisConnectionString))
+                throw new InvalidOperationException($"'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
 
             return config;
         }
