@@ -32,7 +32,7 @@ namespace LoRaWan.Tests.Integration
             var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
-            this.subject.Subscribe(lnsName, function.Object);
+            this.subject.SubscribeAsync(lnsName, function.Object);
             await PublishAsync(lnsName, remoteCall);
 
             // assert
@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Integration
             var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
-            this.subject.Subscribe("lns-1", function.Object);
+            this.subject.SubscribeAsync("lns-1", function.Object);
             await PublishAsync("lns-2", new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
 
             // assert
