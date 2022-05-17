@@ -28,7 +28,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<ILoraModuleClient> loRaModuleClient = new();
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiServiceBase = Mock.Of<LoRaDeviceAPIServiceBase>();
         private readonly Faker faker = new Faker();
-        private readonly Mock<ILnsRemoteHandler> lnsRemoteCall;
+        private readonly Mock<ILnsRemoteCallHandler> lnsRemoteCall;
         private readonly ModuleConnectionHost subject;
 
         public ModuleConnectionHostTest()
@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.networkServerConfiguration = new NetworkServerConfiguration();
             this.loRaModuleClient.Setup(x => x.DisposeAsync());
             this.loRaModuleClientFactory.Setup(x => x.CreateAsync()).ReturnsAsync(loRaModuleClient.Object);
-            this.lnsRemoteCall = new Mock<ILnsRemoteHandler>();
+            this.lnsRemoteCall = new Mock<ILnsRemoteCallHandler>();
             this.subject = new ModuleConnectionHost(this.networkServerConfiguration,
                                                     this.loRaModuleClientFactory.Object,
                                                     this.loRaDeviceApiServiceBase,
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, null, this.lnsRemoteCall.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
             Assert.Equal("loRaDeviceAPIService", ex.ParamName);
             ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, this.loRaDeviceApiServiceBase, null, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
-            Assert.Equal("lnsRemoteHandler", ex.ParamName);
+            Assert.Equal("lnsRemoteCallHandler", ex.ParamName);
         }
 
         [Fact]

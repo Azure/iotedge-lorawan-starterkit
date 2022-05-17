@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
                         .AddSingleton(NetworkServerConfiguration)
                         .AddSingleton<ModuleConnectionHost>()
-                        .AddSingleton<ILnsRemoteHandler, LnsRemoteCallHandler>()
+                        .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
                         .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
                         .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
                         .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()

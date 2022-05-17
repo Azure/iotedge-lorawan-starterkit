@@ -11,12 +11,12 @@ namespace LoRaWan.NetworkServer
     using LoRaTools;
     using Microsoft.Extensions.Logging;
 
-    internal interface ILnsRemoteHandler
+    internal interface ILnsRemoteCallHandler
     {
         Task<HttpStatusCode> ExecuteAsync(LnsRemoteCall lnsRemoteCall, CancellationToken cancellationToken);
     }
 
-    internal sealed class LnsRemoteCallHandler : ILnsRemoteHandler
+    internal sealed class LnsRemoteCallHandler : ILnsRemoteCallHandler
     {
         internal const string ClosedConnectionLog = "Device connection was closed ";
         private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
