@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 {
     using LoRaTools.Utils;
+    using LoRaTools;
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
