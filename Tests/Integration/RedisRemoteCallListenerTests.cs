@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Text.Json;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using Moq;
@@ -32,7 +33,7 @@ namespace LoRaWan.Tests.Integration
             var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
-            this.subject.SubscribeAsync(lnsName, function.Object);
+            await this.subject.SubscribeAsync(lnsName, function.Object, CancellationToken.None);
             await PublishAsync(lnsName, remoteCall);
 
             // assert
@@ -46,7 +47,7 @@ namespace LoRaWan.Tests.Integration
             var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
-            this.subject.SubscribeAsync("lns-1", function.Object);
+            await this.subject.SubscribeAsync("lns-1", function.Object, CancellationToken.None);
             await PublishAsync("lns-2", new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
 
             // assert

@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await this.lnsRemoteCallListener.SubscribeAsync(this.networkServerConfiguration.GatewayID,
-                                                            async (remotecall) => await this.lnsRemoteCallHandler.ExecuteAsync(remotecall, cancellationToken),
+                                                            remotecall => this.lnsRemoteCallHandler.ExecuteAsync(remotecall, cancellationToken),
                                                             cancellationToken);
         }
 
