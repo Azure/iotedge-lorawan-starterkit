@@ -35,7 +35,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [InlineData(false, true)]
         public void ModuleConnectionHostIsInjectedOrNot(bool cloud_deployment, bool enable_gateway)
         {
-            var envVariables = new[] { ("CLOUD_DEPLOYMENT", cloud_deployment.ToString()), ("ENABLE_GATEWAY", enable_gateway.ToString()) };
+            var envVariables = new[]
+            {
+                ("CLOUD_DEPLOYMENT", cloud_deployment.ToString()),
+                ("ENABLE_GATEWAY", enable_gateway.ToString()),
+                ("REDIS_CONNECTION_STRING", "someString")
+            };
 
             try
             {
