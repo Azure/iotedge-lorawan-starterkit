@@ -5,3 +5,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Common")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Unit")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Integration")]
+[assembly: InternalsVisibleTo("LoRaWan.Tests.Simulation")]
