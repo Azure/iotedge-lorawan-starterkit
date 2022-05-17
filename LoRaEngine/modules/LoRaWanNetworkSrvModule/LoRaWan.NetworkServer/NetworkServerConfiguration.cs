@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
 
             config.RedisConnectionString = envVars.GetEnvVar("REDIS_CONNECTION_STRING", string.Empty);
             if (!config.RunningAsIoTEdgeModule && string.IsNullOrEmpty(config.RedisConnectionString))
-                throw new InvalidOperationException($"'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
+                throw new InvalidOperationException("'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
 
             return config;
         }
