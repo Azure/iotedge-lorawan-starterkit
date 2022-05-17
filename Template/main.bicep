@@ -2,17 +2,17 @@ param uniqueSolutionPrefix string
 param location string = resourceGroup().location
 param discoveryZipUrl string
 
-module iotHub 'iothub.bicep' = {
+module iotHub 'modules/iothub.bicep' = {
   name: 'iothub'
   params: {}
 }
 
-module storage 'storage.bicep' = {
+module storage 'modules/storage.bicep' = {
   name: 'storage'
   params: {}
 }
 
-module function 'function.bicep' = {
+module function 'modules/function.bicep' = {
   name: 'function'
   params: {
     deployDevice: true
@@ -26,7 +26,7 @@ module function 'function.bicep' = {
   ]
 }
 
-module discoveryService 'discoveryService.bicep' = {
+module discoveryService 'modules/discoveryService.bicep' = {
   name: 'discoveryService'
   params: {
     appInsightName: '${uniqueSolutionPrefix}insight'
