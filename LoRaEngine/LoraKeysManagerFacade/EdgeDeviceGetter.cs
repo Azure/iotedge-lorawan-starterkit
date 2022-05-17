@@ -16,6 +16,7 @@ namespace LoraKeysManagerFacade
         private readonly IDeviceRegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger<EdgeDeviceGetter> logger;
+        private DateTimeOffset? lastUpdateTime;
 
         public EdgeDeviceGetter(IDeviceRegistryManager registryManager,
                                 ILoRaDeviceCacheStore cacheStore,
@@ -50,7 +51,8 @@ namespace LoraKeysManagerFacade
                 if (await this.cacheStore.LockTakeAsync(keyLock, owner, TimeSpan.FromSeconds(10)))
                 {
                     var findInCache = () => this.cacheStore.GetObject<DeviceKind>(RedisLnsDeviceCacheKey(lnsId));
-                    if (findInCache() is null)
+                    var firstSearch = findInCache();
+                    if (firstSearch is null)
                     {
                         await RefreshEdgeDevicesCacheAsync(cancellationToken);
                         isEdgeDevice = findInCache() is { IsEdge: true };
@@ -60,6 +62,10 @@ namespace LoraKeysManagerFacade
                             if (!marked)
                                 this.logger.LogError("Could not update Redis Edge Device cache status for device {}", lnsId);
                         }
+                    }
+                    else
+                    {
+                        return firstSearch.IsEdge;
                     }
                 }
                 else
@@ -85,13 +91,18 @@ namespace LoraKeysManagerFacade
         private async Task RefreshEdgeDevicesCacheAsync(CancellationToken cancellationToken)
         {
             this.logger.LogDebug("Refreshing Azure IoT Edge devices cache");
-            var twins = await GetEdgeDevicesAsync(cancellationToken);
-            foreach (var t in twins)
+            if (this.lastUpdateTime is null
+                || this.lastUpdateTime - DateTimeOffset.UtcNow >= TimeSpan.FromMinutes(1))
             {
-                _ = this.cacheStore.ObjectSet(RedisLnsDeviceCacheKey(t.DeviceId),
-                                              new DeviceKind(isEdge: true),
-                                              TimeSpan.FromDays(1),
-                                              onlyIfNotExists: true);
+                var twins = await GetEdgeDevicesAsync(cancellationToken);
+                foreach (var t in twins)
+                {
+                    _ = this.cacheStore.ObjectSet(RedisLnsDeviceCacheKey(t.DeviceId),
+                                                  new DeviceKind(isEdge: true),
+                                                  TimeSpan.FromDays(1),
+                                                  onlyIfNotExists: true);
+                }
+                this.lastUpdateTime = DateTimeOffset.UtcNow;
             }
         }
     }

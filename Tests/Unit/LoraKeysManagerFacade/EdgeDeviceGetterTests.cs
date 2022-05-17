@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools;
@@ -16,6 +17,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     public class EdgeDeviceGetterTests
     {
         private const string EdgeDevice1 = "edgeDevice1";
+        private Mock<IDeviceRegistryManager> mockRegistryManager;
+        private Mock<IQuery> mockQuery;
+
+        public EdgeDeviceGetterTests()
+        {
+            InitRegistryManager();
+        }
 
         [Theory]
         [InlineData(EdgeDevice1, true)]
@@ -26,10 +34,22 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.Equal(isEdge, await edgeDeviceGetter.IsEdgeDeviceAsync(lnsId, default));
         }
 
-        private static IDeviceRegistryManager InitRegistryManager()
+        [Fact]
+        public async Task IsEdgeDeviceAsync_Should_Not_Reach_IoTHub_Twice_If_Invoked_In_Less_Than_One_Minute()
         {
-            var mockQuery = new Mock<IQuery>();
-            var mockRegistryManager = new Mock<IDeviceRegistryManager>();
+            var edgeDeviceGetter = new EdgeDeviceGetter(InitRegistryManager(), new LoRaInMemoryDeviceStore(), NullLogger<EdgeDeviceGetter>.Instance);
+            Assert.True(await edgeDeviceGetter.IsEdgeDeviceAsync(EdgeDevice1, default));
+            Assert.True(await edgeDeviceGetter.IsEdgeDeviceAsync(EdgeDevice1, default));
+            Assert.False(await edgeDeviceGetter.IsEdgeDeviceAsync("anotherDevice", default));
+            Assert.False(await edgeDeviceGetter.IsEdgeDeviceAsync("anotherDevice", default));
+
+            _ = this.mockQuery.Invocations.Single(x => x.Method.Name.Equals(nameof(IQuery.GetNextAsTwinAsync), System.StringComparison.OrdinalIgnoreCase));
+        }
+
+        private IDeviceRegistryManager InitRegistryManager()
+        {
+            this.mockQuery = new Mock<IQuery>();
+            this.mockRegistryManager = new Mock<IDeviceRegistryManager>();
 
             var twins = new List<Twin>()
             {
