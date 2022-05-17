@@ -3,7 +3,6 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 {
-    using LoRaTools;
     using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
@@ -13,42 +12,34 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     using System.Configuration;
     using System.Diagnostics.Metrics;
     using System.Net;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class ModuleConnectionHost : IAsyncDisposable
+    internal sealed class ModuleConnectionHost : IAsyncDisposable
     {
         private const string LnsVersionPropertyName = "LnsVersion";
         private readonly NetworkServerConfiguration networkServerConfiguration;
-        private readonly IClassCDeviceMessageSender classCMessageSender;
-        private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+        private readonly ILnsRemoteCall lnsRemoteCall;
         private readonly ILogger<ModuleConnectionHost> logger;
         private readonly Counter<int> unhandledExceptionCount;
-        private readonly Counter<int> forceClosedConnections;
         private ILoraModuleClient loRaModuleClient;
         private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
-        public const string ClosedConnectionLog = "Device connection was closed ";
-
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
-            IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
             ILoRaModuleClientFactory loRaModuleClientFactory,
-            ILoRaDeviceRegistry loRaDeviceRegistry,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
+            ILnsRemoteCall lnsRemoteCall,
             ILogger<ModuleConnectionHost> logger,
             Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
-            this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
-            this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
             this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
+            this.lnsRemoteCall = lnsRemoteCall ?? throw new ArgumentNullException(nameof(lnsRemoteCall));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.unhandledExceptionCount = (meter ?? throw new ArgumentNullException(nameof(meter))).CreateCounter<int>(MetricRegistry.UnhandledExceptions);
-            this.forceClosedConnections = meter.CreateCounter<int>(MetricRegistry.ForceClosedClientConnections);
         }
 
         public async Task CreateAsync(CancellationToken cancellationToken)
@@ -97,109 +88,34 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             try
             {
+                using var cts = methodRequest.ResponseTimeout is { } someResponseTimeout ? new CancellationTokenSource(someResponseTimeout) : null;
+                var token = cts?.Token ?? CancellationToken.None;
+
                 if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await ClearCacheAsync();
+                    return AsMethodResponse(await this.lnsRemoteCall.ClearCacheAsync());
                 }
                 else if (string.Equals(Constants.CloudToDeviceCloseConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await CloseConnectionAsync(methodRequest);
+                    return AsMethodResponse(await this.lnsRemoteCall.CloseConnectionAsync(methodRequest.DataAsJson, token));
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return await SendCloudToDeviceMessageAsync(methodRequest);
+                    return AsMethodResponse(await this.lnsRemoteCall.SendCloudToDeviceMessageAsync(methodRequest.DataAsJson, token));
                 }
 
                 this.logger.LogError($"Unknown direct method called: {methodRequest.Name}");
 
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
+                return AsMethodResponse(HttpStatusCode.BadRequest);
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred on a direct method call: {ex}"),
                                                                     () => this.unhandledExceptionCount.Add(1)))
             {
                 throw;
             }
-        }
 
-        private async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
-        {
-            if (!string.IsNullOrEmpty(methodRequest.DataAsJson))
-            {
-                ReceivedLoRaCloudToDeviceMessage c2d = null;
-
-                try
-                {
-                    c2d = JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                }
-                catch (JsonException ex)
-                {
-                    this.logger.LogError($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}");
-                    return new MethodResponse((int)HttpStatusCode.BadRequest);
-                }
-
-                using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
-                this.logger.LogDebug($"received cloud to device message from direct method: {methodRequest.DataAsJson}");
-
-                using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
-
-                if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
-                {
-                    return new MethodResponse((int)HttpStatusCode.OK);
-                }
-            }
-
-            return new MethodResponse((int)HttpStatusCode.BadRequest);
-        }
-
-        private async Task<MethodResponse> ClearCacheAsync()
-        {
-            await this.loRaDeviceRegistry.ResetDeviceCacheAsync();
-            return new MethodResponse((int)HttpStatusCode.OK);
-        }
-
-        private async Task<MethodResponse> CloseConnectionAsync(MethodRequest methodRequest)
-        {
-            ReceivedLoRaCloudToDeviceMessage c2d = null;
-
-            try
-            {
-                c2d = methodRequest.DataAsJson is { } json ? JsonSerializer.Deserialize<ReceivedLoRaCloudToDeviceMessage>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) : null;
-            }
-            catch (JsonException ex)
-            {
-                this.logger.LogError(ex, "Unable to parse Json for direct method '{MethodName}' for device '{DevEui}', message id '{MessageId}'", methodRequest.Name, c2d?.DevEUI, c2d?.MessageId);
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
-            }
-
-            if (c2d == null)
-            {
-                this.logger.LogError("Missing payload for direct method '{MethodName}'", methodRequest.Name);
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
-            }
-
-            if (c2d.DevEUI == null)
-            {
-                this.logger.LogError("DevEUI missing, cannot identify device to close connection for; message Id '{MessageId}'", c2d.MessageId);
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
-            }
-
-            using var scope = this.logger.BeginDeviceScope(c2d.DevEUI);
-
-            var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(c2d.DevEUI.Value);
-            if (loRaDevice == null)
-            {
-                this.logger.LogError("Could not retrieve LoRa device; message id '{MessageId}'", c2d.MessageId);
-                return new MethodResponse((int)HttpStatusCode.NotFound);
-            }
-
-            loRaDevice.IsConnectionOwner = false;
-            using var cts = methodRequest.ResponseTimeout is { } timeout ? new CancellationTokenSource(timeout) : null;
-            await loRaDevice.CloseConnectionAsync(cts?.Token ?? CancellationToken.None, force: true);
-
-            this.logger.LogInformation(ClosedConnectionLog + "from gateway with id '{GatewayId}', message id '{MessageId}'", this.networkServerConfiguration.GatewayID, c2d.MessageId);
-            this.forceClosedConnections.Add(1);
-
-            return new MethodResponse((int)HttpStatusCode.OK);
+            static MethodResponse AsMethodResponse(HttpStatusCode httpStatusCode) =>
+                new MethodResponse((int)httpStatusCode);
         }
 
         /// <summary>
