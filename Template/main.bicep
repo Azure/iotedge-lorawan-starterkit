@@ -1,10 +1,15 @@
+var iothubname = '${uniqueSolutionPrefix}hub'
+
 param uniqueSolutionPrefix string
 param location string = resourceGroup().location
 param discoveryZipUrl string
 
 module iotHub 'modules/iothub.bicep' = {
   name: 'iothub'
-  params: {}
+  params: {
+    iothubname: iothubname
+    location: location
+  }
 }
 
 module storage 'modules/storage.bicep' = {
