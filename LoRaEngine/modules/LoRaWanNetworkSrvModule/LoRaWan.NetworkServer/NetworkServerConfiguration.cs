@@ -151,11 +151,11 @@ namespace LoRaWan.NetworkServer
             config.RunningAsIoTEdgeModule = !envVars.GetEnvVar("CLOUD_DEPLOYMENT", false);
             config.IoTHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", string.Empty);
             config.GatewayHostName = envVars.GetEnvVar("IOTEDGE_GATEWAYHOSTNAME", string.Empty);
-            config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", config.EnableGateway) is bool enable_gateway
-                                   && !config.RunningAsIoTEdgeModule
-                                   && enable_gateway
-                                   ? throw new NotSupportedException("ENABLE_GATEWAY cannot be true if RunningAsIoTEdgeModule is false.")
-                                   : enable_gateway;
+            config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", true);
+            if (!config.RunningAsIoTEdgeModule && config.EnableGateway)
+            {
+                throw new NotSupportedException("ENABLE_GATEWAY cannot be true if RunningAsIoTEdgeModule is false.");
+            }
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", -1) is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null;
