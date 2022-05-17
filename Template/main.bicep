@@ -1,5 +1,6 @@
 param uniqueSolutionPrefix string
 param location string = resourceGroup().location
+param discoveryZipUrl string
 
 module iotHub 'iothub.bicep' = {
   name: 'iothub'
@@ -23,4 +24,16 @@ module function 'function.bicep' = {
     iotHub,
     storage
   ]
+}
+
+module discoveryService 'discoveryService.bicep' = {
+  name: 'discoveryService'
+  params: {
+    appInsightName: '${uniqueSolutionPrefix}insight'
+    discoveryZipUrl: discoveryZipUrl
+    iotHubHostName: 'TODO'
+    iotHubName: '${uniqueSolutionPrefix}hub'
+    webAppName: 'TODO'
+    location: location
+  }
 }
