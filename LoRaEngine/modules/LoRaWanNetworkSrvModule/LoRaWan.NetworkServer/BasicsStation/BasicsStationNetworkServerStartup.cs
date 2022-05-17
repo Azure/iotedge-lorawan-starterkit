@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaTools.CommonAPI;
     using LoRaTools.NetworkServerDiscovery;
     using LoRaWan;
+    using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
@@ -79,7 +80,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddHttpClient()
                         .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
                         .AddSingleton(NetworkServerConfiguration)
-                        .AddSingleton<ILnsRemoteCall, LnsRemoteCall>()
+                        .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
                         .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
                         .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
                         .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()

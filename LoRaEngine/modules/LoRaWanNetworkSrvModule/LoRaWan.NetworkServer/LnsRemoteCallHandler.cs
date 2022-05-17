@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.BasicsStation
+namespace LoRaWan.NetworkServer
 {
     using System.Diagnostics.Metrics;
     using System.Net;
@@ -11,14 +11,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaTools;
     using Microsoft.Extensions.Logging;
 
-    internal interface ILnsRemoteCall
+    internal interface ILnsRemoteCallHandler
     {
-        Task<HttpStatusCode> ClearCacheAsync();
-        Task<HttpStatusCode> CloseConnectionAsync(string json, CancellationToken cancellationToken);
-        Task<HttpStatusCode> SendCloudToDeviceMessageAsync(string json, CancellationToken cancellationToken);
+        Task<HttpStatusCode> ExecuteAsync(LnsRemoteCall lnsRemoteCall, CancellationToken cancellationToken);
     }
 
-    internal sealed class LnsRemoteCall : ILnsRemoteCall
+    internal sealed class LnsRemoteCallHandler : ILnsRemoteCallHandler
     {
         internal const string ClosedConnectionLog = "Device connection was closed ";
         private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -26,14 +24,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly IClassCDeviceMessageSender classCDeviceMessageSender;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
-        private readonly ILogger<LnsRemoteCall> logger;
+        private readonly ILogger<LnsRemoteCallHandler> logger;
         private readonly Counter<int> forceClosedConnections;
 
-        public LnsRemoteCall(NetworkServerConfiguration networkServerConfiguration,
-                            IClassCDeviceMessageSender classCDeviceMessageSender,
-                            ILoRaDeviceRegistry loRaDeviceRegistry,
-                            ILogger<LnsRemoteCall> logger,
-                            Meter meter)
+        public LnsRemoteCallHandler(NetworkServerConfiguration networkServerConfiguration,
+                                    IClassCDeviceMessageSender classCDeviceMessageSender,
+                                    ILoRaDeviceRegistry loRaDeviceRegistry,
+                                    ILogger<LnsRemoteCallHandler> logger,
+                                    Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration;
             this.classCDeviceMessageSender = classCDeviceMessageSender;
@@ -42,7 +40,18 @@ namespace LoRaWan.NetworkServer.BasicsStation
             this.forceClosedConnections = meter.CreateCounter<int>(MetricRegistry.ForceClosedClientConnections);
         }
 
-        public async Task<HttpStatusCode> SendCloudToDeviceMessageAsync(string json, CancellationToken cancellationToken)
+        public Task<HttpStatusCode> ExecuteAsync(LnsRemoteCall lnsRemoteCall, CancellationToken cancellationToken)
+        {
+            return lnsRemoteCall.Kind switch
+            {
+                RemoteCallKind.CloudToDeviceMessage => SendCloudToDeviceMessageAsync(lnsRemoteCall.JsonData, cancellationToken),
+                RemoteCallKind.ClearCache => ClearCacheAsync(),
+                RemoteCallKind.CloseConnection => CloseConnectionAsync(lnsRemoteCall.JsonData, cancellationToken),
+                _ => throw new System.NotImplementedException(),
+            };
+        }
+
+        private async Task<HttpStatusCode> SendCloudToDeviceMessageAsync(string json, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(json))
             {
@@ -62,15 +71,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 this.logger.LogDebug($"received cloud to device message from direct method: {json}");
 
                 if (await this.classCDeviceMessageSender.SendAsync(c2d, cancellationToken))
-                {
                     return HttpStatusCode.OK;
-                }
             }
 
             return HttpStatusCode.BadRequest;
         }
 
-        public async Task<HttpStatusCode> CloseConnectionAsync(string json, CancellationToken cancellationToken)
+        private async Task<HttpStatusCode> CloseConnectionAsync(string json, CancellationToken cancellationToken)
         {
             ReceivedLoRaCloudToDeviceMessage c2d;
 
@@ -114,7 +121,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             return HttpStatusCode.OK;
         }
 
-        public async Task<HttpStatusCode> ClearCacheAsync()
+        private async Task<HttpStatusCode> ClearCacheAsync()
         {
             await this.loRaDeviceRegistry.ResetDeviceCacheAsync();
             return HttpStatusCode.OK;
