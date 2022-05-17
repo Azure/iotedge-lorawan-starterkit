@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace LoRaWan.NetworkServer
 {
     using System.Threading;
@@ -11,7 +13,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly ILnsRemoteCallListener lnsRemoteCallListener;
         private readonly ILnsRemoteCallHandler lnsRemoteCallHandler;
-        private readonly NetworkServerConfiguration networkServerConfiguration;
+        private readonly string gatewayId;
 
         public CloudControlHost(ILnsRemoteCallListener lnsRemoteCallListener,
                                 ILnsRemoteCallHandler lnsRemoteCallHandler,
@@ -19,15 +21,15 @@ namespace LoRaWan.NetworkServer
         {
             this.lnsRemoteCallListener = lnsRemoteCallListener;
             this.lnsRemoteCallHandler = lnsRemoteCallHandler;
-            this.networkServerConfiguration = networkServerConfiguration;
+            this.gatewayId = networkServerConfiguration.GatewayID;
         }
 
         public Task StartAsync(CancellationToken cancellationToken) =>
-            this.lnsRemoteCallListener.SubscribeAsync(this.networkServerConfiguration.GatewayID,
+            this.lnsRemoteCallListener.SubscribeAsync(this.gatewayId,
                                                       remoteCall => this.lnsRemoteCallHandler.ExecuteAsync(remoteCall, cancellationToken),
                                                       cancellationToken);
 
         public Task StopAsync(CancellationToken cancellationToken) =>
-            this.lnsRemoteCallListener.UnsubscribeAsync(this.networkServerConfiguration.GatewayID, cancellationToken);
+            this.lnsRemoteCallListener.UnsubscribeAsync(this.gatewayId, cancellationToken);
     }
 }
