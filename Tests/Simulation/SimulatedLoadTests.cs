@@ -101,7 +101,7 @@ namespace LoRaWan.Tests.Simulation
 
             await Task.Delay(messagesToSendEachLNS * IntervalBetweenMessages);
             _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => !x.Contains(LnsOperation.ClosedConnectionLog, StringComparison.Ordinal),
+                x => !x.Contains(LnsRemoteCall.ClosedConnectionLog, StringComparison.Ordinal),
                 new SearchLogOptions("No connection switch should be logged") { TreatAsError = true });
 
             // act: change basics station that the device is listened from and therefore the gateway it uses as well
@@ -111,8 +111,8 @@ namespace LoRaWan.Tests.Simulation
             // assert
             var expectedLnsToDropConnection = Configuration.LnsEndpointsForSimulator.First().Key;
             _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => x.Contains(LnsOperation.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
-                new SearchLogOptions($"{LnsOperation.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
+                x => x.Contains(LnsRemoteCall.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
+                new SearchLogOptions($"{LnsRemoteCall.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
             await AssertIotHubMessageCountAsync(simulatedDevice, messagesToSendEachLNS * 2);
         }
 

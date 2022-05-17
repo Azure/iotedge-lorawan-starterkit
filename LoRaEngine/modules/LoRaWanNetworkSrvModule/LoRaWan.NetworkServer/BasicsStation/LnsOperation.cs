@@ -11,14 +11,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaTools;
     using Microsoft.Extensions.Logging;
 
-    internal interface ILnsOperation
+    internal interface ILnsRemoteCall
     {
         Task<HttpStatusCode> ClearCacheAsync();
         Task<HttpStatusCode> CloseConnectionAsync(string json, CancellationToken cancellationToken);
         Task<HttpStatusCode> SendCloudToDeviceMessageAsync(string json, CancellationToken cancellationToken);
     }
 
-    internal sealed class LnsOperation : ILnsOperation
+    internal sealed class LnsRemoteCall : ILnsRemoteCall
     {
         internal const string ClosedConnectionLog = "Device connection was closed ";
         private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -26,13 +26,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly IClassCDeviceMessageSender classCDeviceMessageSender;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
-        private readonly ILogger<LnsOperation> logger;
+        private readonly ILogger<LnsRemoteCall> logger;
         private readonly Counter<int> forceClosedConnections;
 
-        public LnsOperation(NetworkServerConfiguration networkServerConfiguration,
+        public LnsRemoteCall(NetworkServerConfiguration networkServerConfiguration,
                             IClassCDeviceMessageSender classCDeviceMessageSender,
                             ILoRaDeviceRegistry loRaDeviceRegistry,
-                            ILogger<LnsOperation> logger,
+                            ILogger<LnsRemoteCall> logger,
                             Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration;

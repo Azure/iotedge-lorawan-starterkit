@@ -16,22 +16,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using Moq;
     using Xunit;
 
-    public sealed class LnsOperationTests
+    public sealed class LnsRemoteCallTests
     {
         private readonly Faker faker = new();
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly Mock<IClassCDeviceMessageSender> classCMessageSender;
         private readonly Mock<ILoRaDeviceRegistry> loRaDeviceRegistry;
-        private readonly Mock<ILogger<LnsOperation>> logger;
-        private readonly LnsOperation subject;
+        private readonly Mock<ILogger<LnsRemoteCall>> logger;
+        private readonly LnsRemoteCall subject;
 
-        public LnsOperationTests()
+        public LnsRemoteCallTests()
         {
             this.networkServerConfiguration = new NetworkServerConfiguration();
             this.classCMessageSender = new Mock<IClassCDeviceMessageSender>();
             this.loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>();
-            this.logger = new Mock<ILogger<LnsOperation>>();
-            this.subject = new LnsOperation(this.networkServerConfiguration,
+            this.logger = new Mock<ILogger<LnsRemoteCall>>();
+            this.subject = new LnsRemoteCall(this.networkServerConfiguration,
                                             this.classCMessageSender.Object,
                                             this.loRaDeviceRegistry.Object,
                                             this.logger.Object,

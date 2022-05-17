@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private const string LnsVersionPropertyName = "LnsVersion";
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
-        private readonly ILnsOperation lnsOperation;
+        private readonly ILnsRemoteCall lnsRemoteCall;
         private readonly ILogger<ModuleConnectionHost> logger;
         private readonly Counter<int> unhandledExceptionCount;
         private ILoraModuleClient loRaModuleClient;
@@ -30,13 +30,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             NetworkServerConfiguration networkServerConfiguration,
             ILoRaModuleClientFactory loRaModuleClientFactory,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
-            ILnsOperation lnsOperation,
+            ILnsRemoteCall lnsRemoteCall,
             ILogger<ModuleConnectionHost> logger,
             Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
             this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
-            this.lnsOperation = lnsOperation ?? throw new ArgumentNullException(nameof(lnsOperation));
+            this.lnsRemoteCall = lnsRemoteCall ?? throw new ArgumentNullException(nameof(lnsRemoteCall));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.unhandledExceptionCount = (meter ?? throw new ArgumentNullException(nameof(meter))).CreateCounter<int>(MetricRegistry.UnhandledExceptions);
@@ -93,15 +93,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return AsMethodResponse(await this.lnsOperation.ClearCacheAsync());
+                    return AsMethodResponse(await this.lnsRemoteCall.ClearCacheAsync());
                 }
                 else if (string.Equals(Constants.CloudToDeviceCloseConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return AsMethodResponse(await this.lnsOperation.CloseConnectionAsync(methodRequest.DataAsJson, token));
+                    return AsMethodResponse(await this.lnsRemoteCall.CloseConnectionAsync(methodRequest.DataAsJson, token));
                 }
                 else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return AsMethodResponse(await this.lnsOperation.SendCloudToDeviceMessageAsync(methodRequest.DataAsJson, token));
+                    return AsMethodResponse(await this.lnsRemoteCall.SendCloudToDeviceMessageAsync(methodRequest.DataAsJson, token));
                 }
 
                 this.logger.LogError($"Unknown direct method called: {methodRequest.Name}");
