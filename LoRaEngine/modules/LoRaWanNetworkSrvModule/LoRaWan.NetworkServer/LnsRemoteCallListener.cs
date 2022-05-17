@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
         public void Subscribe(string lns, Func<LnsRemoteCall, Task> function)
         {
             this.redis.GetSubscriber().Subscribe(lns).OnMessage(value =>
-                function(JsonSerializer.Deserialize<LnsRemoteCall>(value.Message)));
+                function(JsonSerializer.Deserialize<LnsRemoteCall>(value.Message) ?? throw new ArgumentException("Input LnsRemoteCall json was not parsed as valid one.")));
         }
     }
 }
