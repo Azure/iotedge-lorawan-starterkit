@@ -11,7 +11,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
-    internal class EdgeDeviceGetter
+    internal class EdgeDeviceGetter : IEdgeDeviceGetter
     {
         private readonly IDeviceRegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
