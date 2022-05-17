@@ -154,14 +154,20 @@ namespace LoRaWan.NetworkServer
             var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());
             config.ProcessingDelayInMilliseconds = envVars.GetEnvVar("PROCESSING_DELAY_IN_MS", config.ProcessingDelayInMilliseconds);
             config.RunningAsIoTEdgeModule = !envVars.GetEnvVar("CLOUD_DEPLOYMENT", false);
-            config.IoTHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", string.Empty);
+
+            var iotHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", envVars.GetEnvVar("IOTHUBHOSTNAME", string.Empty));
+            config.IoTHubHostName = !string.IsNullOrEmpty(iotHubHostName) ? iotHubHostName : throw new InvalidOperationException("Either 'IOTEDGE_IOTHUBHOSTNAME' or 'IOTHUBHOSTNAME' environment variable should be populated");
+
             config.GatewayHostName = envVars.GetEnvVar("IOTEDGE_GATEWAYHOSTNAME", string.Empty);
             config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", true);
             if (!config.RunningAsIoTEdgeModule && config.EnableGateway)
             {
                 throw new NotSupportedException("ENABLE_GATEWAY cannot be true if RunningAsIoTEdgeModule is false.");
             }
-            config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
+
+            var gatewayId = envVars.GetEnvVar("IOTEDGE_DEVICEID", envVars.GetEnvVar("HOSTNAME", string.Empty));
+            config.GatewayID = !string.IsNullOrEmpty(gatewayId) ? gatewayId : throw new InvalidOperationException("Either 'IOTEDGE_DEVICEID' or 'HOSTNAME' environment variable should be populated");
+
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", -1) is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null;
             config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ") is { } someFreq ? Hertz.Mega(someFreq) : null;

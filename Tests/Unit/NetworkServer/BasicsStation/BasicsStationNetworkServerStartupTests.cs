@@ -18,16 +18,33 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             // arrange
             var services = new ServiceCollection();
             var config = new ConfigurationBuilder().Build();
-
-            // act + assert
-            var startup = new BasicsStationNetworkServerStartup(config);
-            startup.ConfigureServices(services);
-
-            services.BuildServiceProvider(new ServiceProviderOptions
+            var envVariables = new[]
             {
-                ValidateOnBuild = true,
-                ValidateScopes = true
-            });
+                ("HOSTNAME", "test"),
+                ("IOTHUBHOSTNAME", "test")
+            };
+
+            try
+            {
+                foreach (var (key, value) in envVariables)
+                    Environment.SetEnvironmentVariable(key, value);
+
+                // act + assert
+                var startup = new BasicsStationNetworkServerStartup(config);
+                startup.ConfigureServices(services);
+
+                services.BuildServiceProvider(new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                });
+
+            }
+            finally
+            {
+                foreach (var (key, _) in envVariables)
+                    Environment.SetEnvironmentVariable(key, string.Empty);
+            }
         }
 
         [Theory]
@@ -39,7 +56,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             {
                 ("CLOUD_DEPLOYMENT", cloud_deployment.ToString()),
                 ("ENABLE_GATEWAY", enable_gateway.ToString()),
-                ("REDIS_CONNECTION_STRING", "someString")
+                ("REDIS_CONNECTION_STRING", "someString"),
+                ("HOSTNAME", "test"),
+                ("IOTHUBHOSTNAME", "test")
             };
 
             try
