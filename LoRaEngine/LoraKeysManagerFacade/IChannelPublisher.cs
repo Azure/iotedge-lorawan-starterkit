@@ -10,6 +10,6 @@ namespace LoraKeysManagerFacade
     /// </summary>
     public interface IChannelPublisher
     {
-    Task PublishAsync(string channel, string value);
+        Task PublishAsync(string channel, string value);
     }
 }

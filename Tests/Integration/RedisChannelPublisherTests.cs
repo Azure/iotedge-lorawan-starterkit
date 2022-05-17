@@ -1,13 +1,17 @@
-namespace LoRaWan.Tests.Integration{
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+namespace LoRaWan.Tests.Integration
+{
     using System;
     using System.Threading.Tasks;
-    using StackExchange.Redis;
     using LoRaWan.Tests.Common;
-    using Microsoft.Extensions.Logging;
+    using Xunit;
+    using LoraKeysManagerFacade;
+    using Xunit.Abstractions;
+    using Microsoft.Extensions.Logging.Abstractions;
 
-
-        public class RedisChannelPublisherTests : FunctionTestBase, IClassFixture<RedisFixture>
+    public class RedisChannelPublisherTests : FunctionTestBase, IClassFixture<RedisFixture>
     {
         private readonly IChannelPublisher channelPublisher;
         private readonly ITestOutputHelper testOutputHelper;
@@ -15,16 +19,17 @@ namespace LoRaWan.Tests.Integration{
         public RedisChannelPublisherTests(RedisFixture redis, ITestOutputHelper testOutputHelper)
         {
             if (redis is null) throw new ArgumentNullException(nameof(redis));
-            this.channelPublisher = new RedisChannelPublisher(redis.Redis, NullLogger.instance);
+            this.channelPublisher = new RedisChannelPublisher(redis.Redis, NullLogger<RedisChannelPublisher>.Instance);
             this.testOutputHelper = testOutputHelper;
         }
 
-        public async Task Publish_Aysnc(){
+        [Fact]
+        public async Task Publish_Aysnc()
+        {
             var message = "test message";
             var channel = "channel1";
             Console.WriteLine("Publishing message...");
-            channelPublisher.PublishAsync(channel,message);
-
+            await this.channelPublisher.PublishAsync(channel, message);
         }
-}
+    }
 }

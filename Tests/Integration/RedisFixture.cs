@@ -33,8 +33,6 @@ namespace LoRaWan.Tests.Integration
 
         public IDatabase Database { get; set; }
 
-        public ISubscriber Subscriber;
-
         private async Task StartRedisContainer()
         {
             IList<ContainerListResponse> containers = new List<ContainerListResponse>();
@@ -129,8 +127,8 @@ namespace LoRaWan.Tests.Integration
             var redisConnectionString = $"localhost:{RedisPort}";
             try
             {
-                this.redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
-                Database = this.redis.GetDatabase();
+                Redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
+                Database = Redis.GetDatabase();
             }
             catch (Exception ex)
             {
@@ -144,9 +142,8 @@ namespace LoRaWan.Tests.Integration
             var redisConnectionString = $"localhost:{RedisPort}";
             try
             {
-                this.redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
+                Redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
                 Console.WriteLine("Getting redis subscriber.");
-                Subscriber= this.redis.GetSubscriber();
             }
             catch (Exception ex)
             {
@@ -176,8 +173,8 @@ namespace LoRaWan.Tests.Integration
                 }
             }
 
-            this.redis?.Dispose();
-            this.redis = null;
+            Redis?.Dispose();
+            Redis = null;
         }
     }
 }

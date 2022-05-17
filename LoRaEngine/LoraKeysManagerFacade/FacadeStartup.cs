@@ -42,7 +42,6 @@ namespace LoraKeysManagerFacade
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
             var redisCache = redis.GetDatabase();
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);
-        
 
             builder.Services.AddAzureClients(builder =>
             {
