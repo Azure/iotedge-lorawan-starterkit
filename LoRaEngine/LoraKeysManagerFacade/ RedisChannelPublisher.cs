@@ -6,7 +6,6 @@ namespace LoraKeysManagerFacade
     using StackExchange.Redis;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
-
     public class RedisChannelPublisher : IChannelPublisher
     {
         private readonly ConnectionMultiplexer redis;
@@ -22,6 +21,7 @@ namespace LoraKeysManagerFacade
 
         public async Task PublishAsync(string channel, string value)
         {
+            this.logger.LogDebug("Publishing message to channel '{Channel}'.", channel);
             _ = await subscriber.PublishAsync(channel, value);
         }
     }
