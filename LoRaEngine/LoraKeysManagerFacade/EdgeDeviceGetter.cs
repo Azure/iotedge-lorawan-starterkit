@@ -74,8 +74,10 @@ namespace LoraKeysManagerFacade
             return isEdgeDevice;
         }
 
+        private static string RedisLnsDeviceCacheKey(string lnsId) => $"lnsInstance-{lnsId}";
+
         private bool MarkDeviceAsNonEdge(string lnsId)
-            => this.cacheStore.ObjectSet(lnsId,
+            => this.cacheStore.ObjectSet(RedisLnsDeviceCacheKey(lnsId),
                                          new DeviceKind(isEdge: false),
                                          TimeSpan.FromDays(1),
                                          onlyIfNotExists: true);
@@ -86,7 +88,7 @@ namespace LoraKeysManagerFacade
             var twins = await GetEdgeDevicesAsync(cancellationToken);
             foreach (var t in twins)
             {
-                _ = this.cacheStore.ObjectSet(t.DeviceId,
+                _ = this.cacheStore.ObjectSet(RedisLnsDeviceCacheKey(t.DeviceId),
                                               new DeviceKind(isEdge: true),
                                               TimeSpan.FromDays(1),
                                               onlyIfNotExists: true);
