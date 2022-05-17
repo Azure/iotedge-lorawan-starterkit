@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Moq;

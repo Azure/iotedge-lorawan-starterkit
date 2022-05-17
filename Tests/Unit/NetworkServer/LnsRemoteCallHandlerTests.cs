@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using Bogus;
+    using global::LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging;
