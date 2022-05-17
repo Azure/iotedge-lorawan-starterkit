@@ -6,7 +6,7 @@ namespace LoraKeysManagerFacade
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal class IEdgeDeviceGetter
+    public class IEdgeDeviceGetter
     {
         Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken);
     }
