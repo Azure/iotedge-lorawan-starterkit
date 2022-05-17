@@ -60,6 +60,7 @@ namespace LoraKeysManagerFacade
                                                                               sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
                 .AddSingleton<CreateEdgeDevice>()
                 .AddSingleton<DeviceGetter>()
+                .AddSingleton<EdgeDeviceGetter>()
                 .AddSingleton<FCntCacheCheck>()
                 .AddSingleton<FunctionBundlerFunction>()
                 .AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>()
