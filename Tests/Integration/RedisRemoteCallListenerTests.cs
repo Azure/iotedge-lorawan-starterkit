@@ -54,6 +54,22 @@ namespace LoRaWan.Tests.Integration
             function.Verify(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
         }
 
+        [Fact]
+        public async Task UnsubscribeAsync_Unsubscribes_Successfully()
+        {
+            // arrange
+            var lns = "lns-1";
+            var function = new Mock<Func<LnsRemoteCall, Task>>();
+            await this.subject.SubscribeAsync(lns, function.Object, CancellationToken.None);
+
+            // act
+            await this.subject.UnsubscribeAsync(lns, CancellationToken.None);
+            await PublishAsync(lns, new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
+
+            // assert
+            function.Verify(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
+        }
+
         private async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)
         {
             await this.redis.GetSubscriber().PublishAsync(channel, JsonSerializer.Serialize(lnsRemoteCall));

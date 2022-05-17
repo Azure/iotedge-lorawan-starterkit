@@ -22,16 +22,12 @@ namespace LoRaWan.NetworkServer
             this.networkServerConfiguration = networkServerConfiguration;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            await this.lnsRemoteCallListener.SubscribeAsync(this.networkServerConfiguration.GatewayID,
-                                                            remotecall => this.lnsRemoteCallHandler.ExecuteAsync(remotecall, cancellationToken),
-                                                            cancellationToken);
-        }
+        public Task StartAsync(CancellationToken cancellationToken) =>
+            this.lnsRemoteCallListener.SubscribeAsync(this.networkServerConfiguration.GatewayID,
+                                                      remoteCall => this.lnsRemoteCallHandler.ExecuteAsync(remoteCall, cancellationToken),
+                                                      cancellationToken);
 
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await this.lnsRemoteCallListener.UnsubscribeAsync(this.networkServerConfiguration.GatewayID, cancellationToken);
-        }
+        public Task StopAsync(CancellationToken cancellationToken) =>
+            this.lnsRemoteCallListener.UnsubscribeAsync(this.networkServerConfiguration.GatewayID, cancellationToken);
     }
 }
