@@ -6,9 +6,11 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
+    using LoRaTools;
     using LoRaWan.Tests.Common;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Azure.Devices;
@@ -24,6 +26,8 @@ namespace LoRaWan.Tests.Integration
         private readonly ILoRaDeviceCacheStore cache;
         private readonly Mock<IServiceClient> serviceClientMock;
         private readonly TelemetryConfiguration telemetryConfiguration;
+        private readonly Mock<IEdgeDeviceGetter> edgeDeviceGetter;
+        private readonly Mock<IChannelPublisher> channelPublisher;
         private readonly DeduplicationExecutionItem deduplicationExecutionItem;
 
         public DeduplicationTestWithRedis(RedisFixture redis)
@@ -33,7 +37,13 @@ namespace LoRaWan.Tests.Integration
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
             this.serviceClientMock = new Mock<IServiceClient>();
             this.telemetryConfiguration = new TelemetryConfiguration();
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(this.cache, this.serviceClientMock.Object, this.telemetryConfiguration);
+            this.edgeDeviceGetter = new Mock<IEdgeDeviceGetter>();
+            this.channelPublisher = new Mock<IChannelPublisher>();
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(this.cache,
+                                                                             this.serviceClientMock.Object,
+                                                                             this.edgeDeviceGetter.Object,
+                                                                             this.channelPublisher.Object,
+                                                                             this.telemetryConfiguration);
         }
 
         [Theory]
@@ -41,8 +51,9 @@ namespace LoRaWan.Tests.Integration
         [InlineData("gateway1", 1, "gateway1", 2)]
         [InlineData("gateway1", 1, "gateway2", 1)]
         [InlineData("gateway1", 1, "gateway2", 2)]
-        public async Task When_Called_Multiple_Times_With_Same_Device_Should_Detect_Duplicates(string gateway1, uint fcnt1, string gateway2, uint fcnt2)
+        public async Task When_Called_Multiple_Times_With_Same_Device_Should_Detect_Duplicates_Direct_Method(string gateway1, uint fcnt1, string gateway2, uint fcnt2)
         {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
             this.serviceClientMock.Setup(
                 x => x.InvokeDeviceMethodAsync(It.IsAny<string>(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = 200 });
@@ -85,6 +96,56 @@ namespace LoRaWan.Tests.Integration
                 this.serviceClientMock.Verify(x => x.InvokeDeviceMethodAsync(gateway1, LoraKeysManagerFacadeConstants.NetworkServerModuleId,
                     It.Is<CloudToDeviceMethod>(m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection
                     && m.GetPayloadAsJson().Contains(devEUI.ToString()))));
+            }
+        }
+
+        [Theory]
+        [InlineData("gateway1", 1, "gateway1", 1)]
+        [InlineData("gateway1", 1, "gateway1", 2)]
+        [InlineData("gateway1", 1, "gateway2", 1)]
+        [InlineData("gateway1", 1, "gateway2", 2)]
+        public async Task When_Called_Multiple_Times_With_Same_Device_Should_Detect_Duplicates_Pub_Sub(string gateway1, uint fcnt1, string gateway2, uint fcnt2)
+        {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+            var devEUI = TestEui.GenerateDevEui();
+
+            var req1 = new FunctionBundlerRequest() { GatewayId = gateway1, ClientFCntUp = fcnt1, ClientFCntDown = fcnt1 };
+            var pipeline1 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.deduplicationExecutionItem }, devEUI, req1);
+            var res1 = await this.deduplicationExecutionItem.ExecuteAsync(pipeline1);
+
+            Assert.Equal(FunctionBundlerExecutionState.Continue, res1);
+            Assert.NotNull(pipeline1.Result.DeduplicationResult);
+            Assert.False(pipeline1.Result.DeduplicationResult.IsDuplicate);
+
+            var req2 = new FunctionBundlerRequest() { GatewayId = gateway2, ClientFCntUp = fcnt2, ClientFCntDown = fcnt2 };
+            var pipeline2 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.deduplicationExecutionItem }, devEUI, req2);
+            var res2 = await this.deduplicationExecutionItem.ExecuteAsync(pipeline2);
+
+            Assert.NotNull(pipeline2.Result.DeduplicationResult);
+
+            // same gateway -> no duplicate
+            if (gateway1 == gateway2)
+            {
+                Assert.Equal(FunctionBundlerExecutionState.Continue, res2);
+                Assert.False(pipeline2.Result.DeduplicationResult.IsDuplicate);
+            }
+            // different gateway, the same fcnt -> duplicate
+            else if (fcnt1 == fcnt2)
+            {
+                Assert.Equal(FunctionBundlerExecutionState.Abort, res2);
+                Assert.True(pipeline2.Result.DeduplicationResult.IsDuplicate);
+            }
+            // different gateway, higher fcnt -> no duplicate
+            else
+            {
+                Assert.Equal(FunctionBundlerExecutionState.Continue, res2);
+                Assert.False(pipeline2.Result.DeduplicationResult.IsDuplicate);
+
+                // gateway1 should be notified that it needs to drop connection for the device
+                this.channelPublisher.Verify(x => x.PublishAsync(It.IsAny<string>(), It.IsAny<LnsRemoteCall>()));
+
+                this.serviceClientMock.VerifyNoOtherCalls();
             }
         }
 

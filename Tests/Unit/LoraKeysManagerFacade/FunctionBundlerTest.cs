@@ -58,7 +58,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             this.telemetryConfiguration = new TelemetryConfiguration();
             var items = new IFunctionBundlerExecutionItem[]
             {
-                new DeduplicationExecutionItem(cacheStore, Mock.Of<IServiceClient>(), this.telemetryConfiguration),
+                new DeduplicationExecutionItem(cacheStore,
+                                               Mock.Of<IServiceClient>(),
+                                               Mock.Of<IEdgeDeviceGetter>(),
+                                               Mock.Of<IChannelPublisher>(),
+                                               this.telemetryConfiguration),
                 this.adrExecutionItem,
                 new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore, NullLogger<FCntCacheCheck>.Instance)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
@@ -339,7 +343,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
             var items = new IFunctionBundlerExecutionItem[]
             {
-                new DeduplicationExecutionItem(cacheStore, Mock.Of<IServiceClient>(), this.telemetryConfiguration),
+                new DeduplicationExecutionItem(cacheStore,
+                                               Mock.Of<IServiceClient>(),
+                                               Mock.Of<IEdgeDeviceGetter>(),
+                                               Mock.Of<IChannelPublisher>(),
+                                               this.telemetryConfiguration),
                 new ADRExecutionItem(this.adrManager),
                 new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore, NullLogger<FCntCacheCheck>.Instance)),
                 new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),

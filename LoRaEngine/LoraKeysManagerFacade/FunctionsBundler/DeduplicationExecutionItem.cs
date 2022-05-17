@@ -4,7 +4,9 @@
 namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.CommonAPI;
     using LoRaWan;
     using Microsoft.ApplicationInsights;
@@ -21,16 +23,21 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly IServiceClient serviceClient;
+        private readonly IEdgeDeviceGetter edgeDeviceGetter;
+        private readonly IChannelPublisher channelPublisher;
         private readonly Microsoft.ApplicationInsights.Metric connectionOwnershipChangedMetric;
 
         public DeduplicationExecutionItem(
             ILoRaDeviceCacheStore cacheStore,
             IServiceClient serviceClient,
+            IEdgeDeviceGetter edgeDeviceGetter,
+            IChannelPublisher channelPublisher,
             TelemetryConfiguration telemetryConfiguration)
         {
             this.cacheStore = cacheStore;
             this.serviceClient = serviceClient;
-
+            this.edgeDeviceGetter = edgeDeviceGetter;
+            this.channelPublisher = channelPublisher;
             var telemetryClient = new TelemetryClient(telemetryConfiguration);
             var metricIdentifier = new MetricIdentifier(LoraKeysManagerFacadeConstants.MetricNamespace, ConnectionOwnershipChangeMetricName);
             this.connectionOwnershipChangedMetric = telemetryClient.GetMetric(metricIdentifier);
@@ -59,6 +66,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
         {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             var isDuplicate = true;
             var processedDevice = gatewayId;
 
@@ -105,16 +113,26 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 };
 
                                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                                _ = method.SetPayloadJson(JsonConvert.SerializeObject(loraC2DMessage));
+                                var jsonContents = JsonConvert.SerializeObject(loraC2DMessage);
+                                _ = method.SetPayloadJson(jsonContents);
 
                                 try
                                 {
-                                    var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
-                                    logger?.LogDebug("Connection owner changed and direct method was called on previous gateway '{PreviousConnectionOwner}' to close connection; result is '{Status}'", previousGateway, res?.Status);
-
-                                    if (!HttpUtilities.IsSuccessStatusCode(res.Status))
+                                    if (await this.edgeDeviceGetter.IsEdgeDeviceAsync(previousGateway, cts.Token))
                                     {
-                                        logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
+                                        var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                                        logger?.LogDebug("Connection owner changed and direct method was called on previous gateway '{PreviousConnectionOwner}' to close connection; result is '{Status}'", previousGateway, res?.Status);
+
+                                        if (!HttpUtilities.IsSuccessStatusCode(res.Status))
+                                        {
+                                            logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        await this.channelPublisher.PublishAsync(previousGateway, new LnsRemoteCall(RemoteCallKind.CloseConnection, jsonContents));
+                                        logger?.LogDebug("Connection owner changed and message was published to previous gateway '{PreviousConnectionOwner}' to close connection", previousGateway);
                                     }
                                 }
                                 catch (IotHubException ex)

@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
     using global::LoraKeysManagerFacade.FunctionBundler;
@@ -19,13 +20,21 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
         private readonly DeduplicationExecutionItem deduplicationExecutionItem;
         private readonly Mock<IServiceClient> serviceClientMock;
         private readonly TelemetryConfiguration telemetryConfiguration;
+        private readonly Mock<IEdgeDeviceGetter> edgeDeviceGetter;
 
         public MessageDeduplicationTests()
         {
             this.serviceClientMock = new Mock<IServiceClient>();
 
             this.telemetryConfiguration = new TelemetryConfiguration();
-            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(), this.serviceClientMock.Object, this.telemetryConfiguration);
+            this.edgeDeviceGetter = new Mock<IEdgeDeviceGetter>();
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore(),
+                                                                             this.serviceClientMock.Object,
+                                                                             this.edgeDeviceGetter.Object,
+                                                                             Mock.Of<IChannelPublisher>(),
+                                                                             this.telemetryConfiguration);
         }
 
         [Fact]
