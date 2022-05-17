@@ -4,12 +4,13 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using StackExchange.Redis;
 
     internal interface ILnsRemoteCallListener
     {
-        void Subscribe(string lns, Func<string, Task> function);
+        void Subscribe(string lns, Func<LnsRemoteCall, Task> function);
     }
 
     internal sealed class RedisRemoteCallListener : ILnsRemoteCallListener
@@ -21,9 +22,10 @@ namespace LoRaWan.NetworkServer
             this.redis = redis;
         }
 
-        public void Subscribe(string lns, Func<string, Task> function)
+        public void Subscribe(string lns, Func<LnsRemoteCall, Task> function)
         {
-            this.redis.GetSubscriber().Subscribe(lns).OnMessage(value => function(value.Message));
+            this.redis.GetSubscriber().Subscribe(lns).OnMessage(value =>
+                function(JsonSerializer.Deserialize<LnsRemoteCall>(value.Message)));
         }
     }
 }

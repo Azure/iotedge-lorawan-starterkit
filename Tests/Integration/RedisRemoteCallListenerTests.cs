@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using Moq;
@@ -27,34 +28,34 @@ namespace LoRaWan.Tests.Integration
         {
             // arrange
             var lnsName = "some-lns";
-            var message = "somemessage";
-            var function = new Mock<Func<string, Task>>();
+            var remoteCall = new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, "somejsondata");
+            var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
             this.subject.Subscribe(lnsName, function.Object);
-            await PublishAsync(lnsName, message);
+            await PublishAsync(lnsName, remoteCall);
 
             // assert
-            function.Verify(a => a.Invoke(message), Times.Once);
+            function.Verify(a => a.Invoke(remoteCall), Times.Once);
         }
 
         [Fact]
         public async Task Subscribe_On_Different_Channel_Does_Not_Receive_Message()
         {
             // arrange
-            var function = new Mock<Func<string, Task>>();
+            var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
             this.subject.Subscribe("lns-1", function.Object);
-            await PublishAsync("lns-2", string.Empty);
+            await PublishAsync("lns-2", new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
 
             // assert
-            function.Verify(a => a.Invoke(It.IsAny<string>()), Times.Never);
+            function.Verify(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
         }
 
-        private async Task PublishAsync(string channel, string message)
+        private async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)
         {
-            await this.redis.GetSubscriber().PublishAsync(channel, message);
+            await this.redis.GetSubscriber().PublishAsync(channel, JsonSerializer.Serialize(lnsRemoteCall));
         }
     }
 }
