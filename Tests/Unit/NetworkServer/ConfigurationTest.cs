@@ -39,5 +39,31 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             TheoryDataFactory.From(("0228B1B1;", new[] { new DevAddr(0x0228b1b1) }),
                                    ("0228B1B1;0228B1B2", new DevAddr[] { new DevAddr(0x0228b1b1), new DevAddr(0x0228b1b2) }),
                                    ("ads;0228B1B2;", new DevAddr[] { new DevAddr(0x0228b1b2) }));
+        [Theory]
+        [InlineData("500")]
+        [InlineData("x")]
+        public void ProcessingDelayIsConfigurable(string processing_delay)
+        {
+            var envVariables = new[] { ("PROCESSING_DELAY_IN_MS", processing_delay) };
+
+            try
+            {
+                foreach (var (key, value) in envVariables)
+                    Environment.SetEnvironmentVariable(key, value);
+
+                var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+
+                if (!int.TryParse(processing_delay, out var int_processing_delay))
+                {
+                    int_processing_delay = Constants.DefaultProcessingDelayInMilliseconds;
+                }
+                Assert.Equal(int_processing_delay, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            }
+            finally
+            {
+                foreach (var (key, _) in envVariables)
+                    Environment.SetEnvironmentVariable(key, string.Empty);
+            }
+        }
     }
 }

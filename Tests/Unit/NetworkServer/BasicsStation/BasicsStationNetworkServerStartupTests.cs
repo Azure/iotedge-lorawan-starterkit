@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 {
     using System;
+    using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using Microsoft.Extensions.Configuration;
