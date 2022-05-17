@@ -47,7 +47,7 @@ namespace LoraKeysManagerFacade
             var isEdgeDevice = false;
             try
             {
-                if (await cacheStore.LockTakeAsync(keyLock, owner, TimeSpan.FromSeconds(10)))
+                if (await this.cacheStore.LockTakeAsync(keyLock, owner, TimeSpan.FromSeconds(10)))
                 {
                     var findInCache = () => this.cacheStore.GetObject<DeviceKind>(lnsId);
                     if (findInCache() is null)
@@ -55,7 +55,11 @@ namespace LoraKeysManagerFacade
                         await RefreshEdgeDevicesCacheAsync(cancellationToken);
                         isEdgeDevice = findInCache() is { IsEdge: true };
                         if (!isEdgeDevice)
-                            _ = MarkDeviceAsNonEdge(lnsId);
+                        {
+                            var marked = MarkDeviceAsNonEdge(lnsId);
+                            if (!marked)
+                                this.logger.LogError("Could not update Redis Edge Device cache status for device {}", lnsId);
+                        }
                     }
                 }
                 else
@@ -65,7 +69,7 @@ namespace LoraKeysManagerFacade
             }
             finally
             {
-                _ = cacheStore.LockRelease(keyLock, owner);
+                _ = this.cacheStore.LockRelease(keyLock, owner);
             }
             return isEdgeDevice;
         }
