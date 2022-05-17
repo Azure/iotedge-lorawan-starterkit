@@ -3,11 +3,11 @@
 
 #nullable enable
 
-namespace LoRaWan.NetworkServer
+namespace LoRaTools
 {
-    internal sealed record LnsRemoteCall(RemoteCallKind Kind, string? JsonData);
+    public sealed record LnsRemoteCall(RemoteCallKind Kind, string? JsonData);
 
-    internal enum RemoteCallKind
+    public enum RemoteCallKind
     {
         CloudToDeviceMessage,
         ClearCache,

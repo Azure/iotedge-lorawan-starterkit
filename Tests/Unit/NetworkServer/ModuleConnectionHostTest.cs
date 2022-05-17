@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using Bogus;
+    using global::LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.Tests.Common;

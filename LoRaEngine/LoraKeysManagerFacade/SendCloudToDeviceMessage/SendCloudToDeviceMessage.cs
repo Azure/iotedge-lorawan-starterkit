@@ -162,6 +162,7 @@ namespace LoraKeysManagerFacade
                 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
                 message.MessageId = string.IsNullOrEmpty(c2dMessage.MessageId) ? Guid.NewGuid().ToString() : c2dMessage.MessageId;
 
+                // class a devices only listen for 1-2 seconds, so we send to a queue on the device - we don't care about this for redis 
                 try
                 {
                     await this.serviceClient.SendAsync(devEUI.ToString(), message);
@@ -197,7 +198,8 @@ namespace LoraKeysManagerFacade
             {
                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                 _ = method.SetPayloadJson(JsonConvert.SerializeObject(c2dMessage));
-
+                // class c devices are always listening - we want to publish message to redis queue here 
+                // call IChannelPublisher.PublishAsync
                 var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                 if (HttpUtilities.IsSuccessStatusCode(res.Status))
                 {

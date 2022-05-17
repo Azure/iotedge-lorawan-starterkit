@@ -3,10 +3,10 @@
 
 #nullable enable
 
-namespace LoRaWan.Tests.Unit.NetworkServer
+namespace LoRaWan.Tests.Unit.LoRaTools
 {
     using System.Text.Json;
-    using LoRaWan.NetworkServer;
+    using global::LoRaTools;
     using Xunit;
 
     public sealed class LnsRemoteCallTests

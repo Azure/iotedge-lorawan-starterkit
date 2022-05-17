@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using StackExchange.Redis;
+    using LoRaTools;
 
     internal interface ILnsRemoteCallListener
     {

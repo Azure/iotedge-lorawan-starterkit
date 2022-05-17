@@ -134,6 +134,7 @@ namespace LoRaWan.Tests.Integration
                 throw new InvalidOperationException($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.", ex);
             }
         }
+        
 
         public async Task DisposeAsync()
         {
