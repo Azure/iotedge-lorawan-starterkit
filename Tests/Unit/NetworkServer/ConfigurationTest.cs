@@ -14,7 +14,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [MemberData(nameof(AllowedDevAddressesInput))]
         public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, DevAddr[] expectedAllowedDevAddrValues)
         {
-            var envVariables = new[] { ("AllowedDevAddresses", inputAllowedDevAddrValues), ("FACADE_SERVER_URL", "https://aka.ms") };
+            var envVariables = new[]
+            {
+                ("AllowedDevAddresses", inputAllowedDevAddrValues),
+                ("FACADE_SERVER_URL", "https://aka.ms"),
+                ("HOSTNAME", "test"),
+                ("IOTHUBHOSTNAME", "test")
+            };
 
             try
             {
@@ -47,6 +53,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var key = "REDIS_CONNECTION_STRING";
             var value = "someValue";
             var lnsConfigurationCreation = () => NetworkServerConfiguration.CreateFromEnvironmentVariables();
+
+            Environment.SetEnvironmentVariable("HOSTNAME", "test");
+            Environment.SetEnvironmentVariable("IOTHUBHOSTNAME", "test");
 
             if (isCloudDeployment)
             {
@@ -86,7 +95,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             {
                 ("CLOUD_DEPLOYMENT", cloud_deployment.ToString()),
                 ("ENABLE_GATEWAY", enable_gateway.ToString()),
-                ("REDIS_CONNECTION_STRING", "someString")
+                ("REDIS_CONNECTION_STRING", "someString"),
+                ("HOSTNAME", "test"),
+                ("IOTHUBHOSTNAME", "test")
             };
 
             try
@@ -117,7 +128,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData("x")]
         public void ProcessingDelayIsConfigurable(string processing_delay)
         {
-            var envVariables = new[] { ("PROCESSING_DELAY_IN_MS", processing_delay) };
+            var envVariables = new[]
+            {
+                ("PROCESSING_DELAY_IN_MS", processing_delay),
+                ("HOSTNAME", "test")
+            };
 
             try
             {
