@@ -3,21 +3,35 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Hosting;
 
     internal class CloudControlHost : IHostedService
     {
-        public Task StartAsync(CancellationToken cancellationToken)
+        private readonly ILnsRemoteCallListener lnsRemoteCallListener;
+        private readonly ILnsRemoteCallHandler lnsRemoteCallHandler;
+        private readonly NetworkServerConfiguration networkServerConfiguration;
+
+        public CloudControlHost(ILnsRemoteCallListener lnsRemoteCallListener,
+                                ILnsRemoteCallHandler lnsRemoteCallHandler,
+                                NetworkServerConfiguration networkServerConfiguration)
         {
-            throw new NotImplementedException();
+            this.lnsRemoteCallListener = lnsRemoteCallListener;
+            this.lnsRemoteCallHandler = lnsRemoteCallHandler;
+            this.networkServerConfiguration = networkServerConfiguration;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await this.lnsRemoteCallListener.SubscribeAsync(this.networkServerConfiguration.GatewayID,
+                                                            async (remotecall) => await this.lnsRemoteCallHandler.ExecuteAsync(remotecall, cancellationToken),
+                                                            cancellationToken);
+        }
+
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await this.lnsRemoteCallListener.UnsubscribeAsync(this.networkServerConfiguration.GatewayID, cancellationToken);
         }
     }
 }
