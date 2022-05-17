@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Fact]
-        public async Task Subscribe_Rceives_Message()
+        public async Task Subscribe_Receives_Message()
         {
             // arrange
             var lnsName = "some-lns";
