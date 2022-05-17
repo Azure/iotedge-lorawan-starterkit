@@ -80,7 +80,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddHttpClient()
                         .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
                         .AddSingleton(NetworkServerConfiguration)
-                        .AddSingleton<ModuleConnectionHost>()
                         .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
                         .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
                         .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
@@ -126,6 +125,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
                 _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
+            if (NetworkServerConfiguration.RunningAsIoTEdgeModule)
+            {
+                _ = services.AddSingleton<ModuleConnectionHost>();
+            }
         }
 
 #pragma warning disable CA1822 // Mark members as static
