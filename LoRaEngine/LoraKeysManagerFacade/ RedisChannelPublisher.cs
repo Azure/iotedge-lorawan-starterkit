@@ -6,6 +6,9 @@ namespace LoraKeysManagerFacade
     using StackExchange.Redis;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
+    using LoRaTools;
+    using System.Text.Json;
+
     public class RedisChannelPublisher : IChannelPublisher
     {
         private readonly ConnectionMultiplexer redis;
@@ -19,10 +22,10 @@ namespace LoraKeysManagerFacade
             this.subscriber = this.redis.GetSubscriber();
         }
 
-        public async Task PublishAsync(string channel, string value)
+        public async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)
         {
             this.logger.LogDebug("Publishing message to channel '{Channel}'.", channel);
-            _ = await subscriber.PublishAsync(channel, value);
+            _ = await this.subscriber.PublishAsync(channel, JsonSerializer.Serialize(lnsRemoteCall));
         }
     }
 }

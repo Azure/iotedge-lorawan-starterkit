@@ -4,12 +4,13 @@
 namespace LoraKeysManagerFacade
 {
     using System.Threading.Tasks;
+    using LoRaTools;
 
     /// <summary>
     /// Interface for publisher interation.
     /// </summary>
     public interface IChannelPublisher
     {
-        Task PublishAsync(string channel, string value);
+        Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall);
     }
 }
