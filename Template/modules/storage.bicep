@@ -10,7 +10,7 @@ resource storageaccount 'Microsoft.Storage/storageAccounts@2015-06-15' = {
 }
 
 param credentialsContainerName string
-param FormattedCredentialsContainerName string = '${storageAccountName}/default/${credentialsContainerName}'
+var FormattedCredentialsContainerName = '${storageAccountName}/default/${credentialsContainerName}'
 resource credentialscontainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-06-01' = {
   name: FormattedCredentialsContainerName
   dependsOn: [
@@ -19,7 +19,7 @@ resource credentialscontainer 'Microsoft.Storage/storageAccounts/blobServices/co
 }
 
 param firmwareUpgradesContainerName string
-param FormattedFirmwareUpgradesContainerName string = '${storageAccountName}/default/${firmwareUpgradesContainerName}'
+var FormattedFirmwareUpgradesContainerName = '${storageAccountName}/default/${firmwareUpgradesContainerName}'
 resource firwareupgradescontainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-06-01' = {
   name: FormattedFirmwareUpgradesContainerName
   dependsOn: [

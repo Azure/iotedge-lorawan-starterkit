@@ -1,4 +1,8 @@
-var iothubname = '${uniqueSolutionPrefix}hub'
+var iotHubName = '${uniqueSolutionPrefix}hub'
+var storageAccountName = '${uniqueSolutionPrefix}storage'
+var storageAccountType = 'Standard_LRS'
+var credentialsContainerName = 'stationcredentials'
+var firmwareUpgradesContainerName = 'fwupgrades'
 
 param uniqueSolutionPrefix string
 param location string = resourceGroup().location
@@ -7,14 +11,20 @@ param discoveryZipUrl string
 module iotHub 'modules/iothub.bicep' = {
   name: 'iothub'
   params: {
-    iothubname: iothubname
+    iothubname: iotHubName
     location: location
   }
 }
 
 module storage 'modules/storage.bicep' = {
   name: 'storage'
-  params: {}
+  params: {
+    storageAccountName: storageAccountName
+    storageAccountType: storageAccountType
+    credentialsContainerName: credentialsContainerName
+    firmwareUpgradesContainerName: firmwareUpgradesContainerName
+
+  }
 }
 
 module function 'modules/function.bicep' = {
@@ -26,7 +36,7 @@ module function 'modules/function.bicep' = {
     hostingPlanLocation: location
   }
   dependsOn: [
-    iotHub,
+    iotHub
     storage
   ]
 }
@@ -36,9 +46,9 @@ module discoveryService 'modules/discoveryService.bicep' = {
   params: {
     appInsightName: '${uniqueSolutionPrefix}insight'
     discoveryZipUrl: discoveryZipUrl
-    iotHubHostName: 'TODO'
+    iotHubHostName: reference(resourceId('Microsoft.Devices/IoTHubs', iotHubName), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).hostName
     iotHubName: '${uniqueSolutionPrefix}hub'
-    webAppName: 'TODO'
+    uniqueSolutionPrefix: uniqueSolutionPrefix
     location: location
   }
 }

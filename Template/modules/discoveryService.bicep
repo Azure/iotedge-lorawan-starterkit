@@ -1,4 +1,3 @@
-param webAppName string
 param location string = resourceGroup().location
 param sku string = 'B1'
 param iotHubHostName string
@@ -6,7 +5,9 @@ param discoveryZipUrl string
 param iotHubName string
 param appInsightName string
 param roleNameGuid string = guid(resourceGroup().id, 'twincontributor')
+param uniqueSolutionPrefix string
 
+var webAppName = '${uniqueSolutionPrefix}discovery'
 var hostingPlanName = '${webAppName}plan'
 var iotHubTwinContributorRoleId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/494bdba2-168f-4f31-a0a1-191d2f7c028c'
 var aspNetCoreUrls = 'http://0.0.0.0:80;https://0.0.0.0:443'
