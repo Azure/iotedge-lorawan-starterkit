@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using Bogus;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
@@ -29,7 +28,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         private readonly Mock<ILoraModuleClient> loRaModuleClient = new();
         private readonly LoRaDeviceAPIServiceBase loRaDeviceApiServiceBase = Mock.Of<LoRaDeviceAPIServiceBase>();
         private readonly Faker faker = new Faker();
-        private readonly Mock<ILnsRemoteCall> lnsRemoteCall;
+        private readonly Mock<ILnsRemoteCallHandler> lnsRemoteCall;
         private readonly ModuleConnectionHost subject;
 
         public ModuleConnectionHostTest()
@@ -37,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
             this.loRaModuleClient.Setup(x => x.DisposeAsync());
             this.loRaModuleClientFactory.Setup(x => x.CreateAsync()).ReturnsAsync(loRaModuleClient.Object);
-            this.lnsRemoteCall = new Mock<ILnsRemoteCall>();
+            this.lnsRemoteCall = new Mock<ILnsRemoteCallHandler>();
             this.subject = new ModuleConnectionHost(this.networkServerConfiguration,
                                                     this.loRaModuleClientFactory.Object,
                                                     this.loRaDeviceApiServiceBase,
@@ -58,7 +57,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, null, this.lnsRemoteCall.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
             Assert.Equal("loRaDeviceAPIService", ex.ParamName);
             ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, this.loRaDeviceApiServiceBase, null, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
-            Assert.Equal("lnsRemoteCall", ex.ParamName);
+            Assert.Equal("lnsRemoteCallHandler", ex.ParamName);
         }
 
         [Fact]
@@ -231,7 +230,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task OnDirectMethodCall_Should_Invoke_ClearCache()
         {
             await this.subject.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceClearCache), null);
-            this.lnsRemoteCall.Verify(l => l.ClearCacheAsync(), Times.Once);
+            this.lnsRemoteCall.Verify(l => l.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.ClearCache, null), CancellationToken.None), Times.Once);
         }
 
         [Fact]
@@ -245,7 +244,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
-            this.lnsRemoteCall.Verify(l => l.CloseConnectionAsync(json, CancellationToken.None), Times.Once);
+            this.lnsRemoteCall.Verify(l => l.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.CloseConnection, json), CancellationToken.None), Times.Once);
         }
 
         [Fact]
@@ -259,7 +258,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var result = await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
-            this.lnsRemoteCall.Verify(l => l.SendCloudToDeviceMessageAsync(json, CancellationToken.None), Times.Once);
+            this.lnsRemoteCall.Verify(l => l.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, json), CancellationToken.None), Times.Once);
         }
 
         [Fact]
