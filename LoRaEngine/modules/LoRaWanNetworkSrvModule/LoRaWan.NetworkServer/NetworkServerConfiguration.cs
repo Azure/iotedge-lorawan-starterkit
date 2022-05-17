@@ -131,10 +131,18 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string LnsVersion { get; private set; }
 
+        /// <summary>
+        /// Gets the connection string of Redis server for Pub/Sub functionality in Cloud only deployments.
+        /// </summary>
+        public string RedisConnectionString { get; private set; }
+
         /// Specifies the pool size for upstream AMQP connection
         /// </summary>
         public uint IotHubConnectionPoolSize { get; internal set; } = 1;
 
+        /// <summary>
+        /// Specifies the Processing Delay in Milliseconds
+        /// </summary>
         public int ProcessingDelayInMilliseconds { get; set; } = Constants.DefaultProcessingDelayInMilliseconds;
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
@@ -144,11 +152,15 @@ namespace LoRaWan.NetworkServer
 
             // Create case insensitive dictionary from environment variables
             var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());
-
-            config.RunningAsIoTEdgeModule = !string.IsNullOrEmpty(envVars.GetEnvVar("IOTEDGE_APIVERSION", string.Empty));
+            config.ProcessingDelayInMilliseconds = envVars.GetEnvVar("PROCESSING_DELAY_IN_MS", config.ProcessingDelayInMilliseconds);
+            config.RunningAsIoTEdgeModule = !envVars.GetEnvVar("CLOUD_DEPLOYMENT", false);
             config.IoTHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", string.Empty);
             config.GatewayHostName = envVars.GetEnvVar("IOTEDGE_GATEWAYHOSTNAME", string.Empty);
-            config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", config.EnableGateway);
+            config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", true);
+            if (!config.RunningAsIoTEdgeModule && config.EnableGateway)
+            {
+                throw new NotSupportedException("ENABLE_GATEWAY cannot be true if RunningAsIoTEdgeModule is false.");
+            }
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", -1) is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null;
@@ -183,6 +195,10 @@ namespace LoRaWan.NetworkServer
                                               && size < AmqpConnectionPoolSettings.AbsoluteMaxPoolSize
                                               ? size
                                               : throw new NotSupportedException($"'IOTHUB_CONNECTION_POOL_SIZE' needs to be between 1 and {AmqpConnectionPoolSettings.AbsoluteMaxPoolSize}.");
+
+            config.RedisConnectionString = envVars.GetEnvVar("REDIS_CONNECTION_STRING", string.Empty);
+            if (!config.RunningAsIoTEdgeModule && string.IsNullOrEmpty(config.RedisConnectionString))
+                throw new InvalidOperationException("'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
 
             return config;
         }

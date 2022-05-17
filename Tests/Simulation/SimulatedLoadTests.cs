@@ -22,7 +22,6 @@ namespace LoRaWan.Tests.Simulation
     using static MoreLinq.Extensions.RepeatExtension;
     using static MoreLinq.Extensions.IndexExtension;
     using static MoreLinq.Extensions.TransposeExtension;
-    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
@@ -101,7 +100,7 @@ namespace LoRaWan.Tests.Simulation
 
             await Task.Delay(messagesToSendEachLNS * IntervalBetweenMessages);
             _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => !x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal),
+                x => !x.Contains(LnsRemoteCallHandler.ClosedConnectionLog, StringComparison.Ordinal),
                 new SearchLogOptions("No connection switch should be logged") { TreatAsError = true });
 
             // act: change basics station that the device is listened from and therefore the gateway it uses as well
@@ -111,8 +110,8 @@ namespace LoRaWan.Tests.Simulation
             // assert
             var expectedLnsToDropConnection = Configuration.LnsEndpointsForSimulator.First().Key;
             _ = await TestFixture.AssertNetworkServerModuleLogExistsAsync(
-                x => x.Contains(ModuleConnectionHost.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
-                new SearchLogOptions($"{ModuleConnectionHost.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
+                x => x.Contains(LnsRemoteCallHandler.ClosedConnectionLog, StringComparison.Ordinal) && x.Contains(expectedLnsToDropConnection, StringComparison.Ordinal),
+                new SearchLogOptions($"{LnsRemoteCallHandler.ClosedConnectionLog} and {expectedLnsToDropConnection}") { TreatAsError = true });
             await AssertIotHubMessageCountAsync(simulatedDevice, messagesToSendEachLNS * 2);
         }
 
