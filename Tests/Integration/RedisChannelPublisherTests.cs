@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Integration
             await this.channelPublisher.PublishAsync(channel, message);
 
             // assert
-            assert.Verify(a => a.Invoke(It.Is<ChannelMessage>(actual => actual.Message == serializedMessage)), Times.Once);
+            await assert.RetryVerifyAsync(a => a.Invoke(It.Is<ChannelMessage>(actual => actual.Message == serializedMessage)), Times.Once);
         }
     }
 }
