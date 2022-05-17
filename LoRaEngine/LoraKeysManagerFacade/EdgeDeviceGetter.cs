@@ -39,14 +39,30 @@ namespace LoraKeysManagerFacade
 
         internal async Task<bool> IsEdgeDeviceAsync(string lnsId)
         {
+            var keyLock = $"{nameof(EdgeDeviceGetter)}-lock";
+            var owner = nameof(EdgeDeviceGetter);
             var isEdgeDevice = false;
-            var findInCache = () => this.cacheStore.GetObject<DeviceKind>(lnsId);
-            if (findInCache() is null)
+            try
             {
-                await RefreshEdgeDevicesCacheAsync();
-                isEdgeDevice = findInCache() is { IsEdge: true };
-                if (!isEdgeDevice)
-                    _ = MarkDeviceAsNonEdge(lnsId);
+                if (await cacheStore.LockTakeAsync(keyLock, owner, TimeSpan.FromSeconds(10)))
+                {
+                    var findInCache = () => this.cacheStore.GetObject<DeviceKind>(lnsId);
+                    if (findInCache() is null)
+                    {
+                        await RefreshEdgeDevicesCacheAsync();
+                        isEdgeDevice = findInCache() is { IsEdge: true };
+                        if (!isEdgeDevice)
+                            _ = MarkDeviceAsNonEdge(lnsId);
+                    }
+                }
+                else
+                {
+                    throw new TimeoutException("Timed out while taking a lock on Redis Edge Device cache");
+                }
+            }
+            finally
+            {
+                _ = cacheStore.LockRelease(keyLock, owner);
             }
             return isEdgeDevice;
         }
