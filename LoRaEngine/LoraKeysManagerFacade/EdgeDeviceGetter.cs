@@ -51,8 +51,11 @@ namespace LoraKeysManagerFacade
             return isEdgeDevice;
         }
 
-        internal bool MarkDeviceAsNonEdge(string lnsId)
-            => this.cacheStore.ObjectSet(lnsId, new DeviceKind(false), TimeSpan.FromDays(1), true);
+        private bool MarkDeviceAsNonEdge(string lnsId)
+            => this.cacheStore.ObjectSet(lnsId,
+                                         new DeviceKind(isEdge: false),
+                                         TimeSpan.FromDays(1),
+                                         onlyIfNotExists: true);
 
         private async Task RefreshEdgeDevicesCacheAsync()
         {
@@ -61,16 +64,16 @@ namespace LoraKeysManagerFacade
             foreach (var t in twins)
             {
                 _ = this.cacheStore.ObjectSet(t.DeviceId,
-                                              new DeviceKind(true),
+                                              new DeviceKind(isEdge: true),
                                               TimeSpan.FromDays(1),
-                                              true);
+                                              onlyIfNotExists: true);
             }
         }
     }
 
     internal class DeviceKind
     {
-        public bool IsEdge { get; set; }
+        public bool IsEdge { get; private set; }
         public DeviceKind(bool isEdge)
         {
             IsEdge = isEdge;
