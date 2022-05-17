@@ -10,28 +10,27 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Threading.Tasks;
     using Bogus;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
-    public sealed class LnsRemoteCallTests
+    public sealed class LnsRemoteCallHandlerTests
     {
         private readonly Faker faker = new();
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly Mock<IClassCDeviceMessageSender> classCMessageSender;
         private readonly Mock<ILoRaDeviceRegistry> loRaDeviceRegistry;
-        private readonly Mock<ILogger<LnsRemoteCall>> logger;
-        private readonly LnsRemoteCall subject;
+        private readonly Mock<ILogger<LnsRemoteCallHandler>> logger;
+        private readonly LnsRemoteCallHandler subject;
 
-        public LnsRemoteCallTests()
+        public LnsRemoteCallHandlerTests()
         {
             this.networkServerConfiguration = new NetworkServerConfiguration();
             this.classCMessageSender = new Mock<IClassCDeviceMessageSender>();
             this.loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>();
-            this.logger = new Mock<ILogger<LnsRemoteCall>>();
-            this.subject = new LnsRemoteCall(this.networkServerConfiguration,
+            this.logger = new Mock<ILogger<LnsRemoteCallHandler>>();
+            this.subject = new LnsRemoteCallHandler(this.networkServerConfiguration,
                                             this.classCMessageSender.Object,
                                             this.loRaDeviceRegistry.Object,
                                             this.logger.Object,
@@ -40,7 +39,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
 
         [Fact]
-        public async Task OnDirectMethodCall_DropConnection_Should_Work_As_Expected()
+        public async Task CloseConnectionAsync_Should_Work_As_Expected()
         {
             // arrange
             var devEui = new DevEui(0);
@@ -54,7 +53,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             });
 
             // act
-            _ = await this.subject.CloseConnectionAsync(c2d, CancellationToken.None);
+            _ = await CloseConnectionAsync(c2d);
 
             // assert
             this.loRaDeviceRegistry.VerifyAll();
@@ -69,7 +68,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.networkServerConfiguration.IoTEdgeTimeout = 5;
 
             // act
-            await this.subject.ClearCacheAsync();
+            await this.subject.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.ClearCache, null), CancellationToken.None);
 
             // assert
             this.loRaDeviceRegistry.VerifyAll();
@@ -87,7 +86,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task CloseConnectionAsync_Should_Return_Bad_Request_When_Invalid_Message(string json, string expectedLogPattern)
         {
             // act
-            var response = await this.subject.CloseConnectionAsync(json, CancellationToken.None);
+            var response = await CloseConnectionAsync(json);
 
             // assert
             Assert.Equal(HttpStatusCode.BadRequest, response);
@@ -104,7 +103,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var c2d = JsonSerializer.Serialize(new { DevEui = devEui.ToString(), Fport = 1 });
 
             // act
-            var response = await this.subject.CloseConnectionAsync(c2d, CancellationToken.None);
+            var response = await CloseConnectionAsync(c2d);
 
             // assert
             Assert.Equal(HttpStatusCode.NotFound, response);
@@ -120,7 +119,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var c2d = "{\"test\":\"asd\"}";
 
             // act
-            var response = await this.subject.SendCloudToDeviceMessageAsync(c2d, CancellationToken.None);
+            var response = await SendCloudToDeviceMessageAsync(c2d);
 
             // assert
             Assert.Equal(HttpStatusCode.OK, response);
@@ -133,15 +132,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             this.classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-            var response = await this.subject.SendCloudToDeviceMessageAsync(json, CancellationToken.None);
+            var response = await SendCloudToDeviceMessageAsync(json);
             Assert.Equal(HttpStatusCode.BadRequest, response);
         }
 
         [Fact]
         public async Task SendCloudToDeviceMessageAsync_When_ClassC_Msg_Is_Not_CorrectJson_Should_Return_Not_Found()
         {
-            var response = await this.subject.SendCloudToDeviceMessageAsync(this.faker.Random.String2(10), CancellationToken.None);
+            var response = await SendCloudToDeviceMessageAsync(this.faker.Random.String2(10));
             Assert.Equal(HttpStatusCode.BadRequest, response);
         }
+
+        private Task<HttpStatusCode> CloseConnectionAsync(string payload) =>
+            this.subject.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.CloseConnection, payload), CancellationToken.None);
+
+        private Task<HttpStatusCode> SendCloudToDeviceMessageAsync(string payload) =>
+            this.subject.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, payload), CancellationToken.None);
     }
 }
