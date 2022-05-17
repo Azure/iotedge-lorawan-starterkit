@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Integration
     using System.Text.Json;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Moq;
     using StackExchange.Redis;
     using Xunit;
@@ -36,7 +37,7 @@ namespace LoRaWan.Tests.Integration
             await PublishAsync(lnsName, remoteCall);
 
             // assert
-            function.Verify(a => a.Invoke(remoteCall), Times.Once);
+            await function.RetryVerifyAsync(a => a.Invoke(remoteCall), Times.Once);
         }
 
         [Fact]
@@ -50,7 +51,7 @@ namespace LoRaWan.Tests.Integration
             await PublishAsync("lns-2", new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
 
             // assert
-            function.Verify(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
+            await function.RetryVerifyAsync(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
         }
 
         private async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)
