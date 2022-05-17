@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using Microsoft.Azure.Devices.Shared;
@@ -25,7 +26,9 @@ namespace LoraKeysManagerFacade
             this.logger = logger;
         }
 
-        private async Task<List<Twin>> GetEdgeDevicesAsync()
+#pragma warning disable IDE0060 // Remove unused parameter. Kept here for future improvements of RegistryManager
+        private async Task<List<Twin>> GetEdgeDevicesAsync(CancellationToken cancellationToken)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             this.logger.LogDebug("Getting Azure IoT Edge devices");
             var q = this.registryManager.CreateQuery("SELECT * FROM devices where capabilities.iotEdge = true");
@@ -37,10 +40,10 @@ namespace LoraKeysManagerFacade
             return twins;
         }
 
-        internal async Task<bool> IsEdgeDeviceAsync(string lnsId)
+        internal async Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken)
         {
-            var keyLock = $"{nameof(EdgeDeviceGetter)}-lock";
-            var owner = nameof(EdgeDeviceGetter);
+            const string keyLock = $"{nameof(EdgeDeviceGetter)}-lock";
+            const string owner = nameof(EdgeDeviceGetter);
             var isEdgeDevice = false;
             try
             {
@@ -49,7 +52,7 @@ namespace LoraKeysManagerFacade
                     var findInCache = () => this.cacheStore.GetObject<DeviceKind>(lnsId);
                     if (findInCache() is null)
                     {
-                        await RefreshEdgeDevicesCacheAsync();
+                        await RefreshEdgeDevicesCacheAsync(cancellationToken);
                         isEdgeDevice = findInCache() is { IsEdge: true };
                         if (!isEdgeDevice)
                             _ = MarkDeviceAsNonEdge(lnsId);
@@ -73,10 +76,10 @@ namespace LoraKeysManagerFacade
                                          TimeSpan.FromDays(1),
                                          onlyIfNotExists: true);
 
-        private async Task RefreshEdgeDevicesCacheAsync()
+        private async Task RefreshEdgeDevicesCacheAsync(CancellationToken cancellationToken)
         {
             this.logger.LogDebug("Refreshing Azure IoT Edge devices cache");
-            var twins = await GetEdgeDevicesAsync();
+            var twins = await GetEdgeDevicesAsync(cancellationToken);
             foreach (var t in twins)
             {
                 _ = this.cacheStore.ObjectSet(t.DeviceId,

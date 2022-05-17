@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         public async Task IsEdgeDeviceAsync_Returns_Proper_Answer(string lnsId, bool isEdge)
         {
             var edgeDeviceGetter = new EdgeDeviceGetter(InitRegistryManager(), new LoRaInMemoryDeviceStore(), NullLogger<EdgeDeviceGetter>.Instance);
-            Assert.Equal(isEdge, await edgeDeviceGetter.IsEdgeDeviceAsync(lnsId));
+            Assert.Equal(isEdge, await edgeDeviceGetter.IsEdgeDeviceAsync(lnsId, default));
         }
 
         private static IDeviceRegistryManager InitRegistryManager()
