@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, null, this.lnsRemoteCall.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
             Assert.Equal("loRaDeviceAPIService", ex.ParamName);
             ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, this.loRaDeviceApiServiceBase, null, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance));
-            Assert.Equal("lnsRemoteCaller", ex.ParamName);
+            Assert.Equal("lnsRemoteHandler", ex.ParamName);
         }
 
         [Fact]

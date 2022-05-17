@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private const string LnsVersionPropertyName = "LnsVersion";
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
-        private readonly ILnsRemoteHandler lnsRemoteCaller;
+        private readonly ILnsRemoteHandler lnsRemoteHandler;
         private readonly ILogger<ModuleConnectionHost> logger;
         private readonly Counter<int> unhandledExceptionCount;
         private ILoraModuleClient loRaModuleClient;
@@ -30,13 +30,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             NetworkServerConfiguration networkServerConfiguration,
             ILoRaModuleClientFactory loRaModuleClientFactory,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
-            ILnsRemoteHandler lnsRemoteCaller,
+            ILnsRemoteHandler lnsRemoteHandler,
             ILogger<ModuleConnectionHost> logger,
             Meter meter)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
             this.loRaDeviceAPIService = loRaDeviceAPIService ?? throw new ArgumentNullException(nameof(loRaDeviceAPIService));
-            this.lnsRemoteCaller = lnsRemoteCaller ?? throw new ArgumentNullException(nameof(lnsRemoteCaller));
+            this.lnsRemoteHandler = lnsRemoteHandler ?? throw new ArgumentNullException(nameof(lnsRemoteHandler));
             this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.unhandledExceptionCount = (meter ?? throw new ArgumentNullException(nameof(meter))).CreateCounter<int>(MetricRegistry.UnhandledExceptions);
@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                     throw new LoRaProcessingException($"Unknown direct method called: {methodRequest.Name}");
                 }
 
-                var statusCode = await lnsRemoteCaller.ExecuteAsync(lnsRemoteCall, token);
+                var statusCode = await lnsRemoteHandler.ExecuteAsync(lnsRemoteCall, token);
                 return new MethodResponse((int)statusCode);
             }
             catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred on a direct method call: {ex}"),
