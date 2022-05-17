@@ -31,6 +31,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.ApplicationInsights;
     using Prometheus;
+    using StackExchange.Redis;
 
     internal sealed class BasicsStationNetworkServerStartup
     {
@@ -128,7 +129,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             _ = NetworkServerConfiguration.RunningAsIoTEdgeModule
                 ? services.AddSingleton<ModuleConnectionHost>()
-                : services.AddHostedService<CloudControlHost>();
+                : services.AddHostedService<CloudControlHost>()
+                          .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
+                          .AddSingleton<ILnsRemoteCallListener>(_ => new RedisRemoteCallListener(ConnectionMultiplexer.Connect(NetworkServerConfiguration.RedisConnectionString)));
         }
 
 #pragma warning disable CA1822 // Mark members as static
