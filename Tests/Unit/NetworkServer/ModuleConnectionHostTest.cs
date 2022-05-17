@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
         public ModuleConnectionHostTest()
         {
-            this.networkServerConfiguration = new NetworkServerConfiguration();
+            this.networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
             this.loRaModuleClient.Setup(x => x.DisposeAsync());
             this.loRaModuleClientFactory.Setup(x => x.CreateAsync()).ReturnsAsync(loRaModuleClient.Object);
             this.lnsRemoteCall = new Mock<ILnsRemoteCall>();
