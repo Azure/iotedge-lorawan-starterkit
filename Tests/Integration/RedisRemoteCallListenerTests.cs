@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Text.Json;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaWan.NetworkServer;
@@ -34,7 +35,7 @@ namespace LoRaWan.Tests.Integration
             var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
-            this.subject.Subscribe(lnsName, function.Object);
+            await this.subject.SubscribeAsync(lnsName, function.Object, CancellationToken.None);
             await PublishAsync(lnsName, remoteCall);
 
             // assert
@@ -48,11 +49,27 @@ namespace LoRaWan.Tests.Integration
             var function = new Mock<Func<LnsRemoteCall, Task>>();
 
             // act
-            this.subject.Subscribe("lns-1", function.Object);
+            await this.subject.SubscribeAsync("lns-1", function.Object, CancellationToken.None);
             await PublishAsync("lns-2", new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
 
             // assert
             await function.RetryVerifyAsync(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UnsubscribeAsync_Unsubscribes_Successfully()
+        {
+            // arrange
+            var lns = "lns-1";
+            var function = new Mock<Func<LnsRemoteCall, Task>>();
+            await this.subject.SubscribeAsync(lns, function.Object, CancellationToken.None);
+
+            // act
+            await this.subject.UnsubscribeAsync(lns, CancellationToken.None);
+            await PublishAsync(lns, new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, null));
+
+            // assert
+            function.Verify(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
         }
 
         private async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)

@@ -7,13 +7,16 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Text.Json;
+    using System.Threading;
     using System.Threading.Tasks;
     using StackExchange.Redis;
     using LoRaTools;
 
     internal interface ILnsRemoteCallListener
     {
-        void Subscribe(string lns, Func<LnsRemoteCall, Task> function);
+        Task SubscribeAsync(string lns, Func<LnsRemoteCall, Task> function, CancellationToken cancellationToken);
+
+        Task UnsubscribeAsync(string lns, CancellationToken cancellationToken);
     }
 
     internal sealed class RedisRemoteCallListener : ILnsRemoteCallListener
@@ -25,10 +28,21 @@ namespace LoRaWan.NetworkServer
             this.redis = redis;
         }
 
-        public void Subscribe(string lns, Func<LnsRemoteCall, Task> function)
+        // Cancellation token to be passed when/if a future update to SubscribeAsync is allowing to use it
+        public async Task SubscribeAsync(string lns, Func<LnsRemoteCall, Task> function, CancellationToken cancellationToken)
         {
-            this.redis.GetSubscriber().Subscribe(lns).OnMessage(value =>
-                function(JsonSerializer.Deserialize<LnsRemoteCall>(value.Message) ?? throw new ArgumentException("Input LnsRemoteCall json was not parsed as valid one.")));
+            var channelMessage = await this.redis.GetSubscriber().SubscribeAsync(lns);
+            channelMessage.OnMessage(value =>
+            {
+                var lnsRemoteCall = JsonSerializer.Deserialize<LnsRemoteCall>(value.Message) ?? throw new InvalidOperationException("Deserialization produced an empty LnsRemoteCall.");
+                return function(lnsRemoteCall);
+            });
+        }
+
+        // Cancellation token to be passed when/if a future update to UnsubscribeAsync is allowing to use it
+        public async Task UnsubscribeAsync(string lns, CancellationToken cancellationToken)
+        {
+            await this.redis.GetSubscriber().UnsubscribeAsync(lns);
         }
     }
 }

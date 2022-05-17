@@ -31,6 +31,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.ApplicationInsights;
     using Prometheus;
+    using StackExchange.Redis;
 
     internal sealed class BasicsStationNetworkServerStartup
     {
@@ -51,67 +52,67 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var appInsightsKey = Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
             var useApplicationInsights = !string.IsNullOrEmpty(appInsightsKey);
             _ = services.AddLogging(loggingBuilder =>
-                        {
-                            _ = loggingBuilder.ClearProviders();
-                            var logLevel = int.TryParse(NetworkServerConfiguration.LogLevel, NumberStyles.Integer, CultureInfo.InvariantCulture, out var logLevelNum)
-                                ? (LogLevel)logLevelNum is var level && Enum.IsDefined(typeof(LogLevel), level) ? level : throw new InvalidCastException()
-                                : Enum.Parse<LogLevel>(NetworkServerConfiguration.LogLevel, true);
+                {
+                    _ = loggingBuilder.ClearProviders();
+                    var logLevel = int.TryParse(NetworkServerConfiguration.LogLevel, NumberStyles.Integer, CultureInfo.InvariantCulture, out var logLevelNum)
+                        ? (LogLevel)logLevelNum is var level && Enum.IsDefined(typeof(LogLevel), level) ? level : throw new InvalidCastException()
+                        : Enum.Parse<LogLevel>(NetworkServerConfiguration.LogLevel, true);
 
-                            _ = loggingBuilder.SetMinimumLevel(logLevel);
-                            _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
+                    _ = loggingBuilder.SetMinimumLevel(logLevel);
+                    _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
 
-                            if (NetworkServerConfiguration.LogToTcp)
-                            {
-                                _ = loggingBuilder.AddTcpLogger(new TcpLoggerConfiguration(logLevel, NetworkServerConfiguration.LogToTcpAddress,
-                                                                                           NetworkServerConfiguration.LogToTcpPort,
-                                                                                           NetworkServerConfiguration.GatewayID));
-                            }
-                            if (NetworkServerConfiguration.LogToHub)
-                                _ = loggingBuilder.AddIotHubLogger(c => c.LogLevel = logLevel);
+                    if (NetworkServerConfiguration.LogToTcp)
+                    {
+                        _ = loggingBuilder.AddTcpLogger(new TcpLoggerConfiguration(logLevel, NetworkServerConfiguration.LogToTcpAddress,
+                                                                                   NetworkServerConfiguration.LogToTcpPort,
+                                                                                   NetworkServerConfiguration.GatewayID));
+                    }
+                    if (NetworkServerConfiguration.LogToHub)
+                        _ = loggingBuilder.AddIotHubLogger(c => c.LogLevel = logLevel);
 
-                            if (useApplicationInsights)
-                            {
-                                _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
-                                                  .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
-                                _ = services.AddSingleton<ITelemetryInitializer>(_ => new TelemetryInitializer(NetworkServerConfiguration));
-                            }
-                        })
-                        .AddMemoryCache()
-                        .AddHttpClient()
-                        .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
-                        .AddSingleton(NetworkServerConfiguration)
-                        .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
-                        .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
-                        .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
-                        .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
-                        .AddSingleton<ILoRAADRManagerFactory, LoRAADRManagerFactory>()
-                        .AddSingleton<ILoRaDeviceClientConnectionManager, LoRaDeviceClientConnectionManager>()
-                        .AddSingleton<ILoRaPayloadDecoder, LoRaPayloadDecoder>()
-                        .AddSingleton<IFunctionBundlerProvider, FunctionBundlerProvider>()
-                        .AddSingleton<ILoRaDataRequestHandler, DefaultLoRaDataRequestHandler>()
-                        .AddSingleton<ILoRaDeviceFactory, LoRaDeviceFactory>()
-                        .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
-                        .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
-                        .AddSingleton<IMessageDispatcher, MessageDispatcher>()
-                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
-                        .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
-                        .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
-                        .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
-                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
-                        .AddSingleton<IDownstreamMessageSender, DownstreamMessageSender>()
-                        .AddSingleton<LoRaDeviceCache>()
-                        .AddSingleton(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
-                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
-                        .AddSingleton(new RegistryMetricTagBag(NetworkServerConfiguration))
-                        .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
-                        .AddHostedService(sp =>
-                            new MetricExporterHostedService(
-                                new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
-                                                                                                                           sp.GetRequiredService<RegistryMetricTagBag>(),
-                                                                                                                           sp.GetRequiredService<ILogger<ApplicationInsightsMetricExporter>>()) : null,
-                                                            new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>(), sp.GetRequiredService<ILogger<PrometheusMetricExporter>>()))));
+                    if (useApplicationInsights)
+                    {
+                        _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
+                                          .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
+                        _ = services.AddSingleton<ITelemetryInitializer>(_ => new TelemetryInitializer(NetworkServerConfiguration));
+                    }
+                })
+                .AddMemoryCache()
+                .AddHttpClient()
+                .AddApiClient(NetworkServerConfiguration, ApiVersion.LatestVersion)
+                .AddSingleton(NetworkServerConfiguration)
+                .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
+                .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
+                .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
+                .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
+                .AddSingleton<ILoRAADRManagerFactory, LoRAADRManagerFactory>()
+                .AddSingleton<ILoRaDeviceClientConnectionManager, LoRaDeviceClientConnectionManager>()
+                .AddSingleton<ILoRaPayloadDecoder, LoRaPayloadDecoder>()
+                .AddSingleton<IFunctionBundlerProvider, FunctionBundlerProvider>()
+                .AddSingleton<ILoRaDataRequestHandler, DefaultLoRaDataRequestHandler>()
+                .AddSingleton<ILoRaDeviceFactory, LoRaDeviceFactory>()
+                .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
+                .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
+                .AddSingleton<IMessageDispatcher, MessageDispatcher>()
+                .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
+                .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
+                .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
+                .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
+                .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
+                .AddSingleton<IDownstreamMessageSender, DownstreamMessageSender>()
+                .AddSingleton<LoRaDeviceCache>()
+                .AddSingleton(new LoRaDeviceCacheOptions { MaxUnobservedLifetime = TimeSpan.FromDays(10), RefreshInterval = TimeSpan.FromDays(2), ValidationInterval = TimeSpan.FromMinutes(10) })
+                .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
+                .AddTransient<ICupsProtocolMessageProcessor, CupsProtocolMessageProcessor>()
+                .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
+                .AddSingleton(new RegistryMetricTagBag(NetworkServerConfiguration))
+                .AddSingleton(_ => new Meter(MetricRegistry.Namespace, MetricRegistry.Version))
+                .AddHostedService(sp =>
+                    new MetricExporterHostedService(
+                        new CompositeMetricExporter(useApplicationInsights ? new ApplicationInsightsMetricExporter(sp.GetRequiredService<TelemetryClient>(),
+                                                                                                                   sp.GetRequiredService<RegistryMetricTagBag>(),
+                                                                                                                   sp.GetRequiredService<ILogger<ApplicationInsightsMetricExporter>>()) : null,
+                                                    new PrometheusMetricExporter(sp.GetRequiredService<RegistryMetricTagBag>(), sp.GetRequiredService<ILogger<PrometheusMetricExporter>>()))));
 
             if (useApplicationInsights)
             {
@@ -125,10 +126,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
                 _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
-            if (NetworkServerConfiguration.RunningAsIoTEdgeModule)
-            {
-                _ = services.AddSingleton<ModuleConnectionHost>();
-            }
+
+            _ = NetworkServerConfiguration.RunningAsIoTEdgeModule
+                ? services.AddSingleton<ModuleConnectionHost>()
+                : services.AddHostedService<CloudControlHost>()
+                          .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
+                          .AddSingleton<ILnsRemoteCallListener>(_ => new RedisRemoteCallListener(ConnectionMultiplexer.Connect(NetworkServerConfiguration.RedisConnectionString)));
         }
 
 #pragma warning disable CA1822 // Mark members as static
