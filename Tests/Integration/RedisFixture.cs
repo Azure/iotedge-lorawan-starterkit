@@ -27,11 +27,13 @@ namespace LoRaWan.Tests.Integration
         private const int RedisPort = 6001;
         private static readonly string TestContainerName = ContainerName + RedisPort;
 
-        private ConnectionMultiplexer redis;
+        public ConnectionMultiplexer Redis { get; set; }
 
         private string containerId;
 
         public IDatabase Database { get; set; }
+
+        public ISubscriber Subscriber;
 
         private async Task StartRedisContainer()
         {
@@ -135,6 +137,23 @@ namespace LoRaWan.Tests.Integration
                 throw new InvalidOperationException($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.", ex);
             }
         }
+        public async Task InitializeSubsriberAsync()
+        {
+            await StartRedisContainer();
+
+            var redisConnectionString = $"localhost:{RedisPort}";
+            try
+            {
+                this.redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
+                Console.WriteLine("Getting redis subscriber.");
+                Subscriber= this.redis.GetSubscriber();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.", ex);
+            }
+        }
+        
 
         public async Task DisposeAsync()
         {

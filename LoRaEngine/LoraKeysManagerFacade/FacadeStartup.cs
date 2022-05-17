@@ -42,6 +42,7 @@ namespace LoraKeysManagerFacade
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
             var redisCache = redis.GetDatabase();
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);
+        
 
             builder.Services.AddAzureClients(builder =>
             {
@@ -59,6 +60,7 @@ namespace LoraKeysManagerFacade
                                                                               sp.GetRequiredService<ILoggerFactory>(),
                                                                               sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
                 .AddSingleton<CreateEdgeDevice>()
+                .AddSingleton<IChannelPublisher>(sp => new RedisChannelPublisher(redis, sp.GetRequiredService<ILogger<RedisChannelPublisher>>()))
                 .AddSingleton<DeviceGetter>()
                 .AddSingleton<FCntCacheCheck>()
                 .AddSingleton<FunctionBundlerFunction>()
