@@ -105,7 +105,7 @@ namespace LoRaWan.Tests.Integration
                 }
                 else
                 {
-                    this.channelPublisher.Verify(x => x.PublishAsync(It.IsAny<string>(), It.IsAny<LnsRemoteCall>()));
+                    this.channelPublisher.Verify(x => x.PublishAsync(gateway1, It.Is<LnsRemoteCall>(c => c.Kind == RemoteCallKind.CloseConnection)));
                     this.serviceClientMock.VerifyNoOtherCalls();
                 }
             }
