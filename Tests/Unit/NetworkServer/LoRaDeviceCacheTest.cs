@@ -471,7 +471,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
         }
     }
-        internal static class LoRaDeviceCacheOptionsExtensions
+    internal static class LoRaDeviceCacheOptionsExtensions
     {
         public static TimeSpan ValidationIntervalDelay(this LoRaDeviceCacheOptions options)
          => options.ValidationInterval * 3;
