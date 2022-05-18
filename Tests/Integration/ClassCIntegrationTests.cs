@@ -451,7 +451,6 @@ namespace LoRaWan.Tests.Integration
             {
                 PreferredGatewayResult = new PreferredGatewayResult()
                 {
-                    DevEUI = simulatedDevice.DevEUI,
                     PreferredGatewayID = preferredGatewayID,
                     CurrentFcntUp = PayloadFcnt,
                     RequestFcntUp = PayloadFcnt,
@@ -547,7 +546,6 @@ namespace LoRaWan.Tests.Integration
             {
                 PreferredGatewayResult = new PreferredGatewayResult()
                 {
-                    DevEUI = simulatedDevice.DevEUI,
                     PreferredGatewayID = ServerGatewayID,
                     CurrentFcntUp = PayloadFcnt,
                     RequestFcntUp = PayloadFcnt,
