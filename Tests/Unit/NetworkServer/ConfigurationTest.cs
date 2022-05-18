@@ -4,8 +4,10 @@
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Configuration;
     using Xunit;
 
     public class ConfigurationTest
@@ -14,30 +16,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [MemberData(nameof(AllowedDevAddressesInput))]
         public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, DevAddr[] expectedAllowedDevAddrValues)
         {
-            var envVariables = new[]
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>()
             {
-                ("AllowedDevAddresses", inputAllowedDevAddrValues),
-                ("FACADE_SERVER_URL", "https://aka.ms"),
-                ("HOSTNAME", "test"),
-                ("IOTHUBHOSTNAME", "test")
-            };
+                ["AllowedDevAddresses"] = inputAllowedDevAddrValues,
+                ["FACADE_SERVER_URL"] = "https://aka.ms",
+                ["HOSTNAME"] = "test",
+                ["IOTHUBHOSTNAME"] = "test"
+            }).Build();
 
-            try
+            var networkServerConfiguration = NetworkServerConfiguration.Create(configuration);
+            Assert.Equal(expectedAllowedDevAddrValues.Length, networkServerConfiguration.AllowedDevAddresses.Count);
+            foreach (var devAddr in expectedAllowedDevAddrValues)
             {
-                foreach (var (key, value) in envVariables)
-                    Environment.SetEnvironmentVariable(key, value);
-
-                var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-                Assert.Equal(expectedAllowedDevAddrValues.Length, networkServerConfiguration.AllowedDevAddresses.Count);
-                foreach (var devAddr in expectedAllowedDevAddrValues)
-                {
-                    Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
-                }
-            }
-            finally
-            {
-                foreach (var (key, _) in envVariables)
-                    Environment.SetEnvironmentVariable(key, string.Empty);
+                Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
             }
         }
 
@@ -52,33 +43,39 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cloudDeploymentKey = "CLOUD_DEPLOYMENT";
             var key = "REDIS_CONNECTION_STRING";
             var value = "someValue";
-            var lnsConfigurationCreation = () => NetworkServerConfiguration.CreateFromEnvironmentVariables();
 
-            Environment.SetEnvironmentVariable("HOSTNAME", "test");
-            Environment.SetEnvironmentVariable("IOTHUBHOSTNAME", "test");
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["HOSTNAME"] = "test",
+                ["IOTHUBHOSTNAME"] = "test",
+            });
 
             if (isCloudDeployment)
             {
-                Environment.SetEnvironmentVariable(cloudDeploymentKey, true.ToString());
-                Environment.SetEnvironmentVariable("ENABLE_GATEWAY", false.ToString());
+                configuration.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    [cloudDeploymentKey] = true.ToString(),
+                    ["ENABLE_GATEWAY"] = false.ToString(),
+                });
             }
 
             if (shouldSetRedisString)
-                Environment.SetEnvironmentVariable(key, value);
+            {
+                configuration.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    [key] = value,
+                });
+            }
 
             // act and assert
             if (isCloudDeployment && !shouldSetRedisString)
             {
-                _ = Assert.Throws<InvalidOperationException>(lnsConfigurationCreation);
+                _ = Assert.Throws<InvalidOperationException>(() => NetworkServerConfiguration.Create(configuration.Build()));
             }
             else
             {
-                _ = lnsConfigurationCreation();
+                _ = NetworkServerConfiguration.Create(configuration.Build());
             }
-
-            Environment.SetEnvironmentVariable(key, string.Empty);
-            Environment.SetEnvironmentVariable(cloudDeploymentKey, string.Empty);
-            Environment.SetEnvironmentVariable("ENABLE_GATEWAY", string.Empty);
         }
 
 
@@ -91,67 +88,54 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [CombinatorialData]
         public void EnableGatewayTrue_IoTModuleFalse_IsNotSupported(bool cloud_deployment, bool enable_gateway)
         {
-            var envVariables = new[]
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                ("CLOUD_DEPLOYMENT", cloud_deployment.ToString()),
-                ("ENABLE_GATEWAY", enable_gateway.ToString()),
-                ("REDIS_CONNECTION_STRING", "someString"),
-                ("HOSTNAME", "test"),
-                ("IOTHUBHOSTNAME", "test")
-            };
+                ["CLOUD_DEPLOYMENT"] = cloud_deployment.ToString(),
+                ["ENABLE_GATEWAY"] = enable_gateway.ToString(),
+                ["REDIS_CONNECTION_STRING"] = "someString",
+                ["HOSTNAME"] = "test",
+                ["IOTHUBHOSTNAME"] = "test"
+            }).Build();
 
-            try
+            if (cloud_deployment && enable_gateway)
             {
-                foreach (var (key, value) in envVariables)
-                    Environment.SetEnvironmentVariable(key, value);
-
-                if (cloud_deployment && enable_gateway)
-                {
-                    Assert.Throws<NotSupportedException>(() => {
-                        var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-                    });
-                }
-                else
-                {
-                    var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-                }
+                Assert.Throws<NotSupportedException>(() => {
+                    var networkServerConfiguration = NetworkServerConfiguration.Create(configuration);
+                });
             }
-            finally
+            else
             {
-                foreach (var (key, _) in envVariables)
-                    Environment.SetEnvironmentVariable(key, string.Empty);
+                var networkServerConfiguration = NetworkServerConfiguration.Create(configuration);
             }
         }
 
-        [Theory]
-        [InlineData("500")]
-        [InlineData("x")]
-        public void ProcessingDelayIsConfigurable(string processing_delay)
+        [Fact]
+        public void ProcessingDelayIsConfigurable()
         {
-            var envVariables = new[]
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                ("PROCESSING_DELAY_IN_MS", processing_delay),
-                ("HOSTNAME", "test")
-            };
+                ["PROCESSING_DELAY_IN_MS"] = "500",
+                ["HOSTNAME"] = "test",
+                ["IOTHUBHOSTNAME"] = "test"
+            }).Build();
 
-            try
+            var networkServerConfiguration = NetworkServerConfiguration.Create(configuration);
+
+            Assert.Equal(500, networkServerConfiguration.ProcessingDelayInMilliseconds);
+        }
+
+        [Fact]
+        public void ProcessingDelayCanUseFallback()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                foreach (var (key, value) in envVariables)
-                    Environment.SetEnvironmentVariable(key, value);
+                ["HOSTNAME"] = "test",
+                ["IOTHUBHOSTNAME"] = "test"
+            }).Build();
 
-                var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+            var networkServerConfiguration = NetworkServerConfiguration.Create(configuration);
 
-                if (!int.TryParse(processing_delay, out var int_processing_delay))
-                {
-                    int_processing_delay = Constants.DefaultProcessingDelayInMilliseconds;
-                }
-                Assert.Equal(int_processing_delay, networkServerConfiguration.ProcessingDelayInMilliseconds);
-            }
-            finally
-            {
-                foreach (var (key, _) in envVariables)
-                    Environment.SetEnvironmentVariable(key, string.Empty);
-            }
+            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
     }
 }

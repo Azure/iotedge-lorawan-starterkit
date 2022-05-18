@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using LoRaWan.NetworkServer;
 using LoRaWan.NetworkServer.BasicsStation;
+using Microsoft.Extensions.Configuration;
 
 // Similar to bug https://github.com/dotnet/roslyn-analyzers/issues/5184
 #pragma warning disable CA1812
@@ -31,5 +32,5 @@ Console.CancelKeyPress += (_, args) =>
     args.Cancel = true;
 };
 
-var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+var configuration = NetworkServerConfiguration.Create(new ConfigurationBuilder().AddEnvironmentVariables().Build());
 await BasicsStationNetworkServer.RunServerAsync(configuration, cancellationToken);

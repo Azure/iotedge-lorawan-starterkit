@@ -3,7 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 {
-    using System;
+    using System.Collections.Generic;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using Microsoft.Extensions.Configuration;
@@ -17,34 +17,21 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         {
             // arrange
             var services = new ServiceCollection();
-            var config = new ConfigurationBuilder().Build();
-            var envVariables = new[]
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                ("HOSTNAME", "test"),
-                ("IOTHUBHOSTNAME", "test")
-            };
+                ["HOSTNAME"] = "test",
+                ["IOTHUBHOSTNAME"] = "test"
+            }).Build();
 
-            try
+            // act + assert
+            var startup = new BasicsStationNetworkServerStartup(config);
+            startup.ConfigureServices(services);
+
+            services.BuildServiceProvider(new ServiceProviderOptions
             {
-                foreach (var (key, value) in envVariables)
-                    Environment.SetEnvironmentVariable(key, value);
-
-                // act + assert
-                var startup = new BasicsStationNetworkServerStartup(config);
-                startup.ConfigureServices(services);
-
-                services.BuildServiceProvider(new ServiceProviderOptions
-                {
-                    ValidateOnBuild = true,
-                    ValidateScopes = true
-                });
-
-            }
-            finally
-            {
-                foreach (var (key, _) in envVariables)
-                    Environment.SetEnvironmentVariable(key, string.Empty);
-            }
+                ValidateOnBuild = true,
+                ValidateScopes = true
+            });
         }
 
         [Theory]
@@ -52,48 +39,35 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
         [InlineData(false, true)]
         public void ModuleConnectionHostIsInjectedOrNot(bool cloud_deployment, bool enable_gateway)
         {
-            var envVariables = new[]
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                ("CLOUD_DEPLOYMENT", cloud_deployment.ToString()),
-                ("ENABLE_GATEWAY", enable_gateway.ToString()),
-                ("REDIS_CONNECTION_STRING", "someString"),
-                ("HOSTNAME", "test"),
-                ("IOTHUBHOSTNAME", "test")
-            };
+               ["CLOUD_DEPLOYMENT"] = cloud_deployment.ToString(),
+               ["ENABLE_GATEWAY"] = enable_gateway.ToString(),
+               ["REDIS_CONNECTION_STRING"] = "someString",
+               ["HOSTNAME"] = "test",
+               ["IOTHUBHOSTNAME"] = "test"
+            }).Build();
 
-            try
+            var services = new ServiceCollection();
+
+            // act + assert
+            var startup = new BasicsStationNetworkServerStartup(config);
+            startup.ConfigureServices(services);
+
+            var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
             {
-                foreach (var (key, value) in envVariables)
-                    Environment.SetEnvironmentVariable(key, value);
+                ValidateOnBuild = true,
+                ValidateScopes = true
+            });
 
-                var services = new ServiceCollection();
-                var config = new ConfigurationBuilder().Build();
-
-                // act + assert
-                var startup = new BasicsStationNetworkServerStartup(config);
-                startup.ConfigureServices(services);
-
-                var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
-                {
-                    ValidateOnBuild = true,
-                    ValidateScopes = true
-                });
-
-                var result = serviceProvider.GetService<ModuleConnectionHost>();
-                if (cloud_deployment)
-                {
-                    Assert.Null(result);
-                }
-                else
-                {
-                    Assert.NotNull(result);
-                }
-
+            var result = serviceProvider.GetService<ModuleConnectionHost>();
+            if (cloud_deployment)
+            {
+                Assert.Null(result);
             }
-            finally
+            else
             {
-                foreach (var (key, _) in envVariables)
-                    Environment.SetEnvironmentVariable(key, string.Empty);
+                Assert.NotNull(result);
             }
         }
     }
