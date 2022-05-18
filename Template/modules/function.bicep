@@ -30,7 +30,7 @@ var iotHubName = '${uniqueSolutionPrefix}hub'
 var iotHubOwnerPolicyName = 'iothubowner'
 var logAnalyticsName = '${uniqueSolutionPrefix}insight'
 var redisCacheName = '${uniqueSolutionPrefix}redis'
-var storageAccountName = '${uniqueSolutionPrefix}redis'
+var storageAccountName = '${uniqueSolutionPrefix}storage'
 
 // RESOURCES DEPENDENCIES
 
