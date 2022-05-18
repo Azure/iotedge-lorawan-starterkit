@@ -58,12 +58,12 @@ resource webApp 'Microsoft.Web/sites@2021-03-01' = {
   }
 }
 
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: roleNameGuid
-  scope: iotHub
-  properties: {
-    principalId: reference(webApp.id, webSitesApiVersion, 'Full').identity.principalId
-    roleDefinitionId: iotHubTwinContributorRoleId
-  }
-}
+// resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+//   name: roleNameGuid
+//   scope: iotHub
+//   properties: {
+//     principalId: webApp.identity.principalId
+//     roleDefinitionId: iotHubTwinContributorRoleId
+//   }
+// }
 
