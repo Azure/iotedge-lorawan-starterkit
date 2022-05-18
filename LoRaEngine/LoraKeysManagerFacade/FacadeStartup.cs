@@ -61,7 +61,7 @@ namespace LoraKeysManagerFacade
                 .AddSingleton<CreateEdgeDevice>()
                 .AddSingleton<IChannelPublisher>(sp => new RedisChannelPublisher(redis, sp.GetRequiredService<ILogger<RedisChannelPublisher>>()))
                 .AddSingleton<DeviceGetter>()
-                .AddSingleton<EdgeDeviceGetter>()
+                .AddSingleton<IEdgeDeviceGetter, EdgeDeviceGetter>()
                 .AddSingleton<FCntCacheCheck>()
                 .AddSingleton<FunctionBundlerFunction>()
                 .AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>()

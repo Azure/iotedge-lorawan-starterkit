@@ -11,7 +11,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
-    internal class EdgeDeviceGetter
+    public class EdgeDeviceGetter : IEdgeDeviceGetter
     {
         private readonly IDeviceRegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
@@ -41,7 +41,7 @@ namespace LoraKeysManagerFacade
             return twins;
         }
 
-        internal async Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken)
+        public async Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken)
         {
             const string keyLock = $"{nameof(EdgeDeviceGetter)}-lock";
             const string owner = nameof(EdgeDeviceGetter);
