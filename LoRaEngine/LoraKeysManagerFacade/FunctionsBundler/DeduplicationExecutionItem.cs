@@ -27,6 +27,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
         private readonly IChannelPublisher channelPublisher;
         private readonly Microsoft.ApplicationInsights.Metric connectionOwnershipChangedMetric;
 
+        private static readonly TimeSpan DuplicateMessageTimeout = TimeSpan.FromSeconds(30);
+
         public DeduplicationExecutionItem(
             ILoRaDeviceCacheStore cacheStore,
             IServiceClient serviceClient,
@@ -66,7 +68,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(DevEui devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var cts = new CancellationTokenSource(DuplicateMessageTimeout);
             var isDuplicate = true;
             var processedDevice = gatewayId;
 
