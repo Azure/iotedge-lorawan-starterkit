@@ -28,7 +28,7 @@ var functionZipBinary = 'https://github.com/${gitUsername}/iotedge-lorawan-start
 var hostingPlanName = '${uniqueSolutionPrefix}plan'
 var iotHubName = '${uniqueSolutionPrefix}hub'
 var iotHubOwnerPolicyName = 'iothubowner'
-var logAnalyticsName = '${uniqueSolutionPrefix}insight'
+var logAnalyticsName = '${uniqueSolutionPrefix}log'
 var redisCacheName = '${uniqueSolutionPrefix}redis'
 var storageAccountName = '${uniqueSolutionPrefix}storage'
 
