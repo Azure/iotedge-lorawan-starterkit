@@ -118,9 +118,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.VerifyAll();
         }
 
-        [Fact]
-        public async Task When_Device_Is_Found_In_Cache_Should_Send_Via_Direct_Method()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task When_Device_Is_Found_In_Cache_Should_Send_Via_Direct_Method_Or_Pub_Sub(bool isEdgeDevice)
         {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(isEdgeDevice);
+
             var devEui = new DevEui(123456789);
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
@@ -132,9 +136,18 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             };
 
             LoRaCloudToDeviceMessage receivedC2DMessage = null;
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
-                .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
+
+            if (isEdgeDevice)
+            {
+                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+                    .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
+                    .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
+            }
+            else
+            {
+                this.channelPublisher.Setup(x => x.PublishAsync("gateway1", It.IsNotNull<LnsRemoteCall>()))
+                    .Callback<string, LnsRemoteCall>((device, remoteCall) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(remoteCall.JsonData));
+            }
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEui,
@@ -157,6 +170,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Direct_Method_Returns_Error_Code_Should_Forward_Status_Error()
         {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
             var devEui = new DevEui(0123456789);
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
@@ -181,6 +196,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         [Fact]
         public async Task When_Direct_Method_Throws_Exception_Should_Return_Application_Error()
         {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
             var devEui = new DevEui(123456789);
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
@@ -285,9 +302,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             query.VerifyAll();
         }
 
-        [Fact]
-        public async Task When_Querying_Devices_And_Finds_Class_C_Should_Update_Cache_And_Send_Direct_Method()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task When_Querying_Devices_And_Finds_Class_C_Should_Update_Cache_And_Send_Direct_Method_Or_Pub_Sub(bool isEdgeDevice)
         {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(isEdgeDevice);
+
             var devEui = new DevEui(123456789);
 
             var deviceTwin = new Twin
@@ -314,9 +335,19 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             };
 
             LoRaCloudToDeviceMessage receivedC2DMessage = null;
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
-                .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
+
+            if (isEdgeDevice)
+            {
+                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+                    .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
+                    .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
+            }
+            else
+            {
+                this.channelPublisher.Setup(x => x.PublishAsync("gateway1", It.IsNotNull<LnsRemoteCall>()))
+                    .Callback<string, LnsRemoteCall>((device, remoteCall) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(remoteCall.JsonData));
+            }
+
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEui,
@@ -340,9 +371,13 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             query.VerifyAll();
         }
 
-        [Fact]
-        public async Task When_Querying_Devices_And_Finds_Single_Gateway_Class_C_Should_Update_Cache_And_Send_Direct_Method()
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task When_Querying_Devices_And_Finds_Single_Gateway_Class_C_Should_Update_Cache_And_Send_Direct_Method_Or_Pub_Sub(bool isEdgeDevice)
         {
+            this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(isEdgeDevice);
             var devEui = new DevEui(123456789);
 
             var deviceTwin = new Twin
@@ -369,9 +404,17 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             };
 
             LoRaCloudToDeviceMessage receivedC2DMessage = null;
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
-                .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
+            if (isEdgeDevice)
+            {
+                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+                    .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
+                    .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
+            }
+            else
+            {
+                this.channelPublisher.Setup(x => x.PublishAsync("mygateway", It.IsNotNull<LnsRemoteCall>()))
+                    .Callback<string, LnsRemoteCall>((device, remoteCall) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(remoteCall.JsonData));
+            }
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEui,
