@@ -6,6 +6,8 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
     using Microsoft.AspNetCore.Server.Kestrel.Https;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
@@ -147,11 +149,90 @@ namespace LoRaWan.NetworkServer
         public int ProcessingDelayInMilliseconds { get; set; }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
-        public static NetworkServerConfiguration Create(IConfiguration configuration)
-        {
-            var networkServerConfiguration = new NetworkServerConfiguration();
+        public static NetworkServerConfiguration Create(IConfiguration configuration) =>
+            new NetworkServerConfigurationBuilder(configuration).Build();
 
-            void SetPropertyIfDefined(Action<NetworkServerConfiguration, string> assign, params string[] configurationValueNames)
+        private sealed class NetworkServerConfigurationBuilder
+        {
+            private readonly IConfiguration configuration;
+            private readonly NetworkServerConfiguration instance;
+
+            public NetworkServerConfigurationBuilder(IConfiguration configuration)
+            {
+                this.configuration = configuration;
+                this.instance = new NetworkServerConfiguration();
+            }
+
+            public NetworkServerConfiguration Build()
+            {
+                // Create case insensitive dictionary from environment variables
+                SetProperty("PROCESSING_DELAY_IN_MS", c => c.ProcessingDelayInMilliseconds, Constants.DefaultProcessingDelayInMilliseconds);
+                SetProperty("CLOUD_DEPLOYMENT", c => c.RunningAsIoTEdgeModule, false, v => !v);
+
+                SetProperty(c => c.IoTHubHostName, "IOTEDGE_IOTHUBHOSTNAME", "IOTHUBHOSTNAME");
+                if (string.IsNullOrEmpty(this.instance.IoTHubHostName))
+                    throw new InvalidOperationException("Either 'IOTEDGE_IOTHUBHOSTNAME' or 'IOTHUBHOSTNAME' environment variable should be populated");
+
+                SetProperty(c => c.GatewayHostName, "IOTEDGE_GATEWAYHOSTNAME");
+                SetProperty("ENABLE_GATEWAY", c => c.EnableGateway, true);
+                if (!this.instance.RunningAsIoTEdgeModule && this.instance.EnableGateway)
+                    throw new NotSupportedException("ENABLE_GATEWAY cannot be true if RunningAsIoTEdgeModule is false.");
+
+                SetProperty(c => c.GatewayID, "IOTEDGE_DEVICEID", "HOSTNAME");
+                if (string.IsNullOrEmpty(this.instance.GatewayID))
+                    throw new InvalidOperationException("Either 'IOTEDGE_DEVICEID' or 'HOSTNAME' environment variable should be populated");
+
+                SetProperty(c => c.HttpsProxy, "HTTPS_PROXY");
+                SetProperty("RX2_DATR", c => c.Rx2DataRate, -1, v => v is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null);
+                SetProperty<double?, Hertz?>("RX2_FREQ", c => c.Rx2Frequency, null, v => v is { } someFreq ? Hertz.Mega(someFreq) : null);
+
+                SetProperty("IOTEDGE_TIMEOUT", c => c.IoTEdgeTimeout, this.instance.IoTEdgeTimeout);
+
+                // facadeurl is allowed to be null as the value is coming from the twin in production.
+                SetProperty<string, Uri>("FACADE_SERVER_URL", c => c.FacadeServerUrl, null, v => string.IsNullOrEmpty(v) ? null : new Uri(v));
+                SetProperty(c => c.FacadeAuthCode, "FACADE_AUTH_CODE");
+                SetProperty(c => c.LogLevel, "LOG_LEVEL");
+                SetProperty("LOG_TO_CONSOLE", c => c.LogToConsole, false);
+                SetProperty("LOG_TO_TCP", c => c.LogToTcp, false);
+                SetProperty("LOG_TO_HUB", c => c.LogToHub, false);
+                SetProperty(c => c.LogToTcpAddress, "LOG_TO_TCP_ADDRESS");
+                SetProperty("LOG_TO_TCP_PORT", c => c.LogToTcpPort, 6000);
+                SetProperty("NETID", c => c.NetId, 1, v => new NetId(v));
+                SetProperty("AllowedDevAddresses", c => c.AllowedDevAddresses, string.Empty, v => v.Split(";")
+                    .Select(s => DevAddr.TryParse(s, out var devAddr) ? (true, Value: devAddr) : default)
+                    .Where(a => a is (true, _))
+                    .Select(a => a.Value)
+                    .ToHashSet());
+                SetProperty(c => c.LnsServerPfxPath, "LNS_SERVER_PFX_PATH");
+                SetProperty(c => c.LnsServerPfxPassword, "LNS_SERVER_PFX_PASSWORD");
+                SetProperty("CLIENT_CERTIFICATE_MODE", c => c.ClientCertificateMode, "NoCertificate", v => Enum.Parse<ClientCertificateMode>(v, true));
+                SetProperty(c => c.LnsVersion, "LNS_VERSION");
+                SetProperty("IOTHUB_CONNECTION_POOL_SIZE", c => c.IotHubConnectionPoolSize, 1U, v => v is uint size
+                    && size > 0U
+                    && size < AmqpConnectionPoolSettings.AbsoluteMaxPoolSize
+                    ? size
+                    : throw new NotSupportedException($"'IOTHUB_CONNECTION_POOL_SIZE' needs to be between 1 and {AmqpConnectionPoolSettings.AbsoluteMaxPoolSize}."));
+
+                SetProperty(c => c.RedisConnectionString, "REDIS_CONNECTION_STRING");
+
+                if (!this.instance.RunningAsIoTEdgeModule && string.IsNullOrEmpty(this.instance.RedisConnectionString))
+                    throw new InvalidOperationException("'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
+
+                return this.instance;
+            }
+
+            private void SetPropertyValue<T>(Expression<Func<NetworkServerConfiguration, T>> memberLamda,
+                                             T value)
+            {
+                if (memberLamda.Body is MemberExpression memberSelectorExpression)
+                {
+                    var property = memberSelectorExpression.Member as PropertyInfo;
+                    property.SetValue(this.instance, value, null);
+                }
+            }
+
+            private void SetProperty(Expression<Func<NetworkServerConfiguration, string>> memberLambda,
+                                     params string[] configurationValueNames)
             {
                 foreach (var configurationValueName in configurationValueNames)
                 {
@@ -159,78 +240,22 @@ namespace LoRaWan.NetworkServer
 
                     if (!string.IsNullOrEmpty(value))
                     {
-                        assign(networkServerConfiguration, value);
+                        SetPropertyValue(memberLambda, value);
                         break;
                     }
                 }
             }
 
-            void SetGenericIfDefined<T, U>(string configurationValueName,
-                                           Action<NetworkServerConfiguration, U> assign,
+            private void SetProperty<T, U>(string configurationValueName,
+                                           Expression<Func<NetworkServerConfiguration, U>> propertySelector,
                                            T defaultValue,
                                            Func<T, U> selector) =>
-                assign(networkServerConfiguration, selector(configuration.GetValue<T>(configurationValueName, defaultValue)));
+                SetPropertyValue(propertySelector, selector(configuration.GetValue(configurationValueName, defaultValue)));
 
-            void SetGenericIfDefinedNoSelector<T>(string configurationValueName,
-                                                  Action<NetworkServerConfiguration, T> assign,
-                                                  T defaultValue) =>
-                SetGenericIfDefined(configurationValueName, assign, defaultValue, v => v);
-
-            // Create case insensitive dictionary from environment variables
-            SetGenericIfDefinedNoSelector("PROCESSING_DELAY_IN_MS", (c, v) => c.ProcessingDelayInMilliseconds = v, Constants.DefaultProcessingDelayInMilliseconds);
-            SetGenericIfDefined("CLOUD_DEPLOYMENT", (c, v) => c.RunningAsIoTEdgeModule = v, false, v => !v);
-
-            SetPropertyIfDefined((c, v) => c.IoTHubHostName = v, "IOTEDGE_IOTHUBHOSTNAME", "IOTHUBHOSTNAME");
-            if (string.IsNullOrEmpty(networkServerConfiguration.IoTHubHostName))
-                throw new InvalidOperationException("Either 'IOTEDGE_IOTHUBHOSTNAME' or 'IOTHUBHOSTNAME' environment variable should be populated");
-
-            SetPropertyIfDefined((c, v) => c.GatewayHostName = v, "IOTEDGE_GATEWAYHOSTNAME");
-            SetGenericIfDefinedNoSelector("ENABLE_GATEWAY", (c, v) => c.EnableGateway = v, true);
-            SetGenericIfDefinedNoSelector("ENABLE_GATEWAY", (c, v) => c.EnableGateway = v, true);
-            if (!networkServerConfiguration.RunningAsIoTEdgeModule && networkServerConfiguration.EnableGateway)
-                throw new NotSupportedException("ENABLE_GATEWAY cannot be true if RunningAsIoTEdgeModule is false.");
-
-            SetPropertyIfDefined((c, v) => c.GatewayID = v, "IOTEDGE_DEVICEID", "HOSTNAME");
-            if (string.IsNullOrEmpty(networkServerConfiguration.GatewayID))
-                throw new InvalidOperationException("Either 'IOTEDGE_DEVICEID' or 'HOSTNAME' environment variable should be populated");
-
-            SetPropertyIfDefined((c, v) => c.HttpsProxy = v, "HTTPS_PROXY");
-            SetGenericIfDefined<int, DataRateIndex?>("RX2_DATR", (c, v) => c.Rx2DataRate = v, -1, v => v is var datrNum && (DataRateIndex)datrNum is var datr && Enum.IsDefined(datr) ? datr : null);
-            SetGenericIfDefined<double?, Hertz?>("RX2_FREQ", (c, v) => c.Rx2Frequency = v, null, v => v is { } someFreq ? Hertz.Mega(someFreq) : null);
-
-            SetGenericIfDefinedNoSelector("IOTEDGE_TIMEOUT", (c, v) => c.IoTEdgeTimeout = v, networkServerConfiguration.IoTEdgeTimeout);
-
-            // facadeurl is allowed to be null as the value is coming from the twin in production.
-            SetGenericIfDefined<string, Uri>("FACADE_SERVER_URL", (c, v) => c.FacadeServerUrl = v, null, v => string.IsNullOrEmpty(v) ? null : new Uri(v));
-            SetPropertyIfDefined((c, v) => c.FacadeAuthCode = v, "FACADE_AUTH_CODE");
-            SetPropertyIfDefined((c, v) => c.LogLevel = v, "LOG_LEVEL");
-            SetGenericIfDefinedNoSelector("LOG_TO_CONSOLE", (c, v) => c.LogToConsole = v, false);
-            SetGenericIfDefinedNoSelector("LOG_TO_TCP", (c, v) => c.LogToTcp = v, false);
-            SetGenericIfDefinedNoSelector("LOG_TO_HUB", (c, v) => c.LogToHub = v, false);
-            SetPropertyIfDefined((c, v) => c.LogToTcpAddress = v, "LOG_TO_TCP_ADDRESS");
-            SetGenericIfDefinedNoSelector("LOG_TO_TCP_PORT", (c, v) => c.LogToTcpPort = v, 6000);
-            SetGenericIfDefined("NETID", (c, v) => c.NetId = v, 1, v => new NetId(v));
-            SetGenericIfDefined("AllowedDevAddresses", (c, v) => c.AllowedDevAddresses = v, string.Empty, v => v.Split(";")
-                .Select(s => DevAddr.TryParse(s, out var devAddr) ? (true, Value: devAddr) : default)
-                .Where(a => a is (true, _))
-                .Select(a => a.Value)
-                .ToHashSet());
-            SetPropertyIfDefined((c, v) => c.LnsServerPfxPath = v, "LNS_SERVER_PFX_PATH");
-            SetPropertyIfDefined((c, v) => c.LnsServerPfxPassword = v, "LNS_SERVER_PFX_PASSWORD");
-            SetGenericIfDefined("CLIENT_CERTIFICATE_MODE", (c, v) => c.ClientCertificateMode = v, "NoCertificate", v => Enum.Parse<ClientCertificateMode>(v, true));
-            SetPropertyIfDefined((c, v) => c.LnsVersion = v, "LNS_VERSION");
-            SetGenericIfDefined("IOTHUB_CONNECTION_POOL_SIZE", (c, v) => c.IotHubConnectionPoolSize = v, 1U, v => v is uint size
-                && size > 0U
-                && size < AmqpConnectionPoolSettings.AbsoluteMaxPoolSize
-                ? size
-                : throw new NotSupportedException($"'IOTHUB_CONNECTION_POOL_SIZE' needs to be between 1 and {AmqpConnectionPoolSettings.AbsoluteMaxPoolSize}."));
-
-            SetPropertyIfDefined((c, v) => c.RedisConnectionString = v, "REDIS_CONNECTION_STRING");
-
-            if (!networkServerConfiguration.RunningAsIoTEdgeModule && string.IsNullOrEmpty(networkServerConfiguration.RedisConnectionString))
-                throw new InvalidOperationException("'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
-
-            return networkServerConfiguration;
+            private void SetProperty<T>(string configurationValueName,
+                                        Expression<Func<NetworkServerConfiguration, T>> propertySelector,
+                                        T defaultValue) =>
+                SetProperty(configurationValueName, propertySelector, defaultValue, v => v);
         }
     }
 }
