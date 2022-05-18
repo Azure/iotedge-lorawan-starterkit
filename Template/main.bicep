@@ -27,6 +27,14 @@ module storage 'modules/storage.bicep' = {
   }
 }
 
+module redisCache 'modules/redis.bicep' = {
+  name: 'redisCache'
+  params: {
+    uniqueSolutionPrefix: uniqueSolutionPrefix
+    location: location
+  }
+}
+
 module function 'modules/function.bicep' = {
   name: 'function'
   params: {
@@ -38,6 +46,7 @@ module function 'modules/function.bicep' = {
   dependsOn: [
     iotHub
     storage
+    redisCache
   ]
 }
 
