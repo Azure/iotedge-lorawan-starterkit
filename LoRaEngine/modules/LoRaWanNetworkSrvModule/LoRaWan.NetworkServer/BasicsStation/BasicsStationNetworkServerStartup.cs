@@ -131,7 +131,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 ? services.AddSingleton<ModuleConnectionHost>()
                 : services.AddHostedService<CloudControlHost>()
                           .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()
-                          .AddSingleton<ILnsRemoteCallListener>(_ => new RedisRemoteCallListener(ConnectionMultiplexer.Connect(NetworkServerConfiguration.RedisConnectionString)));
+                          .AddSingleton<ILnsRemoteCallListener>(sp =>
+                              new RedisRemoteCallListener(ConnectionMultiplexer.Connect(NetworkServerConfiguration.RedisConnectionString),
+                                                          sp.GetRequiredService<ILogger<RedisRemoteCallListener>>(),
+                                                          sp.GetRequiredService<Meter>()));
         }
 
 #pragma warning disable CA1822 // Mark members as static

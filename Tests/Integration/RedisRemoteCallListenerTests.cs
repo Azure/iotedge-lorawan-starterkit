@@ -4,26 +4,31 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
+    using System.Collections.Generic;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using StackExchange.Redis;
     using Xunit;
+    using Xunit.Sdk;
 
     [Collection(RedisFixture.CollectionName)]
     public sealed class RedisRemoteCallListenerTests : IClassFixture<RedisFixture>
     {
         private readonly ConnectionMultiplexer redis;
+        private readonly Mock<ILogger<RedisRemoteCallListener>> logger;
         private readonly RedisRemoteCallListener subject;
 
         public RedisRemoteCallListenerTests(RedisFixture redisFixture)
         {
             this.redis = redisFixture.Redis;
-            this.subject = new RedisRemoteCallListener(this.redis);
+            this.logger = new Mock<ILogger<RedisRemoteCallListener>>();
+            this.subject = new RedisRemoteCallListener(this.redis, this.logger.Object, TestMeter.Instance);
         }
 
         [Fact]
@@ -72,9 +77,48 @@ namespace LoRaWan.Tests.Integration
             function.Verify(a => a.Invoke(It.IsAny<LnsRemoteCall>()), Times.Never);
         }
 
+        [Fact]
+        public async Task SubscribeAsync_Exceptions_Are_Tracked()
+        {
+            // arrange
+            var lns = "lns-1";
+            var function = new Mock<Func<LnsRemoteCall, Task>>();
+
+            // act
+            await this.subject.SubscribeAsync(lns, function.Object, CancellationToken.None);
+            await this.redis.GetSubscriber().PublishAsync(lns, string.Empty);
+
+            // assert
+            var invocation = await RetryAssertSingleAsync(this.logger.GetLogInvocations());
+            _ = Assert.IsType<JsonException>(invocation.Exception);
+        }
+
         private async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)
         {
             await this.redis.GetSubscriber().PublishAsync(channel, JsonSerializer.Serialize(lnsRemoteCall));
+        }
+
+        private static async Task<T> RetryAssertSingleAsync<T>(IEnumerable<T> sequence,
+                                                               int numberOfRetries = 5,
+                                                               TimeSpan? delay = null)
+        {
+            var retryDelay = delay ?? TimeSpan.FromMilliseconds(50);
+            for (var i = 0; i < numberOfRetries + 1; ++i)
+            {
+                try
+                {
+                    var result = Assert.Single(sequence);
+                    return result;
+                }
+                catch (SingleException) when (i < numberOfRetries)
+                {
+                    // assertion does not yet pass, retry once more.
+                    await Task.Delay(retryDelay);
+                    continue;
+                }
+            }
+
+            throw new InvalidOperationException("asdfasdf");
         }
     }
 }

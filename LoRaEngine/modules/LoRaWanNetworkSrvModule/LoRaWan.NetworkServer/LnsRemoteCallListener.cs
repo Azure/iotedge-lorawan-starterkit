@@ -11,6 +11,8 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using StackExchange.Redis;
     using LoRaTools;
+    using Microsoft.Extensions.Logging;
+    using System.Diagnostics.Metrics;
 
     internal interface ILnsRemoteCallListener
     {
@@ -22,10 +24,14 @@ namespace LoRaWan.NetworkServer
     internal sealed class RedisRemoteCallListener : ILnsRemoteCallListener
     {
         private readonly ConnectionMultiplexer redis;
+        private readonly ILogger<RedisRemoteCallListener> logger;
+        private readonly Counter<int> unhandledExceptionCount;
 
-        public RedisRemoteCallListener(ConnectionMultiplexer redis)
+        public RedisRemoteCallListener(ConnectionMultiplexer redis, ILogger<RedisRemoteCallListener> logger, Meter meter)
         {
             this.redis = redis;
+            this.logger = logger;
+            this.unhandledExceptionCount = meter.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
         }
 
         // Cancellation token to be passed when/if a future update to SubscribeAsync is allowing to use it
@@ -34,8 +40,16 @@ namespace LoRaWan.NetworkServer
             var channelMessage = await this.redis.GetSubscriber().SubscribeAsync(lns);
             channelMessage.OnMessage(value =>
             {
-                var lnsRemoteCall = JsonSerializer.Deserialize<LnsRemoteCall>(value.Message) ?? throw new InvalidOperationException("Deserialization produced an empty LnsRemoteCall.");
-                return function(lnsRemoteCall);
+                try
+                {
+                    var lnsRemoteCall = JsonSerializer.Deserialize<LnsRemoteCall>(value.Message) ?? throw new InvalidOperationException("Deserialization produced an empty LnsRemoteCall.");
+                    return function(lnsRemoteCall);
+                }
+                catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred when reacting to a Redis message: '{ex}'."),
+                                                                        () => this.unhandledExceptionCount.Add(1)))
+                {
+                    throw;
+                }
             });
         }
 
