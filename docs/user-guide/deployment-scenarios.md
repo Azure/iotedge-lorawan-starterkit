@@ -145,7 +145,7 @@ for example on AKS in the cloud without using IoT Edge. For detailed information
 on how to deploy the LNS in the cloud without using IoT Edge, refer to
 [Cloud-based Network Server configuration documentation](./lns-configuration).
 This configuration enables you to reuse the same Network Servers for globally
-distributed concentrator locations.
+distributed concentrators.
 
 ![Redundancy](../images/scenarios/scenario-edge-in-cloud.png)
 
