@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            var fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, 0);
+            var fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, loRaDevice.FCntUp);
             if (fcntDown <= 0)
             {
                 this.logger.LogError("[class-c] could not obtain fcnt down for class C device");
