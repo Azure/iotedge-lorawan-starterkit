@@ -129,7 +129,7 @@ namespace LoRaWan.Tests.Integration
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, fcntDownFromTwin + fcntDelta, 0, ServerConfiguration.GatewayID))
+                LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, fcntDownFromTwin + fcntDelta, simDevice.FrmCntUp, ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)expectedFcntDown);
             }
 
@@ -234,7 +234,7 @@ namespace LoRaWan.Tests.Integration
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, simDevice.FrmCntDown, 0, ServerConfiguration.GatewayID))
+                LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, simDevice.FrmCntDown, simDevice.FrmCntUp, ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(simDevice.FrmCntDown + 1));
             }
 
