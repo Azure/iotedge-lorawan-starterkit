@@ -1,4 +1,4 @@
-name: LoRa Generate Arm from Bicep
+name: LoRa Generate Arm
 on:
   workflow_dispatch:
 
