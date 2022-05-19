@@ -77,7 +77,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             var dev2EUI = TestEui.GenerateDevEui();
 
             this.serviceClientMock.Setup(x => x.InvokeDeviceMethodAsync(
-                It.IsAny<string>(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>()))
+                It.IsAny<string>(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = 200 });
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
                 It.Is<CloudToDeviceMethod>(
                     m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection
-                    && m.GetPayloadAsJson().Contains(dev1EUI.ToString()))),
+                    && m.GetPayloadAsJson().Contains(dev1EUI.ToString())), It.IsAny<CancellationToken>()),
                 Times.Once);
 
             result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev2EUI, gateway1Id, 1, 1);
@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
                 x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
                 It.Is<CloudToDeviceMethod>(
                     m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection
-                    && m.GetPayloadAsJson().Contains(dev2EUI.ToString()))),
+                    && m.GetPayloadAsJson().Contains(dev2EUI.ToString())), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -122,7 +122,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
             var dev1EUI = TestEui.GenerateDevEui();
 
             this.serviceClientMock.Setup(x => x.InvokeDeviceMethodAsync(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CloudToDeviceMethod>()))
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CloudToDeviceMethod>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new IotHubException("Failed to invoke direct method"));
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade.FunctionBundler
 
             this.serviceClientMock.Verify(
                 x => x.InvokeDeviceMethodAsync(gateway1Id.ToString(), LoraKeysManagerFacadeConstants.NetworkServerModuleId,
-                It.Is<CloudToDeviceMethod>(m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection)),
+                It.Is<CloudToDeviceMethod>(m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection), It.IsAny<CancellationToken>()),
                 Times.Once);
 
             Assert.False(result.IsDuplicate);
