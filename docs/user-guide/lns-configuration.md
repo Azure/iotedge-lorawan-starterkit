@@ -3,7 +3,9 @@ hide:
   - toc
 ---
 
-# Network Server IoT Edge Module configuration
+# Network Server Configuration
+
+## Network Server IoT Edge Module configuration
 
 The following table is providing a list of configuration options, to be provided
 as environment variables for manual configuration of the
@@ -41,7 +43,7 @@ Server module twin in IoT Hub:
 | FacadeServerAuthCode          | Azure Facade function auth code                                                                                                               | Yes                     |
 | ProcessingDelayInMilliseconds | Processing delay (in milliseconds) to be used for the LNS not owning the connection for a device in a multi-gateway scenario; for more information see [Scalability](./scalability.md) | No (defaults to 400 ms) |
 
-# Cloud-based Network Server configuration
+## Cloud-based Network Server configuration
 
 You can run the Network Server directly in the cloud without needing IoT Edge,
 e.g. on an AKS cluster. In general, the same environment variables as for the
