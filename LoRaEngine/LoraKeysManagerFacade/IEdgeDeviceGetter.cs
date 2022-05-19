@@ -10,6 +10,6 @@ namespace LoraKeysManagerFacade
     public interface IEdgeDeviceGetter
     {
         Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken);
-        Task<IEnumerable<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken);
+        Task<ICollection<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken);
     }
 }

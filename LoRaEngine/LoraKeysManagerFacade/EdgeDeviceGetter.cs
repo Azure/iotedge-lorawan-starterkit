@@ -107,7 +107,7 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public async Task<IEnumerable<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken)
+        public async Task<ICollection<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken)
         {
             var edgeDevices = await GetEdgeDevicesAsync(cancellationToken);
             return edgeDevices.Select(e => e.DeviceId).ToList();
