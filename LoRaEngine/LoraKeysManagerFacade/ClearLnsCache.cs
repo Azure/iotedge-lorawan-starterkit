@@ -77,6 +77,8 @@ namespace LoraKeysManagerFacade
 
         internal async Task InvokeClearViaDirectMethodAsync(string lnsId, CancellationToken cancellationToken)
         {
+            //Reason why the yield is needed is to avoid any potential "synchronous" code that might fail the publishing of a message on the pub/sub channel
+            await Task.Yield();
             var res = await this.serviceClient.InvokeDeviceMethodAsync(lnsId,
                                                                        LoraKeysManagerFacadeConstants.NetworkServerModuleId,
                                                                        new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.ClearCacheMethodName),
