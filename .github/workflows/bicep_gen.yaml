@@ -4,7 +4,6 @@ on:
     branches:
       - master
   workflow_dispatch:
-
 env:
   BICEP_FOLDER: Template
 
