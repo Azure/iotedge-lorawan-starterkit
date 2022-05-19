@@ -5,6 +5,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Hosting;
@@ -13,7 +14,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly ILnsRemoteCallListener lnsRemoteCallListener;
         private readonly ILnsRemoteCallHandler lnsRemoteCallHandler;
-        private readonly string gatewayId;
+        private readonly string[] subscriptionChannels;
 
         public CloudControlHost(ILnsRemoteCallListener lnsRemoteCallListener,
                                 ILnsRemoteCallHandler lnsRemoteCallHandler,
@@ -21,15 +22,16 @@ namespace LoRaWan.NetworkServer
         {
             this.lnsRemoteCallListener = lnsRemoteCallListener;
             this.lnsRemoteCallHandler = lnsRemoteCallHandler;
-            this.gatewayId = networkServerConfiguration.GatewayID;
+            this.subscriptionChannels = new string[] { networkServerConfiguration.GatewayID, Constants.CloudToDeviceClearCache };
         }
 
+
         public Task StartAsync(CancellationToken cancellationToken) =>
-            this.lnsRemoteCallListener.SubscribeAsync(this.gatewayId,
-                                                      remoteCall => this.lnsRemoteCallHandler.ExecuteAsync(remoteCall, cancellationToken),
-                                                      cancellationToken);
+            Task.WhenAll(this.subscriptionChannels.Select(c => this.lnsRemoteCallListener.SubscribeAsync(c,
+                                                                                                         remoteCall => this.lnsRemoteCallHandler.ExecuteAsync(remoteCall, cancellationToken),
+                                                                                                         cancellationToken)));
 
         public Task StopAsync(CancellationToken cancellationToken) =>
-            this.lnsRemoteCallListener.UnsubscribeAsync(this.gatewayId, cancellationToken);
+            Task.WhenAll(this.subscriptionChannels.Select(c => this.lnsRemoteCallListener.UnsubscribeAsync(c, cancellationToken)));
     }
 }

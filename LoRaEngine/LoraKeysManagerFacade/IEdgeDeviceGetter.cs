@@ -3,11 +3,13 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
     public interface IEdgeDeviceGetter
     {
         Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken);
+        Task<ICollection<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken);
     }
 }

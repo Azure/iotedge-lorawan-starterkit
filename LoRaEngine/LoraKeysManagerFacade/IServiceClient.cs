@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
 
@@ -11,7 +12,7 @@ namespace LoraKeysManagerFacade
     /// </summary>
     public interface IServiceClient
     {
-        Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod);
+        Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
 
         Task SendAsync(string deviceId, Message message);
     }

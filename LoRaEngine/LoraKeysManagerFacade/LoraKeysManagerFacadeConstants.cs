@@ -11,6 +11,7 @@ namespace LoraKeysManagerFacade
         internal const string TwinProperty_DevAddr = "DevAddr";
         internal const string TwinProperty_NwkSKey = "NwkSKey";
         internal const string NetworkServerModuleId = "LoRaWanNetworkSrvModule";
+        internal const string ClearCacheMethodName = "clearcache";
         internal const string CloudToDeviceMessageMethodName = "cloudtodevicemessage";
         internal const string CloudToDeviceCloseConnection = "closeconnection";
         public const string RoundTripDateTimeStringFormat = "o";

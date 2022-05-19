@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -44,6 +45,36 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.False(await edgeDeviceGetter.IsEdgeDeviceAsync("anotherDevice", default));
 
             _ = this.mockQuery.Invocations.Single(x => x.Method.Name.Equals(nameof(IQuery.GetNextAsTwinAsync), System.StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task ListEdgeDevicesAsync_Returns_Expected_Device_List()
+        {
+            var edgeDeviceGetter = new EdgeDeviceGetter(InitRegistryManager(), new LoRaInMemoryDeviceStore(), NullLogger<EdgeDeviceGetter>.Instance);
+
+            var list = await edgeDeviceGetter.ListEdgeDevicesAsync(default);
+
+            Assert.Contains(EdgeDevice1, list);
+        }
+
+        [Fact]
+        public async Task ListEdgeDevicesAsync_Returns_Empty_Device_List()
+        {
+            this.mockQuery = new Mock<IQuery>();
+            this.mockRegistryManager = new Mock<IDeviceRegistryManager>();
+
+            mockQuery.Setup(x => x.GetNextAsTwinAsync())
+                .ReturnsAsync(Array.Empty<Twin>());
+
+            mockRegistryManager
+                .Setup(x => x.CreateQuery(It.IsAny<string>()))
+                .Returns(mockQuery.Object);
+
+            var edgeDeviceGetter = new EdgeDeviceGetter(this.mockRegistryManager.Object, new LoRaInMemoryDeviceStore(), NullLogger<EdgeDeviceGetter>.Instance);
+
+            var list = await edgeDeviceGetter.ListEdgeDevicesAsync(default);
+
+            Assert.Empty(list);
         }
 
         private IDeviceRegistryManager InitRegistryManager()

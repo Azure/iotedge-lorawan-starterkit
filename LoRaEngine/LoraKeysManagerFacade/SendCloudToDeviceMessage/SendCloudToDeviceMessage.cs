@@ -214,7 +214,7 @@ namespace LoraKeysManagerFacade
 
                 if (await edgeDeviceGetter.IsEdgeDeviceAsync(preferredGatewayID, cancellationToken))
                 {
-                    var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                    var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method, cancellationToken);
                     if (HttpUtilities.IsSuccessStatusCode(res.Status))
                     {
                         this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);

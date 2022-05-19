@@ -122,7 +122,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                 {
                                     if (await this.edgeDeviceGetter.IsEdgeDeviceAsync(previousGateway, cts.Token))
                                     {
-                                        var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
+                                        var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method, default);
                                         logger?.LogDebug("Connection owner changed and direct method was called on previous gateway '{PreviousConnectionOwner}' to close connection; result is '{Status}'", previousGateway, res?.Status);
 
                                         if (!HttpUtilities.IsSuccessStatusCode(res.Status))

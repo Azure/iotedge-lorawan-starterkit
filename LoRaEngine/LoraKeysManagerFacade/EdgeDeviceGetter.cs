@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -32,7 +33,7 @@ namespace LoraKeysManagerFacade
 #pragma warning restore IDE0060 // Remove unused parameter
         {
             this.logger.LogDebug("Getting Azure IoT Edge devices");
-            var q = this.registryManager.CreateQuery("SELECT * FROM devices where capabilities.iotEdge = true");
+            var q = this.registryManager.CreateQuery($"SELECT * FROM devices.modules where moduleId = '{LoraKeysManagerFacadeConstants.NetworkServerModuleId}'");
             var twins = new List<Twin>();
             do
             {
@@ -104,6 +105,12 @@ namespace LoraKeysManagerFacade
                 }
                 this.lastUpdateTime = DateTimeOffset.UtcNow;
             }
+        }
+
+        public async Task<ICollection<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken)
+        {
+            var edgeDevices = await GetEdgeDevicesAsync(cancellationToken);
+            return edgeDevices.Select(e => e.DeviceId).ToList();
         }
     }
 
