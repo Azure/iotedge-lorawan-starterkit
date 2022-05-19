@@ -78,33 +78,5 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.channelPublisher.Verify(c => c.PublishAsync(LoraKeysManagerFacadeConstants.ClearCacheMethodName,
                                                              It.Is<LnsRemoteCall>(r => r.Kind == RemoteCallKind.ClearCache)), Times.Once());
         }
-
-        [Fact]
-        public async Task ClearLnsCacheInternalAsync_Succeeds_Even_If_A_Single_Edge_Device_Is_A_Non_Lns_One()
-        {
-            //arrange
-            var listEdgeDevices = new List<string> { "edge1", "edge2" };
-            this.edgeDeviceGetter.Setup(m => m.ListEdgeDevicesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(listEdgeDevices);
-
-            this.serviceClient.Setup(m => m.InvokeDeviceMethodAsync("edge1",
-                                                                    It.IsAny<string>(),
-                                                                    It.IsAny<CloudToDeviceMethod>(),
-                                                                    It.IsAny<CancellationToken>()))
-                .Throws(new DeviceNotFoundException("edge1"));
-
-            this.serviceClient.Setup(m => m.InvokeDeviceMethodAsync("edge2",
-                                                                    It.IsAny<string>(),
-                                                                    It.IsAny<CloudToDeviceMethod>(),
-                                                                    It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new CloudToDeviceMethodResult() { Status = 200 });
-
-            //act
-            await this.clearLnsCache.ClearLnsCacheInternalAsync(default);
-
-            //assert
-            this.channelPublisher.Verify(c => c.PublishAsync(LoraKeysManagerFacadeConstants.ClearCacheMethodName,
-                                                             It.Is<LnsRemoteCall>(r => r.Kind == RemoteCallKind.ClearCache)), Times.Once());
-        }
     }
 }

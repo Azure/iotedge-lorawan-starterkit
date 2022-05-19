@@ -13,7 +13,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -60,6 +59,10 @@ namespace LoraKeysManagerFacade
             this.logger.LogInformation("Clearing device cache for all edge and Pub/Sub channel based Network Servers.");
             // Edge device discovery for invoking direct methods
             var edgeDevices = await this.edgeDeviceGetter.ListEdgeDevicesAsync(cancellationToken);
+            if (this.logger.IsEnabled(LogLevel.Debug))
+            {
+                this.logger.LogDebug("Invoking clear cache direct method for following devices: {deviceList}", string.Join(',', edgeDevices));
+            }
             var tasks = edgeDevices.Select(e => InvokeClearViaDirectMethodAsync(e, cancellationToken)).ToArray();
             // Publishing a single message for all cloud based LNSes
             await PublishClearMessageAsync();
@@ -74,28 +77,17 @@ namespace LoraKeysManagerFacade
 
         internal async Task InvokeClearViaDirectMethodAsync(string lnsId, CancellationToken cancellationToken)
         {
-            try
+            var res = await this.serviceClient.InvokeDeviceMethodAsync(lnsId,
+                                                                       LoraKeysManagerFacadeConstants.NetworkServerModuleId,
+                                                                       new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.ClearCacheMethodName),
+                                                                       cancellationToken);
+            if (HttpUtilities.IsSuccessStatusCode(res.Status))
             {
-                var res = await this.serviceClient.InvokeDeviceMethodAsync(lnsId,
-                                                                           LoraKeysManagerFacadeConstants.NetworkServerModuleId,
-                                                                           new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.ClearCacheMethodName),
-                                                                           cancellationToken);
-                if (HttpUtilities.IsSuccessStatusCode(res.Status))
-                {
-                    this.logger.LogInformation("Cache cleared for {gatewayID} via direct method", lnsId);
-                }
-
-                this.logger.LogError("Direct method call to {gatewayID} failed with {statusCode}. Response: {response}",
-                                     lnsId,
-                                     res.Status,
-                                     res.GetPayloadAsJson());
+                this.logger.LogInformation("Cache cleared for {gatewayID} via direct method", lnsId);
             }
-            catch (DeviceNotFoundException ex)
+            else
             {
-                this.logger.LogError(ex,
-                                     "Device named {gatewayID} did not exist or had no module named {moduleName}.",
-                                     lnsId,
-                                     LoraKeysManagerFacadeConstants.NetworkServerModuleId);
+                throw new InvalidOperationException($"Direct method call to {lnsId} failed with {res.Status}. Response: {res.GetPayloadAsJson()}");
             }
         }
     }

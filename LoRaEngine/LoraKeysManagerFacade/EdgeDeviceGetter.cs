@@ -33,7 +33,7 @@ namespace LoraKeysManagerFacade
 #pragma warning restore IDE0060 // Remove unused parameter
         {
             this.logger.LogDebug("Getting Azure IoT Edge devices");
-            var q = this.registryManager.CreateQuery("SELECT * FROM devices where capabilities.iotEdge = true");
+            var q = this.registryManager.CreateQuery($"SELECT * FROM devices.modules where moduleId = '{LoraKeysManagerFacadeConstants.NetworkServerModuleId}'");
             var twins = new List<Twin>();
             do
             {
