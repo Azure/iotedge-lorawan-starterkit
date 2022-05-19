@@ -1,9 +1,7 @@
-name: LoRa Generate Arm from Bicep
+name: LoRa Generate Arm
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
+
 env:
   BICEP_FOLDER: Template
 
