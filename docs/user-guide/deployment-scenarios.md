@@ -140,10 +140,12 @@ workloads on Windows machines.
 
 ## Deployment of IoT Edge in the cloud
 
-It is also possible to run the IoT Edge modules directly in the cloud. Either a
-Linux VM to run IoT Edge directly, or on a Windows VM with EFLOW.
-In fact, the full end-to-end Continuous Integration pipeline for the Starter Kit
-also tests this scenario with an installation of EFLOW in a Windows Server VM in Azure.
+It is also possible to run the LNS directly in the cloud. You can run the LNS
+for example on AKS in the cloud without using IoT Edge. For detailed information
+on how to deploy the LNS in the cloud without using IoT Edge, refer to
+[Cloud-based Network Server configuration documentation](./lns-configuration).
+This configuration enables you to reuse the same Network Servers for globally
+distributed concentrators.
 
 ![Redundancy](../images/scenarios/scenario-edge-in-cloud.png)
 

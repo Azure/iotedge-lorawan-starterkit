@@ -80,7 +80,7 @@ nav:
       - user-guide/station-module-configuration.md
       - user-guide/station-firmware-upgrade.md
     - 'LNS module configuration':
-      - user-guide/lns-module-configuration.md
+      - user-guide/lns-configuration.md
     - 'Region specifics':
       - user-guide/as923.md
     - Testing:
