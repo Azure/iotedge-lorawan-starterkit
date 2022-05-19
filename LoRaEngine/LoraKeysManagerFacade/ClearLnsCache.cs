@@ -18,7 +18,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
 
-    public class ClearLnsCache
+    public sealed class ClearLnsCache
     {
         private readonly IEdgeDeviceGetter edgeDeviceGetter;
         private readonly IServiceClient serviceClient;
