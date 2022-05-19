@@ -45,7 +45,7 @@ Server module twin in IoT Hub:
 
 ## Cloud-based Network Server configuration
 
-You can run the Network Server directly in the cloud without needing IoT Edge,
+You can run the Network Server directly in the cloud without requiring IoT Edge,
 e.g. on an AKS cluster. In general, the same environment variables as for the
 [module configuration](#network-server-iot-edge-module-configuration) apply
 (e.g. for the facade connection). In addition make sure to set the following
