@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -104,6 +105,12 @@ namespace LoraKeysManagerFacade
                 }
                 this.lastUpdateTime = DateTimeOffset.UtcNow;
             }
+        }
+
+        public async Task<IEnumerable<string>> ListEdgeDevicesAsync(CancellationToken cancellationToken)
+        {
+            var edgeDevices = await GetEdgeDevicesAsync(cancellationToken);
+            return edgeDevices.Select(e => e.DeviceId).ToList();
         }
     }
 
