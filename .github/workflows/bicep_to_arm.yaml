@@ -1,5 +1,13 @@
 name: LoRa Generate Arm
 on:
+  pull_request:
+    branches: 
+      - master
+      - dev
+  # push: 
+  #   branches:
+  #     - master
+  #     - dev
   workflow_dispatch:
 
 env:
