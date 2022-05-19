@@ -58,9 +58,10 @@ namespace LoraKeysManagerFacade
         internal async Task ClearLnsCacheInternalAsync(CancellationToken cancellationToken)
         {
             this.logger.LogInformation("Clearing device cache for all edge and Pub/Sub channel based Network Servers.");
+            // Edge device discovery for invoking direct methods
             var edgeDevices = await this.edgeDeviceGetter.ListEdgeDevicesAsync(cancellationToken);
             var tasks = edgeDevices.Select(e => InvokeClearViaDirectMethodAsync(e, cancellationToken)).ToArray();
-
+            // Publishing a single message for all cloud based LNSes
             await PublishClearMessageAsync();
             await Task.WhenAll(tasks);
         }
