@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "azure-maps-indoor": "^0.1.6"
+  }
+}

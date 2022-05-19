@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <title>Indoor Maps App</title>
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css"
+        type="text/css" />
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/indoor/0.1/atlas-indoor.min.css"
+        type="text/css" />
+
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.js"></script>
+    <script src="https://atlas.microsoft.com/sdk/javascript/indoor/0.1/atlas-indoor.js"></script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        #map-id {
+            width: 100%;
+            height: 100%;
+        }
+
+        .reading {
+            position: absolute;
+            width: 200px;
+            top: 0;
+            left:0;
+            padding: 15px;
+            font-size: 18px;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+            visibility: hidden;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div id="map-id">
+        <div id="co2reading" class="reading">
+            <span></span>
+        </div>
+    </div>
+
+ 
+    <script>
+        const subscriptionKey = process.env.subscription;
+        const tilesetId = process.env.tilesetid; 
+        const statesetId = process.env.statesetid;
+        const map = new atlas.Map("map-id", {
+            //use your facility's location       
+            center: [-122.13315, 47.63637],
+            //or, you can use bounds: [# west, # south, # east, # north] and replace # with your Map bounds        
+            style: "blank",
+            view: 'Auto',
+            authOptions: {
+                authType: 'subscriptionKey',
+                subscriptionKey: subscriptionKey
+            },
+            zoom: 19,
+        });
+        const levelControl = new atlas.control.LevelControl({
+            position: "top-right",
+        });
+        const indoorManager = new atlas.indoor.IndoorManager(map);
+        console.log(indoorManager.statesetId);
+        map.events.addOnce("ready", function () {
+            indoorManager.setOptions({
+                tilesetId: tilesetId,
+                statesetId: statesetId,
+                       // Optional,
+            })
+            if (statesetId.length > 0) {
+                indoorManager.setDynamicStyling(true);
+            }
+        });
+
+
+        /* Upon a mouse click, log the feature properties to the browser's console. */
+        map.events.add("click", function (e) {
+            var features = map.layers.getRenderedShapes(e.position, "unit");
+            features.forEach(function (feature) {
+                if (feature.layer.id.includes('indoor_unit_office')) {
+                    console.log(feature);
+
+                    if(document.getElementById("co2reading").style.visibility != "visible"){
+                        document.getElementById("co2reading").style.visibility = 'visible';
+                    }
+                    
+                    if(feature.state['stateValue:co2'] != undefined) {
+                        document.getElementById("co2reading").innerHTML = '<b>Unit: </b>' + feature.id + '\n <b>Co2: </b>' + feature.state['stateValue:co2'] + '<small>ppm</small>';
+                    } else {
+                        document.getElementById("co2reading").innerHTML = 'Not Available';
+                    }
+
+                }
+            });
+        }); map.events.add("levelchanged", indoorManager, (eventData) => {
+            //put code that runs after a level has been changed      
+            console.log("The level has changed:", eventData);
+        });
+        map.events.add("facilitychanged", indoorManager, (eventData) => {
+            //put code that runs after a facility has been changed       
+            console.log("The facility has changed:", eventData);
+        });
+    </script>
+
+</body>
+
+</html>
