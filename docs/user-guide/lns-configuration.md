@@ -40,3 +40,19 @@ Server module twin in IoT Hub:
 | FacadeServerUrl               | Azure Facade function url                                                                                                                     | Yes                     |
 | FacadeServerAuthCode          | Azure Facade function auth code                                                                                                               | Yes                     |
 | ProcessingDelayInMilliseconds | Processing delay (in milliseconds) to be used for the LNS not owning the connection for a device in a multi-gateway scenario; for more information see [Scalability](./scalability.md) | No (defaults to 400 ms) |
+
+# Cloud-based Network Server configuration
+
+You can run the Network Server directly in the cloud without needing IoT Edge,
+e.g. on an AKS cluster. In general, the same environment variables as for the
+[module configuration](#network-server-iot-edge-module-configuration) apply
+(e.g. for the facade connection). In addition make sure to set the following
+environment variables:
+
+| Environment variable name | Description | Mandatory |
+| --- | --- | --- |
+| CLOUD_DEPLOYMENT | Switch to indicate that the LNS is deployed as a standalone cloud-based instance | true |
+| ENABLE_GATEWAY | Gateway mode is only applicable to IoT Edge-based deployments. Must be set to `false` or unset. | false |
+| IOTHUBHOSTNAME | Host name of the IoT Hub to which the LNS should connect to. | true |
+| HOSTNAME | Identifier of the LNS. | true |
+| REDIS_CONNECTION_STRING | Connection string used to connect to the deployed Redis instance. | true |
