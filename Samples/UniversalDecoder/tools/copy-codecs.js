@@ -28,7 +28,7 @@ const index = glob.sync(`**/*`,
     console.log(`Copying ${srcPath} to ${dstPath}`);
     fse.copySync(srcPath, dstPath);
 
-    if (f.endsWith(".js" && ignoreList.includes(f))) {
+    if (f.endsWith(".js") && !ignoreList.includes(f)) {
       // Sniff a top-level declaration for a function named "decodeUplink"
       // and include the decoder if only one is found.
       const tree = esprima.parseScript(fs.readFileSync(srcPath).toString());
