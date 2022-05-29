@@ -8,9 +8,9 @@ namespace LoraKeysManagerFacade
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.Utils;
     using LoRaWan;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade
 
         private static string GenerateKey(DevAddr devAddr) => CacheKeyPrefix + devAddr;
 
-        public LoRaDevAddrCache(ILoRaDeviceCacheStore cacheStore, RegistryManager registryManager, ILogger logger, string gatewayId)
+        public LoRaDevAddrCache(ILoRaDeviceCacheStore cacheStore, IDeviceRegistryManager registryManager, ILogger logger, string gatewayId)
         {
             this.cacheStore = cacheStore;
             this.logger = logger ?? NullLogger.Instance;
@@ -110,7 +110,7 @@ namespace LoraKeysManagerFacade
             this.logger.LogInformation($"Successfully saved dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
         }
 
-        internal async Task PerformNeededSyncs(RegistryManager registryManager)
+        internal async Task PerformNeededSyncs(IDeviceRegistryManager registryManager)
         {
             // If a full update is expected
             if (await this.cacheStore.LockTakeAsync(FullUpdateLockKey, this.lockOwner, FullUpdateKeyTimeSpan, block: false))
@@ -191,7 +191,7 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Perform a full relaoad on the dev address cache. This occur typically once every 24 h.
         /// </summary>
-        private async Task PerformFullReload(RegistryManager registryManager)
+        private async Task PerformFullReload(IDeviceRegistryManager registryManager)
         {
             var query = $"SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)";
             var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query);
@@ -201,7 +201,7 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Method performing a deltaReload. Typically occur every 5 minutes.
         /// </summary>
-        private async Task PerformDeltaReload(RegistryManager registryManager)
+        private async Task PerformDeltaReload(IDeviceRegistryManager registryManager)
         {
             // if the value is null (first call), we take five minutes before this call
             var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
@@ -210,7 +210,7 @@ namespace LoraKeysManagerFacade
             BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
 
-        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
+        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IDeviceRegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
             var lastQueryTs = DateTime.UtcNow.AddSeconds(-10); // account for some clock drift

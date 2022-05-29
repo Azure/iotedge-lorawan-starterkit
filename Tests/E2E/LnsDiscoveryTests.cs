@@ -57,13 +57,14 @@ namespace LoRaWan.Tests.E2E
             StationInfo.GroupJoin(LnsInfo, station => station.NetworkId, lns => lns.NetworkId, (s, ls) => (s.StationEui, LnsInfo: ls))
                        .ToImmutableDictionary(x => x.StationEui, x => x.LnsInfo.ToImmutableArray());
 
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
 
         public LnsDiscoveryFixture() =>
-            this.registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString);
+            this.registryManager = IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString));
 
-        public void Dispose() =>
-            this.registryManager.Dispose();
+        public void Dispose()
+        {
+        }
 
         public Task DisposeAsync() =>
             Task.WhenAll(from deviceId in LnsInfo.Select(l => l.DeviceId.ToString())
@@ -89,6 +90,10 @@ namespace LoRaWan.Tests.E2E
                 await this.registryManager.AddDeviceAsync(new Device(deviceId));
                 await this.registryManager.UpdateTwinAsync(deviceId, new Twin { Tags = GetNetworkTags(station.NetworkId) }, "*", CancellationToken.None);
             }
+
+            var waitTime = TimeSpan.FromSeconds(60);
+            Console.WriteLine($"Waiting for {waitTime.TotalSeconds} seconds.");
+            await Task.Delay(waitTime);
 
             static TwinCollection GetNetworkTags(string networkId) => new TwinCollection(JsonSerializer.Serialize(new { network = networkId }));
         }

@@ -11,7 +11,6 @@ namespace LoraKeysManagerFacade
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -19,11 +18,11 @@ namespace LoraKeysManagerFacade
 
     public class DeviceGetter
     {
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger<DeviceGetter> logger;
 
-        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore, ILogger<DeviceGetter> logger)
+        public DeviceGetter(IDeviceRegistryManager registryManager, ILoRaDeviceCacheStore cacheStore, ILogger<DeviceGetter> logger)
         {
             this.registryManager = registryManager;
             this.cacheStore = cacheStore;

@@ -33,13 +33,13 @@ namespace LoRaWan.Tests.Integration
 
     internal sealed class LnsDiscoveryApplication : WebApplicationFactory<Program>
     {
-        public Mock<RegistryManager>? RegistryManagerMock { get; private set; }
+        public Mock<IDeviceRegistryManager>? RegistryManagerMock { get; private set; }
 
         protected override IHost CreateHost(IHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {
-                RegistryManagerMock = new Mock<RegistryManager>();
+                RegistryManagerMock = new Mock<IDeviceRegistryManager>();
                 services.RemoveAll<ILnsDiscovery>();
                 services.AddSingleton<ILnsDiscovery>(sp => new TagBasedLnsDiscovery(sp.GetRequiredService<IMemoryCache>(), RegistryManagerMock.Object, sp.GetRequiredService<ILogger<TagBasedLnsDiscovery>>()));
             });

@@ -5,16 +5,16 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices;
+    using LoRaTools;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
 
     public class SyncDevAddrCache
     {
         private readonly LoRaDevAddrCache loRaDevAddrCache;
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
 
-        public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache, RegistryManager registryManager)
+        public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache, IDeviceRegistryManager registryManager)
         {
             this.loRaDevAddrCache = loRaDevAddrCache;
             this.registryManager = registryManager;

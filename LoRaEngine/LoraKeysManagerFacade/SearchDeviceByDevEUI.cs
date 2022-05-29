@@ -9,17 +9,16 @@ namespace LoraKeysManagerFacade
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
 
     public class SearchDeviceByDevEUI
     {
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly ILogger<SearchDeviceByDevEUI> logger;
 
-        public SearchDeviceByDevEUI(RegistryManager registryManager, ILogger<SearchDeviceByDevEUI> logger)
+        public SearchDeviceByDevEUI(IDeviceRegistryManager registryManager, ILogger<SearchDeviceByDevEUI> logger)
         {
             this.registryManager = registryManager;
             this.logger = logger;
