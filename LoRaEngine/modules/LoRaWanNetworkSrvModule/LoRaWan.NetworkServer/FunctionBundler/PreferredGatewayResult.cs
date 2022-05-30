@@ -10,16 +10,6 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class PreferredGatewayResult
     {
-        [JsonIgnore]
-        public DevEui DevEUI { get; set; }
-
-        [JsonProperty("DevEUI")]
-        public string DevEuiString
-        {
-            get => DevEUI.ToString();
-            set => DevEUI = DevEui.Parse(value);
-        }
-
         public uint RequestFcntUp { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]

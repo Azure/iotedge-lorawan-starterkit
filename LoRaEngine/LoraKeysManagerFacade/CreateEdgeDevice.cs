@@ -10,6 +10,7 @@ namespace LoraKeysManagerFacade
     using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.Devices;
@@ -28,10 +29,10 @@ namespace LoraKeysManagerFacade
         private const string HostAddressPropertyName = "hostAddress";
         private const string NetworkId = "quickstartnetwork";
         private static readonly Uri DefaultHostAddress = new Uri("ws://mylns:5000");
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly IHttpClientFactory httpClientFactory;
 
-        public CreateEdgeDevice(RegistryManager registryManager, IHttpClientFactory httpClientFactory)
+        public CreateEdgeDevice(IDeviceRegistryManager registryManager, IHttpClientFactory httpClientFactory)
         {
             this.registryManager = registryManager;
             this.httpClientFactory = httpClientFactory;

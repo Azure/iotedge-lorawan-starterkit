@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using LoraKeysManagerFacade.FunctionBundler;
+    using LoRaTools;
     using LoRaTools.ADR;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -42,10 +43,6 @@ namespace LoraKeysManagerFacade
             var redisCache = redis.GetDatabase();
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            // Object is handled by DI container.
-            _ = builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
-#pragma warning restore CA2000 // Dispose objects before losing scope
             builder.Services.AddAzureClients(builder =>
             {
                 _ = builder.AddBlobServiceClient(configHandler.StorageConnectionString)
@@ -53,6 +50,7 @@ namespace LoraKeysManagerFacade
             });
             _ = builder.Services
                 .AddHttpClient()
+                .AddSingleton<IDeviceRegistryManager>(IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(iotHubConnectionString)))
                 .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
                 .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
                 .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),

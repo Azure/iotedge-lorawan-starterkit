@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using global::LoRaTools;
     using LoRaWan.NetworkServerDiscovery;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
@@ -25,13 +26,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
         private static readonly StationEui StationEui = new StationEui(1);
         private static readonly string[] LnsUris = new[] { "ws://foo:5000/bar/baz", "wss://baz:5001/baz", "ws://baz" };
 
-        private readonly Mock<RegistryManager> registryManagerMock;
+        private readonly Mock<IDeviceRegistryManager> registryManagerMock;
         private readonly MemoryCache memoryCache;
         private readonly TagBasedLnsDiscovery subject;
 
         public TagBasedLnsDiscoveryTests()
         {
-            this.registryManagerMock = new Mock<RegistryManager>();
+            this.registryManagerMock = new Mock<IDeviceRegistryManager>();
             this.registryManagerMock.Setup(rm => rm.CreateQuery(It.IsAny<string>())).Returns(Mock.Of<IQuery>());
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
             this.subject = new TagBasedLnsDiscovery(memoryCache, this.registryManagerMock.Object, NullLogger<TagBasedLnsDiscovery>.Instance);
