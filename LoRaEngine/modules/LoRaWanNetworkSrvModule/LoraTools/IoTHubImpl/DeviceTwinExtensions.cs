@@ -12,12 +12,10 @@ namespace LoRaTools.IoTHubImpl
         {
             ArgumentNullException.ThrowIfNull(twin, nameof(twin));
 
-            if (twin is not IoTHubDeviceTwin)
+            if (twin is not IoTHubDeviceTwin iotHubDeviceTwin)
             {
                 throw new ArgumentException($"Cannot convert {twin.GetType().Name} to IoTHubDeviceTwin instance.");
             }
-
-            var iotHubDeviceTwin = twin as IoTHubDeviceTwin;
 
             return iotHubDeviceTwin.TwinInstance;
         }
