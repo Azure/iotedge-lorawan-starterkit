@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using global::LoraKeysManagerFacade;
+    using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
@@ -28,14 +29,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
         private readonly LoRaInMemoryDeviceStore cacheStore;
         private readonly Mock<IServiceClient> serviceClient;
-        private readonly Mock<RegistryManager> registryManager;
+        private readonly Mock<IDeviceRegistryManager> registryManager;
         private readonly SendCloudToDeviceMessage sendCloudToDeviceMessage;
 
         public SendCloudToDeviceMessageTest()
         {
             this.cacheStore = new LoRaInMemoryDeviceStore();
             this.serviceClient = new Mock<IServiceClient>(MockBehavior.Strict);
-            this.registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            this.registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             this.sendCloudToDeviceMessage = new SendCloudToDeviceMessage(this.cacheStore, this.registryManager.Object, this.serviceClient.Object, new NullLogger<SendCloudToDeviceMessage>());
         }
 

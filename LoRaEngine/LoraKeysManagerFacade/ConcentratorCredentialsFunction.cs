@@ -17,7 +17,6 @@ namespace LoraKeysManagerFacade
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Azure;
@@ -31,11 +30,11 @@ namespace LoraKeysManagerFacade
         internal const string CupsPropertyName = "cups";
         internal const string CupsCredentialsUrlPropertyName = "cupsCredentialUrl";
         internal const string LnsCredentialsUrlPropertyName = "tcCredentialUrl";
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly IAzureClientFactory<BlobServiceClient> azureClientFactory;
         private readonly ILogger<ConcentratorCredentialsFunction> logger;
 
-        public ConcentratorCredentialsFunction(RegistryManager registryManager,
+        public ConcentratorCredentialsFunction(IDeviceRegistryManager registryManager,
                                                IAzureClientFactory<BlobServiceClient> azureClientFactory,
                                                ILogger<ConcentratorCredentialsFunction> logger)
         {

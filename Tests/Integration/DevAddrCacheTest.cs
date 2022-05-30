@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Integration
     using System.Text;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
+    using LoRaTools;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -39,11 +40,11 @@ namespace LoRaWan.Tests.Integration
             this.testOutputHelper = testOutputHelper;
         }
 
-        private static Mock<RegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
+        private static Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
         {
             var currentDevAddrContext = new List<DevAddrCacheInfo>();
             var currentDevices = deviceIds;
-            var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var hasMoreShouldReturn = true;
 
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
@@ -907,7 +908,7 @@ namespace LoRaWan.Tests.Integration
 
         private static DevAddr CreateDevAddr() => new DevAddr((uint)RandomNumberGenerator.GetInt32(int.MaxValue));
 
-        private DeviceGetter SetupDeviceGetter(RegistryManager registryManager) =>
+        private DeviceGetter SetupDeviceGetter(IDeviceRegistryManager registryManager) =>
             new DeviceGetter(registryManager, this.cache, new TestOutputLogger<DeviceGetter>(this.testOutputHelper));
     }
 }

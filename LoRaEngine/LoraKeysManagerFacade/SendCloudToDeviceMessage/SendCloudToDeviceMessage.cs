@@ -31,11 +31,11 @@ namespace LoraKeysManagerFacade
     public class SendCloudToDeviceMessage
     {
         private readonly ILoRaDeviceCacheStore cacheStore;
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly IServiceClient serviceClient;
         private readonly ILogger log;
 
-        public SendCloudToDeviceMessage(ILoRaDeviceCacheStore cacheStore, RegistryManager registryManager, IServiceClient serviceClient, ILogger<SendCloudToDeviceMessage> log)
+        public SendCloudToDeviceMessage(ILoRaDeviceCacheStore cacheStore, IDeviceRegistryManager registryManager, IServiceClient serviceClient, ILogger<SendCloudToDeviceMessage> log)
         {
             this.cacheStore = cacheStore;
             this.registryManager = registryManager;
