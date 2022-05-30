@@ -11,12 +11,12 @@ const srcDir = args[0] || './node_modules/lorawan-devices/vendor';
 const dstDir = args[1] || './codecs';
 const indexFilePath = path.join(dstDir, 'index.js');
 // cube.js is ignored as esprima doesn't support class parsing https://github.com/jquery/esprima/issues/1971
-const ignoreList = ["greenme/cube.js"];
 const index = glob.sync(`**/*`,
   {
     cwd: srcDir,
     nodir: true,
     ignore: [
+      "greenme/cube.js",
       '**/*.jpg',
       '**/*.png',
       '**/*.svg',
@@ -28,7 +28,7 @@ const index = glob.sync(`**/*`,
     console.log(`Copying ${srcPath} to ${dstPath}`);
     fse.copySync(srcPath, dstPath);
 
-    if (f.endsWith(".js") && !ignoreList.includes(f)) {
+    if (f.endsWith(".js")) {
       // Sniff a top-level declaration for a function named "decodeUplink"
       // and include the decoder if only one is found.
       const tree = esprima.parseScript(fs.readFileSync(srcPath).toString());
