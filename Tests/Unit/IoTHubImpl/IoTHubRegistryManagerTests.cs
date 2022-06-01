@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Tests.Unit
+namespace LoRaWan.Tests.Unit.IoTHubImpl
 {
     using System.Threading;
     using System.Threading.Tasks;
@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Unit
         public async Task AddConfigurationAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var configuration = new Configuration("testConfiguration");
 
@@ -55,7 +55,7 @@ namespace LoRaWan.Tests.Unit
         public async Task AddDeviceAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var edgeGatewayDevice = new Device("deviceid");
 
@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Unit
         public async Task AddDeviceWithTwinAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var device = new Device("deviceid");
                 var twin = new IoTHubDeviceTwin(new Twin("deviceid"));
@@ -104,7 +104,7 @@ namespace LoRaWan.Tests.Unit
         public async Task AddModuleAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var moduleToAdd = new Module();
 
@@ -126,7 +126,7 @@ namespace LoRaWan.Tests.Unit
         public async Task ApplyConfigurationContentOnDeviceAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceName = "deviceid";
                 var deviceConfigurationContent = new ConfigurationContent();
@@ -148,7 +148,7 @@ namespace LoRaWan.Tests.Unit
         public void CreateQuery()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var query = "new query";
                 var mockQuery = this.mockRepository.Create<IQuery>();
@@ -171,7 +171,7 @@ namespace LoRaWan.Tests.Unit
         public void CreateQuery_WithPageSize()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var pageSize = 10;
                 var query = "new query";
@@ -196,7 +196,7 @@ namespace LoRaWan.Tests.Unit
         public async Task GetDeviceAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
                 var device = new Device(deviceId);
@@ -219,7 +219,7 @@ namespace LoRaWan.Tests.Unit
         public async Task GetTwinAsync_With_CancellationToken()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
                 var cancellationToken = CancellationToken.None;
@@ -244,7 +244,7 @@ namespace LoRaWan.Tests.Unit
         public async Task GetTwinAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
                 var twin = new Twin(deviceId);
@@ -267,7 +267,7 @@ namespace LoRaWan.Tests.Unit
         public async Task UpdateTwinAsync_With_Module()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
                 var moduleId = "moduleid";
@@ -295,7 +295,7 @@ namespace LoRaWan.Tests.Unit
         public async Task UpdateTwinAsync_With_CancellationToken()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
                 var deviceTwin = new IoTHubDeviceTwin(new Twin());
@@ -323,10 +323,10 @@ namespace LoRaWan.Tests.Unit
         public async Task UpdateTwinAsync2()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
-                var deviceTwin =  new IoTHubDeviceTwin(new Twin());
+                var deviceTwin = new IoTHubDeviceTwin(new Twin());
                 var eTag = "eTag";
 
                 this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
@@ -349,7 +349,7 @@ namespace LoRaWan.Tests.Unit
         public async Task UpdateTwinAsync_With_Module_And_CancellationToken()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
                 var moduleId = "moduleid";
@@ -384,7 +384,7 @@ namespace LoRaWan.Tests.Unit
         public async Task RemoveDeviceAsync()
         {
             // Arrange
-            using (var manager = this.CreateManager())
+            using (var manager = CreateManager())
             {
                 var deviceId = "deviceid";
 
