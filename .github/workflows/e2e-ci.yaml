@@ -638,7 +638,6 @@ jobs:
       - e2e_tests_job
     steps:
       - uses: actions/checkout@v2
-      - sudo shutdown -h now
       - name: Power OFF Azure VM
         uses: ./.github/actions/power-azure-vm
         with:
