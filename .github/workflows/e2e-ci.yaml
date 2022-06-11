@@ -107,6 +107,19 @@ jobs:
           AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
           AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
 
+  reset_redis_cache:
+    name: Reset the Redis Cache
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Flush the database
+        shell: bash
+        run: |
+          wget https://github.com/IBM-Cloud/redli/releases/download/v0.5.2/redli_0.5.2_linux_amd64.tar.gz
+          tar xzf redli_0.5.2_linux_amd64.tar.gz
+          chmod +x redli
+          ./redli --tls -h ${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net -p 6380 -a ${{ secrets.REDIS_PASSWORD }} FLUSHALL
+
   # Build and deploy Facade Azure Function
   deploy_facade_function:
     environment:
@@ -625,7 +638,7 @@ jobs:
       - e2e_tests_job
     steps:
       - uses: actions/checkout@v2
-
+      - sudo shutdown -h now
       - name: Power OFF Azure VM
         uses: ./.github/actions/power-azure-vm
         with:
