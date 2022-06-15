@@ -639,16 +639,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Theory]
         // Base dr is 2
         // In case the offset is invalid, we rollback to offset 0. for europe that means = to upstream
-        [InlineData(0, DR2)]
-        [InlineData(1, DR1)]
-        [InlineData(2, DR0)]
-        [InlineData(3, DR0)]
-        [InlineData(4, DR0)]
-        [InlineData(6, DR2)]
-        [InlineData(12, DR2)]
-        [InlineData(-2, DR2)]
-        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, DataRateIndex expectedDR)
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(6)]
+        [InlineData(-2)]
+        public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset)
         {
+            var expectedDR = DR2;
             var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
