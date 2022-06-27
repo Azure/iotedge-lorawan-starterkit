@@ -91,6 +91,10 @@ namespace LoRaWan.Tests.E2E
                 await this.registryManager.UpdateTwinAsync(deviceId, new Twin { Tags = GetNetworkTags(station.NetworkId) }, "*", CancellationToken.None);
             }
 
+            var waitTime = TimeSpan.FromSeconds(60);
+            Console.WriteLine($"Waiting for {waitTime.TotalSeconds} seconds.");
+            await Task.Delay(waitTime);
+
             static TwinCollection GetNetworkTags(string networkId) => new TwinCollection(JsonSerializer.Serialize(new { network = networkId }));
         }
     }

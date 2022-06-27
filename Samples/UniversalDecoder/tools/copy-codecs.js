@@ -4,13 +4,12 @@ const glob = require('glob');
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
-const esprima = require('esprima');
+const esprima = require('esprima-next');
 
 var args = process.argv.slice(2);
 const srcDir = args[0] || './node_modules/lorawan-devices/vendor';
 const dstDir = args[1] || './codecs';
 const indexFilePath = path.join(dstDir, 'index.js');
-
 const index = glob.sync(`**/*`,
   {
     cwd: srcDir,

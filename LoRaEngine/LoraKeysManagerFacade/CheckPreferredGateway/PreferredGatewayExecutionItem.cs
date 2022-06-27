@@ -101,7 +101,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             {
                 if (preferredGateway.FcntUp >= fcntUp)
                 {
-                    return new PreferredGatewayResult(devEUI, fcntUp, preferredGateway);
+                    return new PreferredGatewayResult(fcntUp, preferredGateway);
                 }
             }
 
@@ -126,7 +126,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             {
                                 this.log.LogError("Could not resolve closest gateway in {devEUI} and {fcntUp}", devEUI, fcntUp);
 
-                                return new PreferredGatewayResult(devEUI, fcntUp, "Could not resolve closest gateway");
+                                return new PreferredGatewayResult(fcntUp, "Could not resolve closest gateway");
                             }
 
                             preferredGateway = new LoRaDevicePreferredGateway(winner.GatewayID, fcntUp);
@@ -155,13 +155,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 {
                     if (preferredGateway.FcntUp >= fcntUp)
                     {
-                        return new PreferredGatewayResult(devEUI, fcntUp, preferredGateway);
+                        return new PreferredGatewayResult(fcntUp, preferredGateway);
                     }
                 }
             }
 
             this.log.LogError("Could not resolve closest gateway in {devEUI} and {fcntUp}", devEUI, fcntUp);
-            return new PreferredGatewayResult(devEUI, fcntUp, "Could not resolve closest gateway");
+            return new PreferredGatewayResult(fcntUp, "Could not resolve closest gateway");
         }
     }
 }
