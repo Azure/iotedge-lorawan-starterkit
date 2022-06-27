@@ -11,8 +11,8 @@
     </PropertyGroup>
     <PropertyGroup>
       <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>
-      <MicrosoftAzureDevicesVersion>1.37.0</MicrosoftAzureDevicesVersion>
-      <MicrosoftAzureDevicesClientVersion>1.40.0</MicrosoftAzureDevicesClientVersion>
+      <MicrosoftAzureDevicesVersion>1.37.1</MicrosoftAzureDevicesVersion>
+      <MicrosoftAzureDevicesClientVersion>1.41.0</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.1</MicrosoftExtensionsCachingMemoryVersion>
       <MicrosoftAzureFunctionsExtensionsVersion>1.1.0</MicrosoftAzureFunctionsExtensionsVersion>
       <MicrosoftExtensionsDependencyInjectionVersion>6.0.0</MicrosoftExtensionsDependencyInjectionVersion>
@@ -46,7 +46,7 @@
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>34.0.2</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
-      <MicrosoftAspNetCoreMvcTestingVersion>6.0.5</MicrosoftAspNetCoreMvcTestingVersion>
+      <MicrosoftAspNetCoreMvcTestingVersion>6.0.6</MicrosoftAspNetCoreMvcTestingVersion>
       <AzureMessagingEventHubsVersion>5.7.0</AzureMessagingEventHubsVersion>
     </PropertyGroup>
 
