@@ -13,9 +13,9 @@ if [[ -z "$STATION_PATH" ]]; then
 fi
 
 if [[ "$CORECELL" == true ]]; then
-    mv corecell.station.conf station.conf
+    cp corecell.station.conf station.conf
 else
-    mv sx1301.station.conf station.conf
+    cp sx1301.station.conf station.conf
 fi
 
 resetPin
