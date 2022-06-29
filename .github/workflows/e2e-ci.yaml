@@ -322,7 +322,7 @@ jobs:
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns \
                     --environment-variables IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
-                    --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{env.NET_SRV_VERSION}} \
+                    --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{env.NET_SRV_VERSION}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
                     --registry-username ${{ env.CONTAINER_REGISTRY_USERNAME }} \
