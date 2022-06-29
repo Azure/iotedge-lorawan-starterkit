@@ -329,7 +329,7 @@ jobs:
                     --registry-username ${{ env.CONTAINER_REGISTRY_USERNAME }} \
                     --registry-password ${{ env.CONTAINER_REGISTRY_PASSWORD }} \
                     --restart-policy Never \
-                    --secure-environment-variables REDIS_CONNECTION_STRING=${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net:6380,password=${{ secrets.REDIS_PASSWORD }},ssl=True,abortConnect=False \
+                    --secure-environment-variables FACADE_AUTH_CODE=${{ secrets.FUNCTION_FACADE_AUTH_CODE }} FACADE_SERVER_URL=${{ secrets.FUNCTION_FACADE_SERVER_URL }} REDIS_CONNECTION_STRING=${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net:6380,password=${{ secrets.REDIS_PASSWORD }},ssl=True,abortConnect=False \
                     --subnet ${{ secrets.AZURE_SUBNET_NAME }} \
                     --vnet ${{ secrets.AZURE_VNET_NAME }} --output none
           echo "::set-output name=cloudlnsprivateip::$(az container show --name cloudlns --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv)"
