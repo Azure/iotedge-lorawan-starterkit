@@ -287,6 +287,50 @@ jobs:
       clientfwdigest: ${{ steps.generate_step.outputs.clientfwdigest }}
       clientfwversion: ${{ steps.generate_step.outputs.clientfwversion }}
 
+  # Deploy Cloud based LoRaWAN Network Server
+  deploy_cloud_lns:
+    needs:
+    - env_var
+    - build_push_docker_images
+    runs-on: ubuntu-latest
+    name: Deploy Cloud based LNS
+    steps:
+      - run: |
+          if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
+          echo "dev"
+          IMAGE_TAG="$DEV_IMAGE_TAG"
+          elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
+          echo "master"
+          IMAGE_TAG="$MASTER_IMAGE_TAG"
+          elif [ ${{ github.event_name }} == "pull_request" ]; then
+          echo "pull request"
+          IMAGE_TAG="pr-${{ github.event.number}}"
+          else
+          echo "all others"
+          IMAGE_TAG="custom-${GITHUB_REF##*/}"
+          fi
+          echo "Using image tag prefix $IMAGE_TAG"
+          IMAGE_TAG="$MAJOR_VERSION.${{ github.run_number }}.$IMAGE_TAG-${{ github.run_attempt }}"
+          echo "Using image tag $IMAGE_TAG"
+          echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      - name: "Deploy container instance"
+        shell: bash
+        run: |
+          az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
+          az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns \
+                    --environment-variables IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{env.NET_SRV_VERSION}} \
+                    --ports 5000 \
+                    --protocol TCP \
+                    --registry-password ${{ env.CONTAINER_REGISTRY_PASSWORD }} \
+                    --restart-policy Never \
+                    --secure-environment-variables REDIS_CONNECTION_STRING=${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net:6380,password=${{ secrets.REDIS_PASSWORD }},ssl=True,abortConnect=False \
+                    --subnet ${{ secrets.AZURE_SUBNET_NAME }} \
+                    --vnet-name ${{ secrets.AZURE_VNET_NAME }}
+
   # Deploy IoT Edge solution to ARM gateway
   deploy_arm_gw_iot_edge:
     timeout-minutes: 20
