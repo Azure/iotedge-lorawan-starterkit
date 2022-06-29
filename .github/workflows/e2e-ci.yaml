@@ -539,7 +539,7 @@ jobs:
       INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
       INTEGRATIONTEST_DevicePrefix: '12'
       INTEGRATIONTEST_RunningInCI: true
-      INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \"1\": \"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\" }"
+      INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \\\"1\\\": \\\"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\\\" }"
       INTEGRATIONTEST_NumberOfLoadTestDevices: 1
       INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
 
