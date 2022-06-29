@@ -525,7 +525,7 @@ jobs:
     environment:
       name: CI_AZURE_ENVIRONMENT
       url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
-    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_cloud_lns.result == 'success' && needs.deploy_facade_function.result == 'success')) && needs.env_var.outputs.StopFullCi != 'true' && contains(needs.env_var.outputs.E2ETestsToRun, 'CloudDeploymentTest' && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'CloudDeploymentTest'))
+    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_cloud_lns.result == 'success' && needs.deploy_facade_function.result == 'success')) && needs.env_var.outputs.StopFullCi != 'true' && contains(needs.env_var.outputs.E2ETestsToRun, 'CloudDeploymentTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'CloudDeploymentTest'))
     needs:
       - deploy_facade_function
       - deploy_cloud_lns
