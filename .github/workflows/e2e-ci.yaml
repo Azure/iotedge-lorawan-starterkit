@@ -331,7 +331,7 @@ jobs:
                     --restart-policy Never \
                     --secure-environment-variables REDIS_CONNECTION_STRING=${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net:6380,password=${{ secrets.REDIS_PASSWORD }},ssl=True,abortConnect=False \
                     --subnet ${{ secrets.AZURE_SUBNET_NAME }} \
-                    --vnet ${{ secrets.AZURE_VNET_NAME }}
+                    --vnet ${{ secrets.AZURE_VNET_NAME }} --output none
           echo "::set-output name=cloudlnsprivateip::$(az container show --name cloudlns --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv)"
     outputs:
       cloudlnsprivateip: ${{ steps.deploycloudlns.outputs.cloudlnsprivateip }}
@@ -778,4 +778,4 @@ jobs:
         shell: bash
         run: |
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
-          az container delete --yes --resource-group ${{ secrets.AZURE_RG }} --name cloudlns
+          az container delete --yes --resource-group ${{ secrets.AZURE_RG }} --name cloudlns --output none
