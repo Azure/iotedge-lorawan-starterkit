@@ -48,12 +48,12 @@ namespace LoRaWan.Tests.Simulation
             WaitableLoRaRequest.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage(uniqueMessageFragment + Guid.NewGuid()));
 
         internal static Task AssertIotHubMessageCountAsync(SimulatedDevice device,
-                                                          int numberOfMessages,
-                                                          string uniqueMessageFragment,
-                                                          TestOutputLogger logger,
-                                                          int basicStationCount,
-                                                          EventHubDataCollector hubDataCollector,
-                                                          int lnsEndpointsForSimulatorCount) =>
+                                                           int numberOfMessages,
+                                                           string uniqueMessageFragment,
+                                                           TestOutputLogger logger,
+                                                           int basicStationCount,
+                                                           EventHubDataCollector hubDataCollector,
+                                                           int lnsEndpointsForSimulatorCount) =>
             AssertIotHubMessageCountsAsync(new[] { device },
                                            numberOfMessages,
                                            uniqueMessageFragment,
