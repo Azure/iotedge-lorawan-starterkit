@@ -519,7 +519,6 @@ jobs:
       - deploy_cloud_lns
       - env_var
       - certificates_job
-      - load_test_job
     runs-on: [ self-hosted, x64 ]
     env:
       INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
