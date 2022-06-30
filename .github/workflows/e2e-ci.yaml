@@ -292,6 +292,7 @@ jobs:
     needs:
     - env_var
     - build_push_docker_images
+    - certificates_job
     runs-on: ubuntu-latest
     name: Deploy Cloud based LNS
     steps:
@@ -322,7 +323,7 @@ jobs:
         run: |
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns \
-                    --environment-variables IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
                     --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{env.NET_SRV_VERSION}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
