@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Newtonsoft.Json.Linq;
@@ -48,6 +49,12 @@ namespace LoRaWan.Tests.Simulation
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange6000_OTAA_FullLoad { get; private set; }
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange9000_OTAA_FullLoad_DuplicationDrop { get; private set; }
+
+        public override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+            LoRaAPIHelper.Initialize(Configuration.FunctionAppCode, Configuration.FunctionAppBaseUrl);
+        }
 
         public override void SetupTestDevices()
         {

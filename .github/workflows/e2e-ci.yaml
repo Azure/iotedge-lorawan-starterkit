@@ -483,6 +483,8 @@ jobs:
       INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ secrets.LOAD_TEST_LNS_ENDPOINTS }}
       INTEGRATIONTEST_NumberOfLoadTestDevices: 10
       INTEGRATIONTEST_NumberOfLoadTestConcentrators: 4
+      INTEGRATIONTEST_FunctionAppCode: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+      INTEGRATIONTEST_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
 
     steps:
     - uses: actions/checkout@v2
@@ -543,6 +545,8 @@ jobs:
       INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \\\"1\\\": \\\"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\\\" }"
       INTEGRATIONTEST_NumberOfLoadTestDevices: 1
       INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
+      INTEGRATIONTEST_FunctionAppCode: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+      INTEGRATIONTEST_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
 
     steps:
     - uses: actions/checkout@v2
