@@ -10,6 +10,8 @@ namespace LoRaWan.Tests.Simulation
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
     using Xunit;
     using Xunit.Abstractions;
     using static MoreLinq.Extensions.RepeatExtension;
@@ -50,15 +52,8 @@ namespace LoRaWan.Tests.Simulation
             const int messageCount = 5;
             var device = new SimulatedDevice(testDeviceInfo, simulatedBasicsStation: this.simulatedBasicsStations, logger: this.logger);
 
+            TestLogger.Log($"[INFO] Simulating send of {messageCount} messages from {device.LoRaDevice.DeviceID}");
             await SimulationUtils.SendConfirmedUpstreamMessages(device, messageCount, this.uniqueMessageFragment);
-
-            await SimulationUtils.AssertIotHubMessageCountAsync(device,
-                                                                messageCount,
-                                                                this.uniqueMessageFragment,
-                                                                this.logger,
-                                                                this.simulatedBasicsStations.Count,
-                                                                TestFixture.IoTHubMessages,
-                                                                Configuration.LnsEndpointsForSimulator.Count);
 
             var c2dMessageBody = (100 + Random.Shared.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
@@ -68,13 +63,23 @@ namespace LoRaWan.Tests.Simulation
                 MessageId = Guid.NewGuid().ToString(),
             };
 
-            await TestFixture.SendCloudToDeviceMessageAsync(device.LoRaDevice.DeviceID, c2dMessage);
-            Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
+            // Now sending a c2d
+            var c2d = new LoRaCloudToDeviceMessage()
+            {
+                DevEUI = DevEui.Parse(device.LoRaDevice.DeviceID),
+                MessageId = Guid.NewGuid().ToString(),
+                Fport = FramePorts.App23,
+                RawPayload = Convert.ToBase64String(new byte[] { 0xFF, 0x00 }),
+            };
 
-            var c2dLogMessage = $"{device.LoRaDevice.DeviceID}: done processing 'Complete' on cloud to device message, id: '{c2dMessage.MessageId}'";
-            Log($"Expected C2D network server log is: {c2dLogMessage}");
+            TestLogger.Log($"[INFO] Using service API to send C2D message to device {device.LoRaDevice.DeviceID}");
+            TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
 
-            await SimulationUtils.SendConfirmedUpstreamMessages(device, messageCount, this.uniqueMessageFragment);
+            // send message using the SendCloudToDeviceMessage API endpoint
+            Assert.True(await LoRaAPIHelper.SendCloudToDeviceMessage(device.DevEUI, c2d));
+
+            var c2dLogMessage = $"{device.LoRaDevice.DeviceID}: received cloud to device message from direct method";
+            TestLogger.Log($"[INFO] Searching for following log in LNS logs: '{c2dLogMessage}'");
 
             var searchResults = await TestFixture.SearchNetworkServerModuleAsync(
                     (messageBody) =>
@@ -88,7 +93,14 @@ namespace LoRaWan.Tests.Simulation
 
             Assert.True(searchResults.Found, $"Did not find '{device.LoRaDevice.DeviceID}: C2D log: {c2dLogMessage}' in logs");
 
-            SimulationUtils.AssertMessageAcknowledgement(device, messageCount);
+            TestLogger.Log($"[INFO] Asserting all messages were received in IoT Hub for device {device.LoRaDevice.DeviceID}");
+            await SimulationUtils.AssertIotHubMessageCountAsync(device,
+                                                                messageCount,
+                                                                this.uniqueMessageFragment,
+                                                                this.logger,
+                                                                this.simulatedBasicsStations.Count,
+                                                                TestFixture.IoTHubMessages,
+                                                                Configuration.LnsEndpointsForSimulator.Count);
         }
 
         public async Task InitializeAsync()
