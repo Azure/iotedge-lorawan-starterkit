@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Simulation
             // Now sending a c2d
             var c2d = new LoRaCloudToDeviceMessage()
             {
-                DevEUI = DevEui.Parse(device.LoRaDevice.DeviceID),
+                DevEUI = device.DevEUI,
                 MessageId = Guid.NewGuid().ToString(),
                 Fport = FramePorts.App23,
                 RawPayload = Convert.ToBase64String(new byte[] { 0xFF, 0x00 }),
