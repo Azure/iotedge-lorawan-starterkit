@@ -546,16 +546,16 @@ jobs:
       run:
         dotnet --info
 
-    - name: Configuration for load tests
+    - name: Configuration for simulated cloud tests
       uses: cschleiden/replace-tokens@v1
       with:
         files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
 
-    - name: Build load tests
+    - name: Build simulated cloud tests
       run: |
         dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
-    - name: Runs load tests
+    - name: Runs simulated cloud tests
       shell: bash
       run: |
         dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
@@ -570,7 +570,7 @@ jobs:
         label: 'CloudDeploymentTest'
         type: add
 
-    # Upload test results as artifact
+    # Upload simulated cloud results as artifact
     - uses: actions/upload-artifact@v1
       if: always()
       with:
