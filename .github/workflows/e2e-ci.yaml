@@ -497,7 +497,7 @@ jobs:
       shell: bash
       run: |
         dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
-        -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ \
+        -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ --filter "SimulatedLoadTests" \
         ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
     # Upload test results as artifact
