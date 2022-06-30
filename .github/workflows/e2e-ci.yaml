@@ -170,7 +170,8 @@ jobs:
       with:
         fetch-depth: '2'
 
-    - run: |
+    - id: image_tag_definition
+      run: |
         if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
         echo "dev"
         IMAGE_TAG="$DEV_IMAGE_TAG"
@@ -189,6 +190,7 @@ jobs:
         echo "Using image tag $IMAGE_TAG"
         echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
         echo "::set-env name=LBS_VERSION::$IMAGE_TAG"
+        echo "::set-output name=imagetag::$IMAGE_TAG"
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
@@ -215,6 +217,9 @@ jobs:
       working-directory: LoRaEngine
       env:
         CONTAINER_REGISTRY_ADDRESS: ${{ env.CONTAINER_REGISTRY_ADDRESS }}
+
+    outputs:
+      imagetag: ${{ steps.image_tag_definition.outputs.imagetag }}
 
   # Generate root and server certificates and copy required files to RPi
   certificates_job :
@@ -297,27 +302,6 @@ jobs:
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     name: Deploy Cloud based LNS
     steps:
-      - run: |
-          if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
-          echo "dev"
-          IMAGE_TAG="$DEV_IMAGE_TAG"
-          elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
-          echo "master"
-          IMAGE_TAG="$MASTER_IMAGE_TAG"
-          elif [ ${{ github.event_name }} == "pull_request" ]; then
-          echo "pull request"
-          IMAGE_TAG="pr-${{ github.event.number}}"
-          else
-          echo "all others"
-          IMAGE_TAG="custom-${GITHUB_REF##*/}"
-          fi
-          echo "Using image tag prefix $IMAGE_TAG"
-          IMAGE_TAG="$MAJOR_VERSION.${{ github.run_number }}.$IMAGE_TAG-${{ github.run_attempt }}"
-          echo "Using image tag $IMAGE_TAG"
-          echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-
       - name: "Deploy container instance"
         id: "deploycloudlns"
         shell: bash
@@ -325,7 +309,7 @@ jobs:
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns \
                     --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
-                    --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{env.NET_SRV_VERSION}}-amd64 \
+                    --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
                     --registry-username ${{ env.CONTAINER_REGISTRY_USERNAME }} \
