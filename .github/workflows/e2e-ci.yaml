@@ -590,7 +590,6 @@ jobs:
       - deploy_eflow_gw_iot_edge
       - deploy_facade_function
       - deploy_eflow_concentrator_iot_edge
-      - deploy_cloud_lns
       - env_var
       - certificates_job
       - load_test_job
