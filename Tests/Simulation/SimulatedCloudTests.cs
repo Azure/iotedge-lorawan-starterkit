@@ -82,10 +82,7 @@ namespace LoRaWan.Tests.Simulation
             TestLogger.Log($"[INFO] Searching for following log in LNS logs: '{c2dLogMessage}'");
 
             var searchResults = await TestFixture.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase);
-                    },
+                    messageBody => messageBody.StartsWith(c2dLogMessage, StringComparison.OrdinalIgnoreCase),
                     new SearchLogOptions(c2dLogMessage)
                     {
                         MaxAttempts = 1
