@@ -308,7 +308,7 @@ jobs:
         run: |
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns1 \
-                    --environment-variables HOSTNAME=itestcloud1 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --environment-variables Logging__LogLevel__Microsoft=Warning HOSTNAME=itestcloud1 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
                     --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
@@ -321,7 +321,7 @@ jobs:
           az container show --name cloudlns1 --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv
           echo "::set-output name=cloudlns1privateip::$(az container show --name cloudlns1 --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv)"
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns2 \
-                    --environment-variables HOSTNAME=itestcloud2 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --environment-variables Logging__LogLevel__Microsoft=Warning HOSTNAME=itestcloud2 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
                     --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
