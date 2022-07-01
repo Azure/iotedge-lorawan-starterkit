@@ -108,12 +108,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 if (cloud_deployment && enable_gateway)
                 {
                     Assert.Throws<NotSupportedException>(() => {
-                        var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+                        _ = NetworkServerConfiguration.CreateFromEnvironmentVariables();
                     });
                 }
                 else
                 {
-                    var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+                    _ = NetworkServerConfiguration.CreateFromEnvironmentVariables();
                 }
             }
             finally
