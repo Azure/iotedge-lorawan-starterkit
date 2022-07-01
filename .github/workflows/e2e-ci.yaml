@@ -715,5 +715,7 @@ jobs:
         shell: bash
         run: |
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
-          az container logs -g ${{ secrets.AZURE_RG }} --name cloudlns
-          az container delete --yes --resource-group ${{ secrets.AZURE_RG }} --name cloudlns --output none
+          az container logs -g ${{ secrets.AZURE_RG }} --name cloudlns1
+          az container delete --yes --resource-group ${{ secrets.AZURE_RG }} --name cloudlns1 --output none
+          az container logs -g ${{ secrets.AZURE_RG }} --name cloudlns2
+          az container delete --yes --resource-group ${{ secrets.AZURE_RG }} --name cloudlns2 --output none
