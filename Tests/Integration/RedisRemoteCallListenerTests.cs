@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.Integration
 
             // assert
             var invocation = await RetryAssertSingleAsync(this.logger.GetLogInvocations());
-            _ = Assert.IsType<JsonException>(invocation.Exception);
+            _ = Assert.IsType<ArgumentNullException>(invocation.Exception);
         }
 
         private async Task PublishAsync(string channel, LnsRemoteCall lnsRemoteCall)
