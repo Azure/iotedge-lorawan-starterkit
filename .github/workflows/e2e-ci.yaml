@@ -423,6 +423,7 @@ jobs:
     needs:
     - env_var
     - build_push_docker_images
+    - deploy_cloud_lns
     environment:
       name: CI_CONCENTRATOR_EFLOW_ARM32
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
