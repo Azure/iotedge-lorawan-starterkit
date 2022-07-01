@@ -139,7 +139,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task InitModuleAsync_Update_Should_Perform_Happy_Path()
         {
-            var networkServerConfiguration = new NetworkServerConfiguration()
+            var timeotNetworkServerConfiguration = new NetworkServerConfiguration()
             {
                 // Change the iot edge timeout.
                 IoTEdgeTimeout = 5
@@ -161,11 +161,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             
             loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
-            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, this.loRaModuleClientFactory.Object, loRaDeviceApiServiceBase, this.lnsRemoteCall.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
+            await using var moduleClient = new ModuleConnectionHost(timeotNetworkServerConfiguration, this.loRaModuleClientFactory.Object, loRaDeviceApiServiceBase, this.lnsRemoteCall.Object, NullLogger<ModuleConnectionHost>.Instance, TestMeter.Instance);
             await moduleClient.CreateAsync(CancellationToken.None);
             Assert.Equal(facadeUri + "/", loRaDeviceApiServiceBase.URL.ToString());
             Assert.Equal(facadeCode, loRaDeviceApiServiceBase.AuthCode);
-            Assert.Equal(processingDelay, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            Assert.Equal(processingDelay, timeotNetworkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Theory]
@@ -256,7 +256,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var methodRequest = new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(json));
 
             // act
-            var result = await this.subject.OnDirectMethodCalled(methodRequest, null);
+            await this.subject.OnDirectMethodCalled(methodRequest, null);
 
             // assert
             this.lnsRemoteCall.Verify(l => l.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, json), CancellationToken.None), Times.Once);
