@@ -55,14 +55,6 @@ namespace LoRaWan.Tests.Simulation
             TestLogger.Log($"[INFO] Simulating send of {messageCount} messages from {device.LoRaDevice.DeviceID}");
             await SimulationUtils.SendConfirmedUpstreamMessages(device, messageCount, this.uniqueMessageFragment);
 
-            var c2dMessageBody = (100 + Random.Shared.Next(90)).ToString(CultureInfo.InvariantCulture);
-            var c2dMessage = new LoRaCloudToDeviceMessage()
-            {
-                Payload = c2dMessageBody,
-                Fport = FramePorts.App1,
-                MessageId = Guid.NewGuid().ToString(),
-            };
-
             // Now sending a c2d
             var c2d = new LoRaCloudToDeviceMessage()
             {
