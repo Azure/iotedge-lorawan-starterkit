@@ -42,8 +42,15 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    var lnsRemoteCall = JsonSerializer.Deserialize<LnsRemoteCall>(value.Message) ?? throw new InvalidOperationException("Deserialization produced an empty LnsRemoteCall.");
-                    return function(lnsRemoteCall);
+                    if (value is { Message: { } m } && !m.IsNullOrEmpty)
+                    {
+                        var lnsRemoteCall = JsonSerializer.Deserialize<LnsRemoteCall>(m.ToString()) ?? throw new InvalidOperationException("Deserialization produced an empty LnsRemoteCall.");
+                        return function(lnsRemoteCall);
+                    }
+                    else
+                    {
+                        throw new ArgumentNullException(nameof(value));
+                    }
                 }
                 catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred when reacting to a Redis message: '{ex}'."),
                                                                         () => this.unhandledExceptionCount.Add(1)))
