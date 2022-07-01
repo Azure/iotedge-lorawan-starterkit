@@ -376,6 +376,7 @@ jobs:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
+          waitForLnsDeployment: false
 
 # Deploy IoT Edge solution to EFLOW gateway
   deploy_eflow_gw_iot_edge:
