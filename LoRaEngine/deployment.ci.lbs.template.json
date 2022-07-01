@@ -87,7 +87,7 @@
                "value":"$LBS_SPI_SPEED"
               },
               "TC_URI":{
-                "value": "$LBS_TC_URI"
+                "value": "ws://$LBS_TC_URI:5000"
               },
               "RESET_PIN":{
                 "value": "$RESET_PIN"
