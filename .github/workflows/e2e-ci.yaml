@@ -506,7 +506,7 @@ jobs:
       E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
       E2ETESTS_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
       E2ETESTS_LeafDeviceGatewayID: itestcloud1
-      E2ETESTS_DevicePrefix: '01'
+      E2ETESTS_DevicePrefix: '14'
       E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
       E2ETESTS_EnsureHasEventMaximumTries: 5
       E2ETESTS_IoTHubConnectionString: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
