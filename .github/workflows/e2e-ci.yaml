@@ -308,7 +308,7 @@ jobs:
         run: |
           az login --service-principal -u ${{ secrets.AZURE_SP_CLIENTID }} -p ${{ secrets.AZURE_SP_SECRET }} --tenant ${{ secrets.AZURE_TENANTID }}
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns1 \
-                    --environment-variables HOSTNAME=itestcloud1 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --environment-variables HOSTNAME=itestcloud1 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
                     --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
@@ -318,9 +318,10 @@ jobs:
                     --secure-environment-variables FACADE_AUTH_CODE=${{ secrets.FUNCTION_FACADE_AUTH_CODE }} FACADE_SERVER_URL=${{ secrets.FUNCTION_FACADE_SERVER_URL }} REDIS_CONNECTION_STRING=${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net:6380,password=${{ secrets.REDIS_PASSWORD }},ssl=True,abortConnect=False \
                     --subnet ${{ secrets.AZURE_SUBNET_NAME }} \
                     --vnet ${{ secrets.AZURE_VNET_NAME }} --output none
+          az container show --name cloudlns1 --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv
           echo "::set-output name=cloudlns1privateip::$(az container show --name cloudlns1 --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv)"
           az container create --resource-group ${{ secrets.AZURE_RG }} --ip-address Private --location westeurope --name cloudlns2 \
-                    --environment-variables HOSTNAME=itestcloud2 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --environment-variables HOSTNAME=itestcloud2 LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=${{secrets.IOTHUB_HOSTNAME}} ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
                     --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
@@ -330,6 +331,7 @@ jobs:
                     --secure-environment-variables FACADE_AUTH_CODE=${{ secrets.FUNCTION_FACADE_AUTH_CODE }} FACADE_SERVER_URL=${{ secrets.FUNCTION_FACADE_SERVER_URL }} REDIS_CONNECTION_STRING=${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net:6380,password=${{ secrets.REDIS_PASSWORD }},ssl=True,abortConnect=False \
                     --subnet ${{ secrets.AZURE_SUBNET_NAME }} \
                     --vnet ${{ secrets.AZURE_VNET_NAME }} --output none
+          az container show --name cloudlns2 --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv
           echo "::set-output name=cloudlns2privateip::$(az container show --name cloudlns2 --resource-group ${{ secrets.AZURE_RG }} --query ipAddress.ip -o tsv)"
     outputs:
       cloudlns1privateip: ${{ steps.deploycloudlns.outputs.cloudlns1privateip }}
@@ -377,46 +379,6 @@ jobs:
           architecture: '${{ secrets.ARCHITECTURE }}'
           iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
           waitForLnsDeployment: false
-
-# Deploy IoT Edge solution to EFLOW gateway
-  deploy_eflow_gw_iot_edge:
-    timeout-minutes: 20
-    environment:
-      name: CI_EFLOW_AZURE_VM
-    needs:
-    - env_var
-    - build_push_docker_images
-    - certificates_job
-    if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
-    runs-on: ubuntu-latest
-    name: Deploy IoT Edge on EFLOW VM gateway
-    env:
-      DEVICE_ID: ${{ secrets.DEVICE_ID }}
-      NET_SRV_LOG_TO_TCP_ADDRESS: ${{ needs.certificates_job.outputs.itestupip }}
-      IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
-      FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
-      FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
-      EDGE_AGENT_VERSION: 1.1.8
-      EDGE_HUB_VERSION: 1.1.8
-      IOT_HUB_RESOURCE_ID: ${{ secrets.IOT_HUB_RESOURCE_ID }}
-      LOG_ANALYTICS_WORKSPACE_ID: ${{ secrets.LOG_ANALYTICS_WORKSPACE_ID }}
-      LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
-      APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
-    steps:
-      - uses: actions/checkout@v2
-        name: Checkout current branch
-
-      - name: Iot Edge Push Solution
-        uses: ./.github/actions/deployedge
-        id: deploy_edge
-        env:
-          IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
-          DEVICE_ID: ${{ secrets.DEVICE_ID }}
-          IOT_EDGE_DEPLOYMENT_ID: ${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}
-        with:
-          deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
-          architecture: '${{ secrets.ARCHITECTURE }}'
-          iot_edge_deployment_id: '${{ secrets.IOT_EDGE_DEPLOYMENT_ID }}'
 
   # Deploy IoT Edge solution to standalone Concentrator
   deploy_eflow_concentrator_iot_edge:
@@ -469,7 +431,6 @@ jobs:
     if: always() && (github.event_name == 'schedule' || github.event.inputs.RunLoadTests == 'true')
     needs:
       - deploy_arm_gw_iot_edge
-      - deploy_eflow_gw_iot_edge
       - deploy_facade_function
       - deploy_eflow_concentrator_iot_edge
       - env_var
@@ -531,10 +492,9 @@ jobs:
     environment:
       name: CI_AZURE_ENVIRONMENT
       url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
-    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success')) && needs.env_var.outputs.StopFullCi != 'true'
+    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success')) && needs.env_var.outputs.StopFullCi != 'true'
     needs:
       - deploy_arm_gw_iot_edge
-      - deploy_eflow_gw_iot_edge
       - deploy_facade_function
       - deploy_eflow_concentrator_iot_edge
       - env_var
