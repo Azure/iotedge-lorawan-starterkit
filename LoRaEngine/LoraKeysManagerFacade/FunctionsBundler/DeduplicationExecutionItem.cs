@@ -125,7 +125,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                         var res = await this.serviceClient.InvokeDeviceMethodAsync(previousGateway, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method, default);
                                         logger?.LogDebug("Connection owner changed and direct method was called on previous gateway '{PreviousConnectionOwner}' to close connection; result is '{Status}'", previousGateway, res?.Status);
 
-                                        if (!HttpUtilities.IsSuccessStatusCode(res.Status))
+                                        if (res is null || (res is { } && !HttpUtilities.IsSuccessStatusCode(res.Status)))
                                         {
                                             logger?.LogError("Failed to invoke direct method on LNS '{PreviousConnectionOwner}' to close the connection for device '{DevEUI}'; status '{Status}'", previousGateway, devEUI, res?.Status);
                                         }
