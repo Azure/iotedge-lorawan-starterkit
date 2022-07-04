@@ -95,7 +95,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Power ON Azure VM
         uses: ./.github/actions/power-azure-vm
@@ -133,10 +133,10 @@ jobs:
       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'LoRaEngine/LoraKeysManagerFacade/'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
 
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x'
 
@@ -165,7 +165,7 @@ jobs:
       MASTER_IMAGE_TAG: master
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
       with:
         fetch-depth: '2'
@@ -194,13 +194,13 @@ jobs:
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
-    - uses: docker/setup-buildx-action@v1
+    - uses: docker/setup-buildx-action@v2
       id: buildx
       with:
          install: true
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Build Docker LoRaWanNetworkServer images
       run: |
@@ -233,7 +233,7 @@ jobs:
     runs-on: [ self-hosted, x64 ]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
 
     - id: generate_step
@@ -338,7 +338,7 @@ jobs:
       EDGE_AGENT_VERSION: 1.2.6
       EDGE_HUB_VERSION: 1.2.6
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout current branch
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -387,7 +387,7 @@ jobs:
       LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
       APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout current branch
 
       - name: Iot Edge Push Solution
@@ -422,7 +422,7 @@ jobs:
       EDGE_AGENT_VERSION: 1.1.8
       EDGE_HUB_VERSION: 1.1.8
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout current branch
 
       - name: Iot Edge Push Solution
@@ -472,11 +472,11 @@ jobs:
       INTEGRATIONTEST_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
       INTEGRATIONTEST_TcpLogPort: 6000
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1.8.2
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -501,7 +501,7 @@ jobs:
         ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: load-test-results
@@ -627,11 +627,11 @@ jobs:
       E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1.8.2
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -732,7 +732,7 @@ jobs:
         test_name: 'LnsDiscoveryTest'
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: e2e-test-results
@@ -745,7 +745,7 @@ jobs:
     needs:
       - e2e_tests_job
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Power OFF Azure VM
         uses: ./.github/actions/power-azure-vm
         with:

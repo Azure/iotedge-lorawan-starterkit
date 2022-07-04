@@ -18,16 +18,19 @@ env:
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
   TESTS_FOLDER: Tests
   TESTS_RESULTS_FOLDER: Tests/TestResults
+  CONTAINER_REGISTRY_ADDRESS: "${{ secrets.CI_ACR_NAME }}.azurecr.io"
+  CONTAINER_REGISTRY_USERNAME: "${{ secrets.CI_ACR_NAME }}"
+  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
 
 jobs:
   build_and_test:
     name: Build and Test Solution
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
 
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x'
 
@@ -79,7 +82,7 @@ jobs:
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: success() || failure()
       with:
         name: test-results
@@ -88,7 +91,7 @@ jobs:
           ${{ env.TESTS_RESULTS_FOLDER }}/Integration
 
     - name: Upload to Codecov test reports
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         directory: Tests/
 
@@ -96,20 +99,19 @@ jobs:
     name: Build Docker Images
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout current branch
 
-    - uses: docker/setup-buildx-action@v1
+    - uses: docker/setup-buildx-action@v2
       id: buildx
       with:
         install: true
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Build docker images
       run: |
-        docker buildx bake
+        echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
+        docker buildx bake --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CONTAINER_REGISTRY_ADDRESS }}
       working-directory: LoRaEngine
-      env:
-        CONTAINER_REGISTRY_ADDRESS: docker.io/test
