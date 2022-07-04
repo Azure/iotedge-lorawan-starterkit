@@ -1,6 +1,7 @@
 #This docker builds a container for the LoRa Basics station on arm32 architecture
 
-FROM amd64/debian:buster as build
+ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=docker.io
+FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/amd64/debian:buster as build
 RUN apt-get update \
     && apt-get install -y git apt-utils build-essential gcc-arm-linux-gnueabihf
 RUN git clone --branch v2.0.6 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
@@ -30,7 +31,7 @@ RUN sed -i "s|8000000|2000000|g" /basicstation/deps/lgw/platform-rpi/libloragw/s
 RUN make platform=rpi variant=std
 RUN cp ./build-rpi-std/bin/station ./built/station.spispeed2
 
-FROM arm32v7/debian:buster
+FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/arm32v7/debian:buster
 WORKDIR /basicstation
 COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
 COPY --from=build /basicstation/built/* .
