@@ -136,7 +136,7 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout current branch
 
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x'
 
@@ -439,7 +439,7 @@ jobs:
       name: Checkout current branch
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1.8.2
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -464,7 +464,7 @@ jobs:
         ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: load-test-results
@@ -523,7 +523,7 @@ jobs:
       name: Checkout current branch
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1.8.2
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -624,7 +624,7 @@ jobs:
         test_name: 'LnsDiscoveryTest'
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: e2e-test-results
