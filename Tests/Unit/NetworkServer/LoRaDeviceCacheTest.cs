@@ -17,7 +17,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public class LoRaDeviceCacheTest
     {
-
         [Fact]
         public async Task When_Device_Expires_It_Is_Refreshed()
         {
@@ -57,7 +56,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             device.LastUpdate = DateTime.UtcNow + TimeSpan.FromMinutes(1);
 
             cache.Register(device);
-            using var cts = new CancellationTokenSource(this.quickRefreshOptions.ValidationInterval * 2);
+            using var cts = this.quickRefreshOptions.ValidationIntervalCancellationToken();
             await Assert.ThrowsAsync<OperationCanceledException>(() => cache.WaitForRefreshAsync(cts.Token));
         }
 
@@ -83,7 +82,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             await cache.DisposeAsync();
             var count = cache.DeviceRefreshCount;
-            await Task.Delay(this.quickRefreshOptions.ValidationInterval * 2);
+            await Task.Delay(this.quickRefreshOptions.ValidationIntervalDelay());
             Assert.Equal(count, cache.DeviceRefreshCount);
         }
 
@@ -118,7 +117,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             await using var device = new LoRaDevice(new DevAddr(0xabc), new DevEui(0x123), connectionManager.Object) { LastSeen = DateTime.UtcNow };
 
             cache.Register(device);
-            using var cts = new CancellationTokenSource(this.quickRefreshOptions.ValidationInterval * 2);
+            using var cts = this.quickRefreshOptions.ValidationIntervalCancellationToken();
             await cache.WaitForRemoveAsync(cts.Token);
 
             Assert.False(cache.TryGetByDevEui(device.DevEUI, out _));
@@ -450,11 +449,9 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             public override async Task<bool> RemoveAsync(LoRaDevice device)
             {
+                var ret = await base.RemoveAsync(device);
                 if (this.removeTick.CurrentCount == 0)
                     this.removeTick.Release();
-
-                var ret = await base.RemoveAsync(device);
-
                 return ret;
             }
 
@@ -473,5 +470,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                 return base.DisposeAsync(dispose);
             }
         }
+    }
+    internal static class LoRaDeviceCacheOptionsExtensions
+    {
+        public static TimeSpan ValidationIntervalDelay(this LoRaDeviceCacheOptions options)
+         => options.ValidationInterval * 3;
+
+        public static CancellationTokenSource ValidationIntervalCancellationToken(this LoRaDeviceCacheOptions options) => new CancellationTokenSource(options.ValidationIntervalDelay());
     }
 }

@@ -8,6 +8,7 @@ namespace LoraKeysManagerFacade
     using System.Linq;
     using System.Net;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.CommonAPI;
@@ -33,20 +34,30 @@ namespace LoraKeysManagerFacade
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly IDeviceRegistryManager registryManager;
         private readonly IServiceClient serviceClient;
+        private readonly IEdgeDeviceGetter edgeDeviceGetter;
+        private readonly IChannelPublisher channelPublisher;
         private readonly ILogger log;
 
-        public SendCloudToDeviceMessage(ILoRaDeviceCacheStore cacheStore, IDeviceRegistryManager registryManager, IServiceClient serviceClient, ILogger<SendCloudToDeviceMessage> log)
+        public SendCloudToDeviceMessage(ILoRaDeviceCacheStore cacheStore,
+                                        IDeviceRegistryManager registryManager,
+                                        IServiceClient serviceClient,
+                                        IEdgeDeviceGetter edgeDeviceGetter,
+                                        IChannelPublisher channelPublisher,
+                                        ILogger<SendCloudToDeviceMessage> log)
         {
             this.cacheStore = cacheStore;
             this.registryManager = registryManager;
             this.serviceClient = serviceClient;
+            this.edgeDeviceGetter = edgeDeviceGetter;
+            this.channelPublisher = channelPublisher;
             this.log = log;
         }
 
         [FunctionName("SendCloudToDeviceMessage")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "cloudtodevicemessage/{devEUI}")] HttpRequest req,
-            string devEUI)
+            string devEUI,
+            CancellationToken cancellationToken)
         {
             DevEui parsedDevEui;
 
@@ -78,10 +89,10 @@ namespace LoraKeysManagerFacade
             var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
             c2dMessage.DevEUI = parsedDevEui;
 
-            return await SendCloudToDeviceMessageImplementationAsync(parsedDevEui, c2dMessage);
+            return await SendCloudToDeviceMessageImplementationAsync(parsedDevEui, c2dMessage, cancellationToken);
         }
 
-        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(DevEui devEUI, LoRaCloudToDeviceMessage c2dMessage, CancellationToken cancellationToken)
         {
             if (c2dMessage == null)
             {
@@ -96,7 +107,7 @@ namespace LoraKeysManagerFacade
             var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
             if (cachedPreferredGateway != null && !string.IsNullOrEmpty(cachedPreferredGateway.GatewayID))
             {
-                return await SendMessageViaDirectMethodAsync(cachedPreferredGateway.GatewayID, devEUI, c2dMessage);
+                return await SendMessageViaDirectMethodOrPubSubAsync(cachedPreferredGateway.GatewayID, devEUI, c2dMessage, cancellationToken);
             }
 
             var queryText = $"SELECT * FROM devices WHERE deviceId = '{devEUI}'";
@@ -137,7 +148,7 @@ namespace LoraKeysManagerFacade
                             var preferredGateway = new LoRaDevicePreferredGateway(gatewayID, 0);
                             _ = LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway, onlyIfNotExists: true);
 
-                            return await SendMessageViaDirectMethodAsync(gatewayID, devEUI, c2dMessage);
+                            return await SendMessageViaDirectMethodOrPubSubAsync(gatewayID, devEUI, c2dMessage, cancellationToken);
                         }
 
                         // class c device that did not send a single upstream message
@@ -162,6 +173,7 @@ namespace LoraKeysManagerFacade
                 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
                 message.MessageId = string.IsNullOrEmpty(c2dMessage.MessageId) ? Guid.NewGuid().ToString() : c2dMessage.MessageId;
 
+                // class a devices only listen for 1-2 seconds, so we send to a queue on the device - we don't care about this for redis 
                 try
                 {
                     await this.serviceClient.SendAsync(devEUI.ToString(), message);
@@ -188,20 +200,44 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        private async Task<IActionResult> SendMessageViaDirectMethodAsync(
+        private async Task<IActionResult> SendMessageViaDirectMethodOrPubSubAsync(
             string preferredGatewayID,
             DevEui devEUI,
-            LoRaCloudToDeviceMessage c2dMessage)
+            LoRaCloudToDeviceMessage c2dMessage,
+            CancellationToken cancellationToken)
         {
             try
             {
                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                _ = method.SetPayloadJson(JsonConvert.SerializeObject(c2dMessage));
+                var jsonContent = JsonConvert.SerializeObject(c2dMessage);
+                _ = method.SetPayloadJson(jsonContent);
 
-                var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
-                if (HttpUtilities.IsSuccessStatusCode(res.Status))
+                if (await edgeDeviceGetter.IsEdgeDeviceAsync(preferredGatewayID, cancellationToken))
                 {
-                    this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);
+                    var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method, cancellationToken);
+                    if (HttpUtilities.IsSuccessStatusCode(res.Status))
+                    {
+                        this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);
+
+                        return new OkObjectResult(new SendCloudToDeviceMessageResult()
+                        {
+                            DevEui = devEUI,
+                            MessageID = c2dMessage.MessageId,
+                            ClassType = "C",
+                        });
+                    }
+
+                    this.log.LogError("Direct method call to {gatewayID} failed with {statusCode}. Response: {response}", preferredGatewayID, res.Status, res.GetPayloadAsJson());
+
+                    return new ObjectResult(res.GetPayloadAsJson())
+                    {
+                        StatusCode = res.Status,
+                    };
+                }
+                else
+                {
+                    await this.channelPublisher.PublishAsync(preferredGatewayID, new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, jsonContent));
+                    this.log.LogInformation("C2D message to {gatewayID} and {devEUI} published to Redis queue", preferredGatewayID, devEUI);
 
                     return new OkObjectResult(new SendCloudToDeviceMessageResult()
                     {
@@ -210,13 +246,6 @@ namespace LoraKeysManagerFacade
                         ClassType = "C",
                     });
                 }
-
-                this.log.LogError("Direct method call to {gatewayID} failed with {statusCode}. Response: {response}", preferredGatewayID, res.Status, res.GetPayloadAsJson());
-
-                return new ObjectResult(res.GetPayloadAsJson())
-                {
-                    StatusCode = res.Status,
-                };
             }
             catch (JsonSerializationException ex)
             {

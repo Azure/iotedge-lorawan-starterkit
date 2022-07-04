@@ -32,7 +32,8 @@ namespace LoRaWan.Tests.Unit.LoRaTools.CommonAPI
                 (req) => new DeviceGetter(null, null, NullLogger<DeviceGetter>.Instance).GetDevice(req),
                 (req) => Task.Run(() => new FCntCacheCheck(null, NullLogger<FCntCacheCheck>.Instance).NextFCntDownInvoke(req)),
                 (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>(), NullLogger<FunctionBundlerFunction>.Instance).FunctionBundler(req, string.Empty)),
-                (req) => new SendCloudToDeviceMessage(null, null, null, null).Run(req, string.Empty)
+                (req) => new SendCloudToDeviceMessage(null, null, null, null, null, null).Run(req, string.Empty, default),
+                (req) => new ClearLnsCache(null, null, null, NullLogger<ClearLnsCache>.Instance).ClearNetworkServerCache(req, default)
             };
 
             foreach (var apiCall in apiCalls)
