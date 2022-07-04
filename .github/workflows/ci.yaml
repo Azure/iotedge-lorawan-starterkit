@@ -115,5 +115,3 @@ jobs:
         echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username  "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
         docker buildx bake
       working-directory: LoRaEngine
-      env:
-        CONTAINER_REGISTRY_ADDRESS: docker.io/test
