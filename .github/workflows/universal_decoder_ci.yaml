@@ -35,7 +35,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Use node JS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '14'
       - run: npm install
@@ -68,7 +68,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Use node JS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '14'
       - run: npm install
