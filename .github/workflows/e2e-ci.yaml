@@ -464,7 +464,7 @@ jobs:
         ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: load-test-results
@@ -624,7 +624,7 @@ jobs:
         test_name: 'LnsDiscoveryTest'
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: e2e-test-results
