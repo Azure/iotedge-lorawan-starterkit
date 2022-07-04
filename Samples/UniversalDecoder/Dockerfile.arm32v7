@@ -1,4 +1,4 @@
-FROM arm32v7/node:14-slim
+FROM lorae2etestsacr.azurecr.io/arm32v7/node:14-slim
 
 WORKDIR /app/
 
