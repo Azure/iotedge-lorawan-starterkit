@@ -18,6 +18,9 @@ env:
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
   TESTS_FOLDER: Tests
   TESTS_RESULTS_FOLDER: Tests/TestResults
+  CONTAINER_REGISTRY_ADDRESS: "${{ secrets.CI_ACR_NAME }}.azurecr.io"
+  CONTAINER_REGISTRY_USERNAME: "${{ secrets.CI_ACR_NAME }}"
+  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
 
 jobs:
   build_and_test:
@@ -109,7 +112,6 @@ jobs:
 
     - name: Build docker images
       run: |
-        docker buildx bake
+        echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
+        docker buildx bake --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CONTAINER_REGISTRY_ADDRESS }}
       working-directory: LoRaEngine
-      env:
-        CONTAINER_REGISTRY_ADDRESS: docker.io/test
