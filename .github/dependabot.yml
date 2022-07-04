@@ -5,8 +5,14 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    # Maintain dependencies for universal decoder
+  # Maintain dependencies for universal decoder
   - package-ecosystem: "npm"
     directory: "/Samples/UniversalDecoder"
     schedule:
+      interval: "daily"
+  # Maintain dependencies for github actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions every weekday
       interval: "daily"
