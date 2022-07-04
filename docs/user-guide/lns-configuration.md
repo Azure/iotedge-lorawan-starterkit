@@ -53,8 +53,10 @@ environment variables:
 
 | Environment variable name | Description | Mandatory |
 | --- | --- | --- |
-| CLOUD_DEPLOYMENT | Switch to indicate that the LNS is deployed as a standalone cloud-based instance | true |
-| ENABLE_GATEWAY | Gateway mode is only applicable to IoT Edge-based deployments. Must be set to `false` or unset. | false |
-| IOTHUBHOSTNAME | Host name of the IoT Hub to which the LNS should connect to. | true |
-| HOSTNAME | Identifier of the LNS. | true |
-| REDIS_CONNECTION_STRING | Connection string used to connect to the deployed Redis instance. | true |
+| CLOUD_DEPLOYMENT | Switch to indicate that the LNS is deployed as a standalone cloud-based instance | Yes (must be set to true) |
+| ENABLE_GATEWAY | Gateway mode is only applicable to IoT Edge-based deployments. Must be set to `false` or unset. | No |
+| IOTHUBHOSTNAME | Host name of the IoT Hub to which the LNS should connect to. | Yes |
+| HOSTNAME | Identifier of the LNS. | Yes |
+| REDIS_CONNECTION_STRING | Connection string used to connect to the deployed Redis instance. | Yes |
+| FACADE_SERVER_URL | Azure Facade function url, e.g. "https://deployedfunction.azurewebsites.net/api" | Yes |
+| FACADE_AUTH_CODE | Azure Facade function auth code | Yes |
