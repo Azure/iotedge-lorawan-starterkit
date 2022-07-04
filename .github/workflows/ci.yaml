@@ -112,6 +112,6 @@ jobs:
 
     - name: Build docker images
       run: |
-        echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username  "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
-        docker buildx bake
+        echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
+        docker buildx bake --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CONTAINER_REGISTRY_ADDRESS }}
       working-directory: LoRaEngine
