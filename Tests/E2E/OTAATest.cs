@@ -64,6 +64,7 @@ namespace LoRaWan.Tests.E2E
             }
 
             var devAddr = IntegrationTestFixtureBase.GetDevAddrAfterJoin(ArduinoDevice.SerialLogs);
+            var shouldKeepSearchingForFunctionLogs = true;
 
             // Sends 10x unconfirmed messages
             for (var i = 0; i < MESSAGES_COUNT; ++i)
@@ -97,14 +98,25 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
                 // Checking if one of the Network Server cache is out of sync
-                var functionMissMsg = $"{devAddr}: querying the registry for devices by devAddr {devAddr} found 0 devices";
-                Log($"[INFO] ** Searching for log '{functionMissMsg}' **");
-                var functionMissMsgSearch = await TestFixtureCi.SearchNetworkServerModuleAsync((input) => input.StartsWith(functionMissMsg, StringComparison.Ordinal), new SearchLogOptions(functionMissMsg));
-                if (functionMissMsgSearch.Found)
+                if (shouldKeepSearchingForFunctionLogs)
                 {
-                    // Waiting 5 minutes as the function refreshes every 5mins ideally
-                    Log($"[INFO] ** Waiting 5 minutes for cache refresh **");
-                    await Task.Delay(TimeSpan.FromMinutes(5));
+                    var functionMissMsg = $"{devAddr}: querying the registry for devices by devAddr {devAddr} found";
+                    Log($"[INFO] ** Searching for log '{functionMissMsg}' **");
+                    var functionMissMsgSearch = await TestFixtureCi.SearchNetworkServerModuleAsync((input) => input.StartsWith(functionMissMsg, StringComparison.Ordinal), new SearchLogOptions(functionMissMsg) { MaxAttempts = 1 });
+                    if (functionMissMsgSearch.Found)
+                    {
+                        if (functionMissMsgSearch.FoundLogResult.Contains("0 devices", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Waiting 5 minutes as the function refreshes every 5mins ideally
+                            Log($"[INFO] ** Waiting 5 minutes for cache refresh **");
+                            await Task.Delay(TimeSpan.FromMinutes(5));
+                        }
+                        else
+                        {
+                            // Should stop searching
+                            shouldKeepSearchingForFunctionLogs = false;
+                        }
+                    }
                 }
             }
 
