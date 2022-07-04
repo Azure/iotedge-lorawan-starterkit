@@ -24,7 +24,7 @@
     },
     "devDependencies": {
         "jest": "^28.1.2",
-        "supertest": "^6.2.3"
+        "supertest": "^6.2.4"
     },
     "jest": {
         "testEnvironment": "node",
