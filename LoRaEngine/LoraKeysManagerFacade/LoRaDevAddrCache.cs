@@ -203,8 +203,8 @@ namespace LoraKeysManagerFacade
         /// </summary>
         private async Task PerformDeltaReload(IDeviceRegistryManager registryManager)
         {
-            // if the value is null (first call), we take five minutes before this call
-            var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+            // if the value is null (first call), we take one day before this call
+            var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddDays(-1).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
             var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
             var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query);
             BulkSaveDevAddrCache(devAddrCacheInfos, false);
@@ -213,8 +213,7 @@ namespace LoraKeysManagerFacade
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IDeviceRegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
-            var lastQueryTs = DateTime.UtcNow.AddSeconds(-10); // account for some clock drift
-            _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+            var mostRecentReportedUpdate = DateTimeOffset.MinValue;
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -238,9 +237,19 @@ namespace LoraKeysManagerFacade
                             NwkSKey = twin.GetNwkSKey(),
                             LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                         });
+
+                        var reportedMetadata = (object)twin.Properties.Reported["$metadata"];
+
+                        if (reportedMetadata is Microsoft.Azure.Devices.Shared.Metadata someMetadata
+                            && someMetadata.LastUpdated > mostRecentReportedUpdate)
+                        {
+                            mostRecentReportedUpdate = someMetadata.LastUpdated;
+                        }
                     }
                 }
             }
+
+            _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, mostRecentReportedUpdate.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
 
             return devAddrCacheInfos;
         }
