@@ -63,6 +63,8 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);
             }
 
+            var devAddr = IntegrationTestFixtureBase.GetDevAddrAfterJoin(ArduinoDevice.SerialLogs);
+
             // Sends 10x unconfirmed messages
             for (var i = 0; i < MESSAGES_COUNT; ++i)
             {
@@ -93,6 +95,17 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                // Checking if one of the Network Server cache is out of sync
+                var functionMissMsg = $"{devAddr}: querying the registry for devices by devAddr {devAddr} found 0 devices";
+                Log($"[INFO] ** Searching for log '{functionMissMsg}' **");
+                var functionMissMsgSearch = await TestFixtureCi.SearchNetworkServerModuleAsync((input) => input.StartsWith(functionMissMsg, StringComparison.Ordinal), new SearchLogOptions(functionMissMsg));
+                if (functionMissMsgSearch.Found)
+                {
+                    // Waiting 5 minutes as the function refreshes every 5mins ideally
+                    Log($"[INFO] ** Waiting 5 minutes for cache refresh **");
+                    await Task.Delay(TimeSpan.FromMinutes(5));
+                }
             }
 
             // Sends 10x confirmed messages

@@ -192,10 +192,7 @@ namespace LoRaWan.Tests.Common
         /// <param name="devEUI">The device EUI of the current device.</param>
         public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, DevEui devEUI)
         {
-            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
-            Assert.NotNull(joinConfirmMsg);
-            var devAddr = joinConfirmMsg[(joinConfirmMsg.LastIndexOf(' ') + 1)..];
-            devAddr = devAddr.Replace(":", string.Empty, StringComparison.Ordinal);
+            var devAddr = GetDevAddrAfterJoin(serialLog);
 
             // wait for the twins to be stored and published -> all GW need the same state
             const int DelayForJoinTwinStore = 20 * 1000;
@@ -219,6 +216,15 @@ namespace LoRaWan.Tests.Common
             }
 
             return reported;
+        }
+
+        public static string GetDevAddrAfterJoin(IReadOnlyCollection<string> serialLog)
+        {
+            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
+            Assert.NotNull(joinConfirmMsg);
+            var devAddr = joinConfirmMsg[(joinConfirmMsg.LastIndexOf(' ') + 1)..];
+            devAddr = devAddr.Replace(":", string.Empty, StringComparison.Ordinal);
+            return devAddr;
         }
 
         // Asserts Network Server Module log exists. It has built-in retries and delays
