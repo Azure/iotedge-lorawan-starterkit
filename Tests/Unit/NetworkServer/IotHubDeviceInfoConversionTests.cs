@@ -5,7 +5,7 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
-    using global::LoraKeysManagerFacade;
+    using global::LoRaTools;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Xunit;
