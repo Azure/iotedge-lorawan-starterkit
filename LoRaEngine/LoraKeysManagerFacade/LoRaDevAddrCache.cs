@@ -11,7 +11,11 @@ namespace LoraKeysManagerFacade
     using LoRaTools;
     using LoRaTools.Utils;
     using LoRaWan;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
@@ -98,6 +102,32 @@ namespace LoraKeysManagerFacade
             }
 
             return info?.Count > 0;
+        }
+
+        [FunctionName("StoreInDevAddrCache")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "storeindevaddrcache")] HttpRequest req)
+        {
+            try
+            {
+                VersionValidator.Validate(req);
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
+
+            var requestBody = await req.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(requestBody))
+            {
+                return new BadRequestObjectResult("missing body");
+            }
+
+            var devAddrCacheInfo = JsonConvert.DeserializeObject<DevAddrCacheInfo>(requestBody);
+            using var deviceScope = this.logger.BeginDeviceScope(devAddrCacheInfo.DevEUI);
+
+            StoreInfo(devAddrCacheInfo);
+
+            return new OkResult();
         }
 
         public void StoreInfo(DevAddrCacheInfo info)
