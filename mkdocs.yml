@@ -100,7 +100,6 @@ nav:
     - 'Decoders':
       - samples/decoders/decoder.md
       - samples/decoders/universal.md
-      - samples/decoders/cayenne.md
   - Tools:
     - tools/device-provisioning.md
     - tools/arduino-samples.md
