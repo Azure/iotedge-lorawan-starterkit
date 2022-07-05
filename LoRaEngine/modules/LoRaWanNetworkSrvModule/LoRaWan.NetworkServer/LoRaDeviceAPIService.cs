@@ -12,6 +12,7 @@ namespace LoRaWan.NetworkServer
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -259,5 +260,23 @@ namespace LoRaWan.NetworkServer
         }
 
         private HttpClient CreateClient() => this.httpClientFactory.CreateClient(LoRaApiHttpClient.Name);
+
+        public override async Task StoreDevAddrInCacheAsync(DevAddrCacheInfo devAddrCacheInfo, CancellationToken token)
+        {
+            using var client = CreateClient();
+            var url = BuildUri("StoreInDevAddrCache", new Dictionary<string, string>
+            {
+                ["code"] = AuthCode
+            });
+
+            var requestBody = JsonConvert.SerializeObject(devAddrCacheInfo);
+
+            using var content = PreparePostContent(requestBody);
+            using var response = await client.PostAsync(url, content, token);
+            if (!response.IsSuccessStatusCode)
+            {
+                this.logger.LogError($"error calling the storeindevaddrcache function, check the function log. {response.ReasonPhrase}");
+            }
+        }
     }
 }
