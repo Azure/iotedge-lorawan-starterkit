@@ -293,7 +293,7 @@ namespace LoRaWan.NetworkServer
                 {
                     DevAddr = devAddr,
                     DevEUI = devEui,
-                    GatewayId = this.configuration.GatewayID,
+                    GatewayId = loRaDevice.GatewayID,
                     NwkSKey = nwkSKey.ToString()
                 }, joinAcceptCancellationToken.Token);
 
