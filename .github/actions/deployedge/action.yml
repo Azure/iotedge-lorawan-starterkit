@@ -65,8 +65,8 @@ runs:
     shell: bash
     run: |
       az extension add --name azure-iot
-      until `az iot edge deployment show-metric --deployment-id $IOT_EDGE_DEPLOYMENT_ID --metric-id reportedSuccessfulCount --metric-type system --login $IOTHUB_CONNECTION_STRING | grep -q $DEVICE_ID`; do sleep 10 && echo "waiting for deployment to be applied"; done
-  
+      until $(az iot hub module-twin show -m '\$edgeAgent' -d $DEVICE_ID --login "HostName=lorae2etestshub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=f0s1abFUY5TUW6ZqNUf4FKQar4CU0lDdFHjgRPMibfU=" | jq ".properties.desired.\"\$version\" == .properties.reported.lastDesiredVersion and .properties.reported.lastDesiredStatus.code == 200 and .configurations.$IOT_EDGE_DEPLOYMENT_ID.status == \"Applied\"" | grep -q true); do sleep 10 && echo "waiting for deployment to be applied"; done
+
   - name: Wait for LNS start
     if: inputs.waitForLnsDeployment == 'true'
     shell: bash
