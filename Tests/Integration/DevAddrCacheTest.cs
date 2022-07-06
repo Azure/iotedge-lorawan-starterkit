@@ -514,7 +514,7 @@ namespace LoRaWan.Tests.Integration
                     DevEUI = TestEui.GenerateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
-                    LastUpdatedTwins = dateTime.AddMinutes(-i * 40) // on empty cache, only updates from last hour are processed, therefore out of 5 device only 2 will be added with this computation
+                    LastUpdatedTwins = dateTime.AddMinutes((float)-i * 40) // on empty cache, only updates from last hour are processed, therefore out of 5 device only 2 will be added with this computation
                 });
             }
 
@@ -709,7 +709,8 @@ namespace LoRaWan.Tests.Integration
                     DevEUI = managerInput[i].DevEUI,
                     DevAddr = managerInput[i].DevAddr,
                     LastUpdatedTwins = dateTime,
-                    PrimaryKey = primaryKey
+                    PrimaryKey = primaryKey,
+                    GatewayId = oldGatewayId
                 });
             }
 
