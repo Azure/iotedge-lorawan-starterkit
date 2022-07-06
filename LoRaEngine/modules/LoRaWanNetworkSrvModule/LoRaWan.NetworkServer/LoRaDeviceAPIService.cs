@@ -264,7 +264,8 @@ namespace LoRaWan.NetworkServer
         public override async Task StoreDevAddrInCacheAsync(DevAddrCacheInfo devAddrCacheInfo, CancellationToken token)
         {
             using var client = CreateClient();
-            var url = BuildUri("StoreInDevAddrCache", new Dictionary<string, string>
+            const string StoreInDevAddrCacheFunctionName = "StoreInDevAddrCache";
+            var url = BuildUri(StoreInDevAddrCacheFunctionName, new Dictionary<string, string>
             {
                 ["code"] = AuthCode
             });
@@ -275,7 +276,7 @@ namespace LoRaWan.NetworkServer
             using var response = await client.PostAsync(url, content, token);
             if (!response.IsSuccessStatusCode)
             {
-                this.logger.LogError($"error calling the storeindevaddrcache function, check the function log. {response.ReasonPhrase}");
+                this.logger.LogError($"error calling the {StoreInDevAddrCacheFunctionName} function, check the function log. {response.ReasonPhrase}");
             }
         }
     }
