@@ -1,0 +1,47 @@
+#This docker builds a container for the LoRa Basics station on arm32 architecture
+
+# NOTE: Use either docker.io or your own registry address to build the image
+ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=your-registry-address.azurecr.io
+FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/amd64/debian:buster as build
+RUN apt-get update \
+    && apt-get install -y git apt-utils build-essential gcc-aarch64-linux-gnu
+RUN git clone --branch v2.0.6 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
+
+# creating links for allowing cross-compilation of arm-linux-gnueabihf binaries
+RUN mkdir -p ~/toolchain-rpi/bin/ ~/toolchain-corecell/bin/ \
+    && ln -s /usr/bin/aarch64-linux-gnu-gcc ~/toolchain-rpi/bin/aarch64-linux-gnu-gcc \
+    && ln -s /usr/bin/aarch64-linux-gnu-ld ~/toolchain-rpi/bin/aarch64-linux-gnu-ld \
+    && ln -s /usr/bin/aarch64-linux-gnu-ar ~/toolchain-rpi/bin/aarch64-linux-gnu-ar \
+    && ln -s /usr/bin/aarch64-linux-gnu-objdump ~/toolchain-rpi/bin/aarch64-linux-gnu-objdump \
+    && ln -s /usr/bin/aarch64-linux-gnu-objcopy ~/toolchain-rpi/bin/aarch64-linux-gnu-objcopy \
+    && cp -RP ~/toolchain-rpi/bin/* ~/toolchain-corecell/bin/
+WORKDIR /basicstation
+
+# make corecell version
+RUN sed -i "s|arm-linux-gnueabihf|aarch64-linux-gnu|g" /basicstation/setup.gmk
+RUN make platform=corecell variant=std
+RUN mkdir built && cp ./build-corecell-std/bin/station ./built/station.corecell
+
+# make standard version
+RUN make platform=rpi variant=std
+RUN cp ./build-rpi-std/bin/station ./built/station.std
+
+# clean before making spi speed 2 version
+RUN make platform=rpi variant=std clean
+# make spi speed 2 version
+RUN sed -i "s|8000000|2000000|g" /basicstation/deps/lgw/platform-rpi/libloragw/src/loragw_spi.native.c
+RUN make platform=rpi variant=std
+RUN cp ./build-rpi-std/bin/station ./built/station.spispeed2
+
+FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/arm64v8/debian:buster
+WORKDIR /basicstation
+COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
+COPY --from=build /basicstation/built/* .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/sx1301.station.conf .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/corecell.station.conf .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/helper-functions.sh .
+COPY LoRaEngine/modules/LoRaBasicsStationModule/start_basicsstation.sh .
+COPY LICENSE .
+COPY ./LoRaEngine/modules/LoRaBasicsStationModule/NOTICE.txt .
+RUN chmod +x ./start_basicsstation.sh
+ENTRYPOINT ["./start_basicsstation.sh"]
