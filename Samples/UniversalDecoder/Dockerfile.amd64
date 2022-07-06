@@ -1,6 +1,5 @@
-
-# DisableDockerDetector "Users should have the possibility to build the docker image locally. The CI build will use the docker image from our internal registry. See ./.github/workflows/ci.yml for more information."
-ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=docker.io
+# NOTE: Use either docker.io or your own registry address to build the image
+ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=your-registry-address.azurecr.io
 FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/amd64/node:14-alpine
 
 WORKDIR /app/
