@@ -207,16 +207,17 @@ namespace LoraKeysManagerFacade
         private async Task PerformDeltaReload(IDeviceRegistryManager registryManager)
         {
             // if the value is null (first call), we take updates from one hour before this call
-            var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddHours(-1).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
-            var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
-            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query, DateTime.Parse(lastUpdate, CultureInfo.InvariantCulture));
+            var lastUpdate = long.TryParse(this.cacheStore.StringGet(LastDeltaUpdateKeyValue), out var cachedTicks) ? cachedTicks : DateTime.UtcNow.AddHours(-1).Ticks;
+            var lastUpdateDateTime = new DateTime(lastUpdate, DateTimeKind.Utc).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+            var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdateDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdateDateTime}'";
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query, lastUpdate);
             BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
 
-        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IDeviceRegistryManager registryManager, string inputQuery, DateTimeOffset? lastDeltaUpdateFromCache)
+        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IDeviceRegistryManager registryManager, string inputQuery, long? lastDeltaUpdateFromCacheTicks)
         {
             var query = registryManager.CreateQuery(inputQuery);
-            var isFullReload = lastDeltaUpdateFromCache is null;
+            var isFullReload = lastDeltaUpdateFromCacheTicks is null;
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -245,7 +246,7 @@ namespace LoraKeysManagerFacade
                             && twin.Properties.Desired.GetMetadata() is { LastUpdated: { } desiredUpdateTime }
                             && twin.Properties.Reported.GetMetadata() is { LastUpdated: { } reportedUpdateTime })
                         {
-                            lastDeltaUpdateFromCache = new[] { lastDeltaUpdateFromCache, desiredUpdateTime.ToUniversalTime(), reportedUpdateTime.ToUniversalTime() }.Max();
+                            lastDeltaUpdateFromCacheTicks = Math.Max(lastDeltaUpdateFromCacheTicks.Value, Math.Max(desiredUpdateTime.Ticks, reportedUpdateTime.Ticks));
                         }
                     }
                 }
@@ -253,7 +254,7 @@ namespace LoraKeysManagerFacade
 
             if (!isFullReload)
             {
-                _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastDeltaUpdateFromCache.Value.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+                _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastDeltaUpdateFromCacheTicks.Value.ToString(CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             }
 
             return devAddrCacheInfos;
