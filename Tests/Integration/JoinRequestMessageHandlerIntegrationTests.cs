@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
+    using LoRaTools;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Shared;
@@ -80,6 +81,7 @@ namespace LoRaWan.Tests.Integration
             // assert
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
             this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), null), Times.Once());
+            this.apiServiceMock.Verify(x => x.StoreDevAddrInCacheAsync(It.IsAny<DevAddrCacheInfo>(), It.IsAny<CancellationToken>()), Times.Once());
 
             // do another request
             joinRequest = this.simulatedDevice.CreateJoinRequest();
@@ -87,6 +89,7 @@ namespace LoRaWan.Tests.Integration
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), It.IsNotNull<DevAddr>()), Times.Once());
+            this.apiServiceMock.Verify(x => x.StoreDevAddrInCacheAsync(It.IsAny<DevAddrCacheInfo>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
         [Theory]
@@ -113,12 +116,14 @@ namespace LoRaWan.Tests.Integration
                 this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
                 this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), null), Times.Once());
             }
+            this.apiServiceMock.Verify(x => x.StoreDevAddrInCacheAsync(It.IsAny<DevAddrCacheInfo>(), It.IsAny<CancellationToken>()), joinHandledByAnotherGateway ? Times.Never() : Times.Once());
 
             // act and assert again
             joinRequest = this.simulatedDevice.CreateJoinRequest();
             loraRequest.SetPayload(joinRequest);
             await this.joinRequestHandler.ProcessJoinRequestAsync(loraRequest);
             this.deviceMock.Verify(x => x.CloseConnectionAsync(CancellationToken.None, true), Times.Exactly(2));
+            this.apiServiceMock.Verify(x => x.StoreDevAddrInCacheAsync(It.IsAny<DevAddrCacheInfo>(), It.IsAny<CancellationToken>()), joinHandledByAnotherGateway ? Times.Once() : Times.Exactly(2));
         }
 
         [Fact]
@@ -136,6 +141,7 @@ namespace LoRaWan.Tests.Integration
             // assert
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Once());
             this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), It.IsAny<DevAddr>()), Times.Never());
+            this.apiServiceMock.Verify(x => x.StoreDevAddrInCacheAsync(It.IsAny<DevAddrCacheInfo>(), It.IsAny<CancellationToken>()), Times.Never());
 
             // do another request, which will succeed and therefore deviceRegistry should be updated
             _ = this.clientMock.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
@@ -145,6 +151,7 @@ namespace LoRaWan.Tests.Integration
             this.deviceMock.Verify(x => x.UpdateAfterJoinAsync(It.IsAny<LoRaDeviceJoinUpdateProperties>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             // asserting that a UpdateDeviceAfterJoin with a null "oldDevAddr" is received meaning that device was not in dev Addr cache
             this.deviceRegistryMock.Verify(x => x.UpdateDeviceAfterJoin(It.IsAny<LoRaDevice>(), null), Times.Once());
+            this.apiServiceMock.Verify(x => x.StoreDevAddrInCacheAsync(It.IsAny<DevAddrCacheInfo>(), It.IsAny<CancellationToken>()), Times.Once());
         }
 
         protected override async ValueTask DisposeAsync(bool disposing)
