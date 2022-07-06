@@ -1,3 +1,4 @@
+# DisableDockerDetector "Users should have the possibility to build the docker image locally. The CI build will use the docker image from our internal registry. See ./.github/workflows/ci.yml for more information."
 ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=docker.io
 FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/arm32v7/node:14-slim
 
