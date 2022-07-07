@@ -261,22 +261,22 @@ namespace LoRaWan.NetworkServer
 
         private HttpClient CreateClient() => this.httpClientFactory.CreateClient(LoRaApiHttpClient.Name);
 
-        public override async Task StoreDevAddrInCacheAsync(DevAddrCacheInfo devAddrCacheInfo, CancellationToken token)
+        public override async Task SendJoinNotificationAsync(DeviceJoinNotification deviceJoinNotification, CancellationToken token)
         {
             using var client = CreateClient();
-            const string StoreInDevAddrCacheFunctionName = "StoreInDevAddrCache";
-            var url = BuildUri(StoreInDevAddrCacheFunctionName, new Dictionary<string, string>
+            const string FunctionName = "DeviceJoinNotification";
+            var url = BuildUri(FunctionName, new Dictionary<string, string>
             {
                 ["code"] = AuthCode
             });
 
-            var requestBody = JsonConvert.SerializeObject(devAddrCacheInfo);
+            var requestBody = JsonConvert.SerializeObject(deviceJoinNotification);
 
             using var content = PreparePostContent(requestBody);
             using var response = await client.PostAsync(url, content, token);
             if (!response.IsSuccessStatusCode)
             {
-                this.logger.LogError($"error calling the {StoreInDevAddrCacheFunctionName} function, check the function log. {response.ReasonPhrase}");
+                this.logger.LogError($"error calling the {FunctionName} function, check the function log. {response.ReasonPhrase}");
             }
         }
     }

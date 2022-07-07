@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -289,12 +290,12 @@ namespace LoRaWan.NetworkServer
 
                 this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
                 _ = request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessage);
-                _ = this.apiService.StoreDevAddrInCacheAsync(new DevAddrCacheInfo
+                _ = this.apiService.SendJoinNotificationAsync(new DeviceJoinNotification
                 {
                     DevAddr = devAddr,
                     DevEUI = devEui,
                     GatewayId = loRaDevice.GatewayID,
-                    NwkSKey = nwkSKey.ToString()
+                    NwkSKey = nwkSKey
                 }, joinAcceptCancellationToken.Token);
 
                 request.NotifySucceeded(loRaDevice, downlinkMessage);

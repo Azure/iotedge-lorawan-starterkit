@@ -3,12 +3,9 @@
 
 namespace LoraKeysManagerFacade
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -16,19 +13,19 @@ namespace LoraKeysManagerFacade
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
-    internal class LoRaDevAddrCacheFunction
+    internal class LoRaDeviceJoinNotificationFunction
     {
         private readonly LoRaDevAddrCache loRaDevAddrCache;
-        private readonly ILogger<LoRaDevAddrCacheFunction> logger;
+        private readonly ILogger<LoRaDeviceJoinNotificationFunction> logger;
 
-        public LoRaDevAddrCacheFunction(LoRaDevAddrCache loRaDevAddrCache, ILogger<LoRaDevAddrCacheFunction> logger)
+        public LoRaDeviceJoinNotificationFunction(LoRaDevAddrCache loRaDevAddrCache, ILogger<LoRaDeviceJoinNotificationFunction> logger)
         {
             this.loRaDevAddrCache = loRaDevAddrCache;
             this.logger = logger;
         }
 
-        [FunctionName("StoreInDevAddrCache")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "storeindevaddrcache")] HttpRequest req)
+        [FunctionName("DeviceJoinNotification")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "devicejoinnotification")] HttpRequest req)
         {
             try
             {
@@ -45,10 +42,16 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult("missing body");
             }
 
-            var devAddrCacheInfo = JsonConvert.DeserializeObject<DevAddrCacheInfo>(requestBody);
-            using var deviceScope = this.logger.BeginDeviceScope(devAddrCacheInfo.DevEUI);
+            var joinNotification = JsonConvert.DeserializeObject<DeviceJoinNotification>(requestBody);
+            using var deviceScope = this.logger.BeginDeviceScope(joinNotification.DevEUI);
 
-            this.loRaDevAddrCache.StoreInfo(devAddrCacheInfo);
+            this.loRaDevAddrCache.StoreInfo(new DevAddrCacheInfo
+            {
+                DevAddr = joinNotification.DevAddr,
+                DevEUI = joinNotification.DevEUI,
+                GatewayId = joinNotification.GatewayId,
+                NwkSKey = joinNotification.NwkSKeyString
+            });
 
             return new OkResult();
         }

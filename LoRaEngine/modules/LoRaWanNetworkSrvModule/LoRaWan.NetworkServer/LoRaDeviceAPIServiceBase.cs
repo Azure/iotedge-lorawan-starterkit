@@ -9,7 +9,6 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools;
     using LoRaTools.CommonAPI;
 
     /// <summary>
@@ -71,7 +70,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetAuthCode(string value) => AuthCode = value;
 
-        public abstract Task StoreDevAddrInCacheAsync(DevAddrCacheInfo devAddrCacheInfo, CancellationToken token);
+        public abstract Task SendJoinNotificationAsync(DeviceJoinNotification deviceJoinNotification, CancellationToken token);
 
         public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request);
 
