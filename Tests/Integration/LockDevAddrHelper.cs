@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Integration
 {
     using LoraKeysManagerFacade;
-    using LoRaTools;
     using System;
     using System.Threading.Tasks;
 

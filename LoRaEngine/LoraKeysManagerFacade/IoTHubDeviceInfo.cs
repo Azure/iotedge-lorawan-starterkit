@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaTools
+namespace LoraKeysManagerFacade
 {
     using LoRaWan;
     using Newtonsoft.Json;
@@ -12,7 +12,7 @@ namespace LoRaTools
         public string DevAddrString
         {
             get => DevAddr.ToString();
-            set => DevAddr = DevAddr.Parse(value);
+            set => DevAddr = LoRaWan.DevAddr.Parse(value);
         }
 
         [JsonIgnore]
