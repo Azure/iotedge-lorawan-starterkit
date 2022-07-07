@@ -3,7 +3,6 @@
 
 namespace LoraKeysManagerFacade
 {
-    using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
@@ -11,7 +10,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
 
     internal class LoRaDeviceJoinNotificationFunction
     {
@@ -25,7 +23,8 @@ namespace LoraKeysManagerFacade
         }
 
         [FunctionName("DeviceJoinNotification")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "devicejoinnotification")] HttpRequest req)
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "devicejoinnotification")] DeviceJoinNotification joinNotification,
+                                 HttpRequest req)
         {
             try
             {
@@ -36,13 +35,6 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            var requestBody = await req.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(requestBody))
-            {
-                return new BadRequestObjectResult("missing body");
-            }
-
-            var joinNotification = JsonConvert.DeserializeObject<DeviceJoinNotification>(requestBody);
             using var deviceScope = this.logger.BeginDeviceScope(joinNotification.DevEUI);
 
             this.loRaDevAddrCache.StoreInfo(new DevAddrCacheInfo
