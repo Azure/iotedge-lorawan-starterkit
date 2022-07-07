@@ -203,6 +203,14 @@ namespace LoraKeysManagerFacade
 
         /// <summary>
         /// Method performing a deltaReload. Typically occur every 5 minutes.
+        ///
+        /// Please be aware that changes to twin are delayed in IoT Hub queries.
+        /// The Delta reload is keeping track of the most recent update and using that timestamp
+        /// as the start date/time for the next iteration.
+        /// No one is guaranteeing that the twin changes are propagated all together and in order,
+        /// therefore there could be a chance where we are missing some items.
+        /// At the same time, the LoRaWanNetworkServer is proactively storing the changes in Redis
+        /// after a successful join, therefore the chance of missing items should be very very low.
         /// </summary>
         private async Task PerformDeltaReload(IDeviceRegistryManager registryManager)
         {
