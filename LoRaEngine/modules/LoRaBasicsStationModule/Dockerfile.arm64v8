@@ -1,4 +1,4 @@
-#This docker builds a container for the LoRa Basics station on arm32 architecture
+#This docker builds a container for the LoRa Basics station on arm64v8 architecture
 
 # NOTE: Use either docker.io or your own registry address to build the image
 ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=your-registry-address.azurecr.io
