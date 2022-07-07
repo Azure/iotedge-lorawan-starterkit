@@ -12,6 +12,7 @@ namespace LoRaWan.NetworkServer
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -259,5 +260,24 @@ namespace LoRaWan.NetworkServer
         }
 
         private HttpClient CreateClient() => this.httpClientFactory.CreateClient(LoRaApiHttpClient.Name);
+
+        public override async Task SendJoinNotificationAsync(DeviceJoinNotification deviceJoinNotification, CancellationToken token)
+        {
+            using var client = CreateClient();
+            const string FunctionName = "DeviceJoinNotification";
+            var url = BuildUri(FunctionName, new Dictionary<string, string>
+            {
+                ["code"] = AuthCode
+            });
+
+            var requestBody = JsonConvert.SerializeObject(deviceJoinNotification);
+
+            using var content = PreparePostContent(requestBody);
+            using var response = await client.PostAsync(url, content, token);
+            if (!response.IsSuccessStatusCode)
+            {
+                this.logger.LogError($"error calling the {FunctionName} function, check the function log. {response.ReasonPhrase}");
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Xunit;
     using Xunit.Abstractions;
+    using IoTHubDeviceInfo = NetworkServer.IoTHubDeviceInfo;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // General message processor tests (Join tests are handled in other class)

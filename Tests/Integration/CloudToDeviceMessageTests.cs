@@ -20,6 +20,7 @@ namespace LoRaWan.Tests.Integration
     using Xunit;
     using Xunit.Abstractions;
     using static LoRaWan.ReceiveWindowNumber;
+    using IoTHubDeviceInfo = NetworkServer.IoTHubDeviceInfo;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Cloud to device message processing tests (Join tests are handled in other class)

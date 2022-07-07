@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Common
     using LoRaWan.NetworkServer;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
 
     public static class TestMessageDispatcher
     {
@@ -19,7 +20,7 @@ namespace LoRaWan.Tests.Common
             return new MessageDispatcher(configuration,
                                          deviceRegistry,
                                          frameCounterUpdateStrategyProvider,
-                                         new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, null),
+                                         new JoinRequestMessageHandler(configuration, concentratorDeduplication, deviceRegistry, NullLogger<JoinRequestMessageHandler>.Instance, Mock.Of<LoRaDeviceAPIServiceBase>(), null),
                                          NullLoggerFactory.Instance,
                                          NullLogger<MessageDispatcher>.Instance,
                                          null);

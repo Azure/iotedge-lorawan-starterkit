@@ -48,6 +48,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                               deduplicationMock.Object,
                                               Mock.Of<ILoRaDeviceRegistry>(),
                                               NullLogger<JoinRequestMessageHandler>.Instance,
+                                              Mock.Of<LoRaDeviceAPIServiceBase>(),
                                               meter),
                 meter);
         }

@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
@@ -40,7 +41,7 @@ namespace LoRaWan.Tests.Integration
             this.testOutputHelper = testOutputHelper;
         }
 
-        private static Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
+        private static Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds)
         {
             var currentDevAddrContext = new List<DevAddrCacheInfo>();
             var currentDevices = deviceIds;
@@ -89,6 +90,7 @@ namespace LoRaWan.Tests.Integration
                             Properties = new TwinProperties()
                             {
                                 Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
+                                Reported = new TwinCollection($"{{}}", $"{{\"$lastUpdated\": \"0001-01-01T00:00:00Z\"}}"),
                             }
                         };
 
@@ -120,7 +122,8 @@ namespace LoRaWan.Tests.Integration
                 .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >=", StringComparison.Ordinal))))
                 .Returns((string query) =>
                 {
-                    currentDevAddrContext = currentDevices.Take(numberOfDeviceDeltaUpdates).ToList();
+                    var lastDeltaUpdate = DateTimeOffset.Parse(query.Split('\'')[1], CultureInfo.InvariantCulture);
+                    currentDevAddrContext = currentDevices.Where(d => d.LastUpdatedTwins >= lastDeltaUpdate).ToList();
                     // reset device count in case HasMoreResult is called more than once
                     hasMoreShouldReturn = true;
                     return cacheMissQueryMock.Object;
@@ -511,7 +514,7 @@ namespace LoRaWan.Tests.Integration
                     DevEUI = TestEui.GenerateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = gatewayId,
-                    LastUpdatedTwins = dateTime
+                    LastUpdatedTwins = dateTime.AddMinutes((float)-i * 40) // on empty cache, only updates from last hour are processed, therefore out of 5 device only 2 will be added with this computation
                 });
             }
 
@@ -567,7 +570,6 @@ namespace LoRaWan.Tests.Integration
             var oldGatewayId = NewUniqueEUI64();
             var newGatewayId = NewUniqueEUI64();
             var dateTime = DateTime.UtcNow;
-
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var managerInput = new List<DevAddrCacheInfo>();
 
@@ -593,7 +595,7 @@ namespace LoRaWan.Tests.Integration
 
             var devAddrJoining = managerInput[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = InitRegistryManager(managerInput, managerInput.Count);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -679,8 +681,8 @@ namespace LoRaWan.Tests.Integration
         {
             var oldGatewayId = NewUniqueEUI64();
             var newGatewayId = NewUniqueEUI64();
-            var dateTime = DateTime.UtcNow;
-            var updateDateTime = DateTime.UtcNow.AddMinutes(10);
+            var dateTime = DateTime.UtcNow.AddMinutes(-10);
+            var updateDateTime = DateTime.UtcNow;
 
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var managerInput = new List<DevAddrCacheInfo>();
@@ -696,7 +698,7 @@ namespace LoRaWan.Tests.Integration
                 });
             }
 
-            var registryManagerMock = InitRegistryManager(managerInput, managerInput.Count);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -707,7 +709,8 @@ namespace LoRaWan.Tests.Integration
                     DevEUI = managerInput[i].DevEUI,
                     DevAddr = managerInput[i].DevAddr,
                     LastUpdatedTwins = dateTime,
-                    PrimaryKey = primaryKey
+                    PrimaryKey = primaryKey,
+                    GatewayId = oldGatewayId
                 });
             }
 
@@ -776,7 +779,7 @@ namespace LoRaWan.Tests.Integration
 
             var devAddrJoining = newValues[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = InitRegistryManager(newValues, newValues.Count);
+            var registryManagerMock = InitRegistryManager(newValues);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -864,7 +867,7 @@ namespace LoRaWan.Tests.Integration
             }
 
             // The cache start as empty
-            var registryManagerMock = InitRegistryManager(newValues, newValues.Count);
+            var registryManagerMock = InitRegistryManager(newValues);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
