@@ -23,7 +23,7 @@ namespace LoRaTools.CommonAPI
         public string DevAddrString
         {
             get => DevAddr.ToString();
-            set => DevAddr = LoRaWan.DevAddr.Parse(value);
+            set => DevAddr = DevAddr.Parse(value);
         }
 
         [JsonProperty("DevEUI")]
