@@ -236,27 +236,7 @@ namespace LoraKeysManagerFacade
                     if (!twin.Properties.Desired.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out DevAddr devAddr) &&
                         !twin.Properties.Reported.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out devAddr))
                     {
-                        if (!twin.Properties.Desired.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out DevAddr devAddr) &&
-                            !twin.Properties.Reported.TryRead(TwinPropertiesConstants.DevAddr, this.logger, out devAddr))
-                        {
-                            continue;
-                        }
-
-                        devAddrCacheInfos.Add(new DevAddrCacheInfo()
-                        {
-                            DevAddr = devAddr,
-                            DevEUI = DevEui.Parse(twin.DeviceId),
-                            GatewayId = twin.GetGatewayID(),
-                            NwkSKey = twin.GetNwkSKey(),
-                            LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
-                        });
-
-                        if (!isFullReload
-                            && twin.Properties.Desired.GetMetadata() is { LastUpdated: { } desiredUpdateTime }
-                            && twin.Properties.Reported.GetMetadata() is { LastUpdated: { } reportedUpdateTime })
-                        {
-                            lastDeltaUpdateFromCacheTicks = Math.Max(lastDeltaUpdateFromCacheTicks.Value, Math.Max(desiredUpdateTime.Ticks, reportedUpdateTime.Ticks));
-                        }
+                        continue;
                     }
 
                     devAddrCacheInfos.Add(new DevAddrCacheInfo()
@@ -267,6 +247,13 @@ namespace LoraKeysManagerFacade
                         NwkSKey = twin.GetNwkSKey(),
                         LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                     });
+
+                    if (!isFullReload
+                        && twin.Properties.Desired.GetMetadata() is { LastUpdated: { } desiredUpdateTime }
+                        && twin.Properties.Reported.GetMetadata() is { LastUpdated: { } reportedUpdateTime })
+                    {
+                        lastDeltaUpdateFromCacheTicks = Math.Max(lastDeltaUpdateFromCacheTicks.Value, Math.Max(desiredUpdateTime.Ticks, reportedUpdateTime.Ticks));
+                    }
                 }
             }
 
