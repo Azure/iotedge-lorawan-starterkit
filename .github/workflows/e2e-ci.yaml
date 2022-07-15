@@ -205,7 +205,7 @@ jobs:
     - name: Build Docker LoRaWanNetworkServer images
       run: |
         echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username  "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
-        docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerx64
+        docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
       working-directory: LoRaEngine
       env:
         CONTAINER_REGISTRY_ADDRESS: ${{ env.CONTAINER_REGISTRY_ADDRESS }}
@@ -213,7 +213,7 @@ jobs:
     # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
     - name: Build Docker LoRaWanBasicsStation images
       run: |
-        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CONTAINER_REGISTRY_ADDRESS }}
+        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CONTAINER_REGISTRY_ADDRESS }}
       working-directory: LoRaEngine
       env:
         CONTAINER_REGISTRY_ADDRESS: ${{ env.CONTAINER_REGISTRY_ADDRESS }}

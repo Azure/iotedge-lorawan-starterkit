@@ -270,8 +270,8 @@ namespace LoRaWan.NetworkServer
 
                 var joinAcceptBytes = loRaPayloadJoinAccept.Serialize(appKey);
 
+                // For join accept messages the RX1DROffsetvalue is ignored as the join accept message carry the settings to the device.
                 var rx1 = windowToUse is not ReceiveWindow2
-                        // For join accept messages the RX1DROffsetvalue is ignored as the join accept message carry the settings to the device.
                         ? new ReceiveWindow(loraRegion.GetDownstreamDataRate(request.RadioMetadata.DataRate), freq)
                         : (ReceiveWindow?)null;
 

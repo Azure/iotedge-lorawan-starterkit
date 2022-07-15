@@ -52,6 +52,7 @@ jobs:
       matrix:
         image:
           - arm32v7
+          - arm64v8
           - amd64
     defaults:
       run:
@@ -96,7 +97,7 @@ jobs:
       - name: Login to docker registry
         run: docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Create manifest list
-        run: docker manifest create ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}} ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-arm32v7  ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-amd64 --amend
+        run: docker manifest create ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}} ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-arm32v7  ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-amd64 ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-arm64v8 --amend
       - name: Push manifest
         run: docker manifest push ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}
 
