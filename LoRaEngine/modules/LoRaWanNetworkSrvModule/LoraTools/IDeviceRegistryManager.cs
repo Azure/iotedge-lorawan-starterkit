@@ -3,8 +3,11 @@
 
 namespace LoRaTools
 {
+    using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan;
     using Microsoft.Azure.Devices;
 
     public interface IDeviceRegistryManager
@@ -15,8 +18,12 @@ namespace LoRaTools
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, IDeviceTwin twin, string eTag, CancellationToken cancellationToken);
         Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, IDeviceTwin twin);
-        IQuery CreateQuery(string query);
-        IQuery CreateQuery(string query, int? pageSize);
+        Task<IEnumerable<IDeviceTwin>> GetEdgeDevicesAsync(CancellationToken token);
+        IRegistryPageResult<IDeviceTwin> GetAllLoRaDevices();
+        IRegistryPageResult<IDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime);
+        IRegistryPageResult<IDeviceTwin> FindLoRaDeviceByDevAddr(DevAddr someDevAddr);
+        IRegistryPageResult<string> FindLnsByNetworkId(string networkId);
+        IRegistryPageResult<IDeviceTwin> FindDeviceByDevEUI(DevEui devEUI);
         Task<Device> AddDeviceAsync(Device edgeGatewayDevice);
         Task<Module> AddModuleAsync(Module moduleToAdd);
         Task ApplyConfigurationContentOnDeviceAsync(string deviceName, ConfigurationContent deviceConfigurationContent);

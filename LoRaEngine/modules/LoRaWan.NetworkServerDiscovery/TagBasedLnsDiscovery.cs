@@ -98,12 +98,12 @@ namespace LoRaWan.NetworkServerDiscovery
                 $"{LnsByNetworkCacheKey}:{networkId}",
                 async _ =>
                 {
-                    var query = this.registryManager.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'");
+                    var query = this.registryManager.FindLnsByNetworkId(networkId);
                     var results = new List<Uri>();
                     var parseFailures = new List<string>();
                     while (query.HasMoreResults)
                     {
-                        var matches = await query.GetNextAsJsonAsync();
+                        var matches = await query.GetNextPageAsync();
 
                         var parseResult = matches.Select(hostAddressInfo => HostAddressReader.Read(hostAddressInfo)).ToList();
 

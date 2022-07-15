@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
+    using LoRaWan.Tests.Unit.IoTHubImpl;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -139,7 +140,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             if (isEdgeDevice)
             {
-                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
+                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoRaToolsConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
                     .Callback<string, string, CloudToDeviceMethod, CancellationToken>((device, methodName, method, _) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
                     .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
             }
@@ -176,7 +177,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoRaToolsConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.BadRequest });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -202,7 +203,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEui, preferredGateway);
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoRaToolsConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
                 .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -224,12 +225,16 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
-            query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new[] { new Twin() });
+            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            mockDeviceTwin.SetupGet(c => c.Properties)
+                           .Returns(new TwinProperties());
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            query.Setup(x => x.HasMoreResults).Returns(true);
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
+
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -251,12 +256,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
+            query.Setup(x => x.GetNextPageAsync())
                 .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -279,12 +284,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(Array.Empty<Twin>());
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(Array.Empty<IDeviceTwin>());
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -311,21 +316,21 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var devEui = new DevEui(123456789);
 
-            var deviceTwin = new Twin
-            {
-                Properties = new TwinProperties()
+            var mockDeviceTwin = new Mock<IDeviceTwin>();
+
+            mockDeviceTwin.SetupGet(c => c.Properties)
+                .Returns(new TwinProperties()
                 {
                     Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\"}}"),
                     Reported = new TwinCollection($"{{\"PreferredGatewayID\": \"gateway1\" }}"),
-                }
-            };
+                });
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new[] { deviceTwin });
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actualMessage = new LoRaCloudToDeviceMessage()
@@ -338,7 +343,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             if (isEdgeDevice)
             {
-                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
+                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoRaToolsConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
                     .Callback<string, string, CloudToDeviceMethod, CancellationToken>((device, methodName, method, _) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
                     .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
             }
@@ -380,21 +385,21 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(isEdgeDevice);
             var devEui = new DevEui(123456789);
 
-            var deviceTwin = new Twin
-            {
-                Properties = new TwinProperties()
+            var mockDeviceTwin = new Mock<IDeviceTwin>();
+
+            mockDeviceTwin.SetupGet(c => c.Properties)
+                .Returns(new TwinProperties()
                 {
                     Desired = new TwinCollection($"{{\"DevAddr\": \"{new DevAddr(100)}\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
                     Reported = new TwinCollection(),
-                }
-            };
+                });
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new[] { deviceTwin });
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actualMessage = new LoRaCloudToDeviceMessage()
@@ -406,7 +411,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             LoRaCloudToDeviceMessage receivedC2DMessage = null;
             if (isEdgeDevice)
             {
-                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
+                this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", LoRaToolsConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>(), default))
                     .Callback<string, string, CloudToDeviceMethod, CancellationToken>((device, methodName, method, _) => receivedC2DMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson()))
                     .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.OK });
             }
@@ -444,21 +449,21 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(0123456789);
             var devAddr = new DevAddr(03010101);
-            var deviceTwin = new Twin
-            {
-                Properties = new TwinProperties()
+            var mockDeviceTwin = new Mock<IDeviceTwin>();
+
+            mockDeviceTwin.SetupGet(c => c.Properties)
+                .Returns(new TwinProperties()
                 {
                     Desired = new TwinCollection($"{{\"DevAddr\": \"{devAddr}\", \"ClassType\": \"C\"}}"),
                     Reported = new TwinCollection(),
-                }
-            };
+                });
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new[] { deviceTwin });
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actualMessage = new LoRaCloudToDeviceMessage()
@@ -485,20 +490,20 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var deviceTwin = new Twin
-            {
-                Properties = new TwinProperties()
+            var mockDeviceTwin = new Mock<IDeviceTwin>();
+
+            mockDeviceTwin.SetupGet(c => c.Properties)
+                .Returns(new TwinProperties()
                 {
                     Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
-                }
-            };
+                });
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new[] { deviceTwin });
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actualMessage = new LoRaCloudToDeviceMessage()
@@ -540,20 +545,20 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var deviceTwin = new Twin
-            {
-                Properties = new TwinProperties()
+            var mockDeviceTwin = new Mock<IDeviceTwin>();
+
+            mockDeviceTwin.SetupGet(c => c.Properties)
+                .Returns(new TwinProperties()
                 {
                     Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
-                }
-            };
+                });
 
-            var query = new Mock<IQuery>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
-            query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new[] { deviceTwin });
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
 
-            this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
+            this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
 
             var actualMessage = new LoRaCloudToDeviceMessage()

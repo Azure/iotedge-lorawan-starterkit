@@ -110,18 +110,17 @@ namespace LoraKeysManagerFacade
                 return await SendMessageViaDirectMethodOrPubSubAsync(cachedPreferredGateway.GatewayID, devEUI, c2dMessage, cancellationToken);
             }
 
-            var queryText = $"SELECT * FROM devices WHERE deviceId = '{devEUI}'";
-            var query = this.registryManager.CreateQuery(queryText, 1);
+            var query = this.registryManager.FindDeviceByDevEUI(devEUI);
             if (query.HasMoreResults)
             {
-                IEnumerable<Twin> deviceTwins;
+                IEnumerable<IDeviceTwin> deviceTwins;
                 try
                 {
-                    deviceTwins = await query.GetNextAsTwinAsync();
+                    deviceTwins = await query.GetNextPageAsync();
                 }
                 catch (IotHubException ex)
                 {
-                    this.log.LogError(ex, "Failed to query devices with {query}", queryText);
+                    this.log.LogError(ex, "Failed to query devices");
                     return new ObjectResult("Failed to query devices") { StatusCode = (int)HttpStatusCode.InternalServerError };
                 }
 
@@ -173,7 +172,7 @@ namespace LoraKeysManagerFacade
                 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
                 message.MessageId = string.IsNullOrEmpty(c2dMessage.MessageId) ? Guid.NewGuid().ToString() : c2dMessage.MessageId;
 
-                // class a devices only listen for 1-2 seconds, so we send to a queue on the device - we don't care about this for redis 
+                // class a devices only listen for 1-2 seconds, so we send to a queue on the device - we don't care about this for redis
                 try
                 {
                     await this.serviceClient.SendAsync(devEUI.ToString(), message);
@@ -214,7 +213,7 @@ namespace LoraKeysManagerFacade
 
                 if (await edgeDeviceGetter.IsEdgeDeviceAsync(preferredGatewayID, cancellationToken))
                 {
-                    var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method, cancellationToken);
+                    var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoRaToolsConstants.NetworkServerModuleId, method, cancellationToken);
                     if (HttpUtilities.IsSuccessStatusCode(res.Status))
                     {
                         this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);

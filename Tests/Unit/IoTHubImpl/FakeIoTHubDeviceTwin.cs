@@ -15,7 +15,14 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
         public TwinCollection Tags => throw new NotImplementedException();
 
+        public string DeviceId => throw new NotImplementedException();
+
         public string GetGatewayID()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetNwkSKey()
         {
             throw new NotImplementedException();
         }

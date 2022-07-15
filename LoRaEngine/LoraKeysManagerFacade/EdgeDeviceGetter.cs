@@ -28,18 +28,11 @@ namespace LoraKeysManagerFacade
             this.logger = logger;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter. Kept here for future improvements of RegistryManager
-        private async Task<List<Twin>> GetEdgeDevicesAsync(CancellationToken cancellationToken)
-#pragma warning restore IDE0060 // Remove unused parameter
+        private async Task<IEnumerable<IDeviceTwin>> GetEdgeDevicesAsync(CancellationToken cancellationToken)
         {
             this.logger.LogDebug("Getting Azure IoT Edge devices");
-            var q = this.registryManager.CreateQuery($"SELECT * FROM devices.modules where moduleId = '{LoraKeysManagerFacadeConstants.NetworkServerModuleId}'");
-            var twins = new List<Twin>();
-            do
-            {
-                twins.AddRange(await q.GetNextAsTwinAsync());
-            } while (q.HasMoreResults);
-            return twins;
+
+            return await this.registryManager.GetEdgeDevicesAsync(cancellationToken);
         }
 
         public async Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken)

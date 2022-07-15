@@ -27,6 +27,8 @@ namespace LoRaTools.IoTHubImpl
 
         public string ETag => this.TwinInstance.ETag;
 
+        public string DeviceId => this.TwinInstance.DeviceId;
+
         public override bool Equals(object obj)
         {
             ArgumentNullException.ThrowIfNull(obj, nameof(obj));
@@ -42,6 +44,22 @@ namespace LoRaTools.IoTHubImpl
         public override int GetHashCode()
         {
             return TwinInstance.GetHashCode();
+        }
+
+        public string GetNwkSKey()
+        {
+            if (TwinInstance.Properties.Desired.TryRead(TwinPropertiesConstants.NwkSKey, null, out string nwkSKey))
+            {
+                return nwkSKey;
+            }
+            else if (TwinInstance.Properties.Reported.TryRead(TwinPropertiesConstants.NwkSKey, null, out nwkSKey))
+            {
+                return nwkSKey;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

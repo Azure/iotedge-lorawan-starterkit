@@ -207,14 +207,14 @@ namespace LoRaWan.Tests.Integration
 
         private void SetupIotHubQueryResponse(string networkId, IList<string> hostAddresses)
         {
-            var queryMock = new Mock<IQuery>();
+            var queryMock = new Mock<IRegistryPageResult<string>>();
             var i = 0;
             queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
-            queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
+            queryMock.Setup(q => q.GetNextPageAsync()).ReturnsAsync(from ha in hostAddresses
                                                                       select JsonSerializer.Serialize(new { hostAddress = ha, deviceId = Guid.NewGuid().ToString() }));
             this.subject
                 .RegistryManagerMock?
-                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Setup(rm => rm.FindLnsByNetworkId(networkId))
                 .Returns(queryMock.Object);
         }
 

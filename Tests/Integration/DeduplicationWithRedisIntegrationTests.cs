@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Integration
         {
             this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(isEdgeDevice);
             this.serviceClientMock.Setup(
-                x => x.InvokeDeviceMethodAsync(It.IsAny<string>(), LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>(), It.IsAny<CancellationToken>()))
+                x => x.InvokeDeviceMethodAsync(It.IsAny<string>(), LoRaToolsConstants.NetworkServerModuleId, It.IsAny<CloudToDeviceMethod>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = 200 });
 
             var devEUI = TestEui.GenerateDevEui();
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Integration
                 if (isEdgeDevice)
                 {
                     // gateway1 should be notified that it needs to drop connection for the device
-                    this.serviceClientMock.Verify(x => x.InvokeDeviceMethodAsync(gateway1, LoraKeysManagerFacadeConstants.NetworkServerModuleId,
+                    this.serviceClientMock.Verify(x => x.InvokeDeviceMethodAsync(gateway1, LoRaToolsConstants.NetworkServerModuleId,
                         It.Is<CloudToDeviceMethod>(m => m.MethodName == LoraKeysManagerFacadeConstants.CloudToDeviceCloseConnection
                         && m.GetPayloadAsJson().Contains(devEUI.ToString())), It.IsAny<CancellationToken>()));
                 }

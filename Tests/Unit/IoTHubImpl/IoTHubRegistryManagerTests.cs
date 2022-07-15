@@ -3,6 +3,9 @@
 
 namespace LoRaWan.Tests.Unit.IoTHubImpl
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools.IoTHubImpl;
@@ -141,54 +144,6 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             }
 
             // Assert
-            this.mockRepository.VerifyAll();
-        }
-
-        [Fact]
-        public void CreateQuery()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var query = "new query";
-                var mockQuery = this.mockRepository.Create<IQuery>();
-
-                this.mockRegistryManager.Setup(c => c.CreateQuery(
-                        It.Is<string>(x => x == query)))
-                    .Returns(mockQuery.Object);
-
-                // Act
-                var result = manager.CreateQuery(query);
-
-                // Assert
-                Assert.Equal(mockQuery.Object, result);
-            }
-
-            this.mockRepository.VerifyAll();
-        }
-
-        [Fact]
-        public void CreateQuery_WithPageSize()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var pageSize = 10;
-                var query = "new query";
-                var mockQuery = this.mockRepository.Create<IQuery>();
-
-                this.mockRegistryManager.Setup(c => c.CreateQuery(
-                        It.Is<string>(x => x == query),
-                        It.Is<int>(x => x == pageSize)))
-                    .Returns(mockQuery.Object);
-
-                // Act
-                var result = manager.CreateQuery(query, pageSize);
-
-                // Assert
-                Assert.Equal(mockQuery.Object, result);
-            }
-
             this.mockRepository.VerifyAll();
         }
 
@@ -399,6 +354,59 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
             // Assert
             this.mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GetEdgeDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+
+            var mockQuery = new Mock<IQuery>();
+            var twins = new List<Twin>()
+                {
+                    new Twin("edgeDevice") { Capabilities = new DeviceCapabilities() { IotEdge = true }},
+                };
+
+            mockQuery.Setup(x => x.GetNextAsTwinAsync())
+                .ReturnsAsync(twins);
+
+            mockRegistryManager
+                .Setup(x => x.CreateQuery(It.IsAny<string>()))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = await manager.GetEdgeDevicesAsync(CancellationToken.None);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("edgeDevice", result.First().DeviceId);
+        }
+
+        [Fact]
+        public async Task GetEdgeDevicesShouldThrowsAnExceptionIfCanceled()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            using var cancelationTokenSource = new CancellationTokenSource();
+
+            var mockQuery = new Mock<IQuery>();
+            var twins = new List<Twin>()
+                {
+                    new Twin("edgeDevice") { Capabilities = new DeviceCapabilities() { IotEdge = true }},
+                };
+
+            cancelationTokenSource.Cancel(true);
+
+            mockQuery.Setup(x => x.GetNextAsTwinAsync())
+                .ReturnsAsync(twins);
+
+            mockRegistryManager
+                .Setup(x => x.CreateQuery(It.IsAny<string>()))
+                .Returns(mockQuery.Object);
+
+            // Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() => manager.GetEdgeDevicesAsync(cancelationTokenSource.Token));
         }
     }
 }

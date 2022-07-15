@@ -171,11 +171,11 @@ namespace LoraKeysManagerFacade
                         // if the device is not found is the cache we query, if there was something, it is probably not our device.
                         if (results.Count == 0 && devAddressesInfo == null)
                         {
-                            var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{someDevAddr}' OR properties.reported.DevAddr ='{someDevAddr}'", 100);
+                            var query = this.registryManager.FindLoRaDeviceByDevAddr(someDevAddr);
                             var resultCount = 0;
                             while (query.HasMoreResults)
                             {
-                                var page = await query.GetNextAsTwinAsync();
+                                var page = await query.GetNextPageAsync();
 
                                 foreach (var twin in page)
                                 {
