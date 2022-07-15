@@ -9,6 +9,7 @@ namespace LoraKeysManagerFacade
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools;
     using LoRaTools.ADR;
+    using LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Azure;

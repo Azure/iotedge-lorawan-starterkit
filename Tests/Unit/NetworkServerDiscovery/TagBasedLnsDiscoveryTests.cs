@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools;
+    using global::LoRaTools.IoTHubImpl;
     using LoRaWan.NetworkServerDiscovery;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
@@ -204,7 +205,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
         {
             this.registryManagerMock
                 .Setup(rm => rm.GetTwinAsync(stationEui.ToString(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") });
+                .ReturnsAsync(new IoTHubDeviceTwin(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") }));
         }
 
         private void SetupIotHubQueryResponse(string networkId, IList<string?> hostAddresses)

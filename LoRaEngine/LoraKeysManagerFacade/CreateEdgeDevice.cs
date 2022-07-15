@@ -11,6 +11,7 @@ namespace LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.IoTHubImpl;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.Devices;
@@ -146,7 +147,7 @@ namespace LoraKeysManagerFacade
                 twin.Tags[NetworkTagName] = NetworkId;
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
-                _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
+                _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", new IoTHubDeviceTwin(twin), remoteTwin.ETag);
 
                 // Deploy concentrator
                 using var httpClient = this.httpClientFactory.CreateClient();
@@ -176,14 +177,14 @@ namespace LoraKeysManagerFacade
                     var otaaEndTwin = new Twin();
                     otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
                     var otaaRemoteTwin = _ = await this.registryManager.GetTwinAsync(OtaaDeviceId);
-                    _ = await this.registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
+                    _ = await this.registryManager.UpdateTwinAsync(OtaaDeviceId, new IoTHubDeviceTwin(otaaEndTwin), otaaRemoteTwin.ETag);
 
                     var abpDevice = new Device(AbpDeviceId);
                     _ = await this.registryManager.AddDeviceAsync(abpDevice);
                     var abpTwin = new Twin();
                     abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
                     var abpRemoteTwin = await this.registryManager.GetTwinAsync(AbpDeviceId);
-                    _ = await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
+                    _ = await this.registryManager.UpdateTwinAsync(AbpDeviceId, new IoTHubDeviceTwin(abpTwin), abpRemoteTwin.ETag);
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types. This will go away when we implement #242
