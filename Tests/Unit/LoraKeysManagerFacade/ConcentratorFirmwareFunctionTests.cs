@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Azure.Storage.Blobs.Models;
     using global::LoraKeysManagerFacade;
     using global::LoRaTools;
+    using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -75,7 +76,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 'fwSignature': '123'
             }}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                                .Returns(Task.FromResult(twin));
+                                .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
             using var blobContentStream = new MemoryStream(blobBytes);
@@ -115,7 +116,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 'fwSignature': '123'
             }}"));
             this.registryManager.Setup(m => m.GetTwinAsync("AnotherTwin", It.IsAny<CancellationToken>()))
-                                .Returns(Task.FromResult(twin));
+                                .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
             var result = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
@@ -150,7 +151,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'a': 'b'}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                                .Returns(Task.FromResult(twin));
+                                .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
@@ -176,7 +177,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 'fwSignature': '123'
             }}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                                .Returns(Task.FromResult(twin));
+                                .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
             var actual = await this.concentratorFirmware.RunFetchConcentratorFirmware(httpRequest.Object, CancellationToken.None);
 
@@ -203,7 +204,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 'fwSignature': '123'
             }}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                                .Returns(Task.FromResult(twin));
+                                .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
             this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<HttpRange>(),
                                                                 It.IsAny<BlobRequestConditions>(),

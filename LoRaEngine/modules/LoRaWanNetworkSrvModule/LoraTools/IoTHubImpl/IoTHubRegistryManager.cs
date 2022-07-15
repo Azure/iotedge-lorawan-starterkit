@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaTools
+namespace LoRaTools.IoTHubImpl
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
 
     public sealed class IoTHubRegistryManager : IDeviceRegistryManager, IDisposable
     {
@@ -29,7 +28,7 @@ namespace LoRaTools
 
         public Task<Device> AddDeviceAsync(Device edgeGatewayDevice) => this.instance.AddDeviceAsync(edgeGatewayDevice);
 
-        public Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin) => this.instance.AddDeviceWithTwinAsync(device, twin);
+        public Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, IDeviceTwin twin) => this.instance.AddDeviceWithTwinAsync(device, twin.ToIoTHubDeviceTwin());
 
         public Task<Module> AddModuleAsync(Module moduleToAdd) => this.instance.AddModuleAsync(moduleToAdd);
 
@@ -44,22 +43,22 @@ namespace LoRaTools
 
         public Task<Device> GetDeviceAsync(string deviceId) => this.instance.GetDeviceAsync(deviceId);
 
-        public Task<Twin> GetTwinAsync(string deviceId, CancellationToken cancellationToken)
-            => this.instance.GetTwinAsync(deviceId, cancellationToken);
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken cancellationToken)
+            => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken));
 
-        public Task<Twin> GetTwinAsync(string deviceName) => this.instance.GetTwinAsync(deviceName);
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceName) => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceName));
 
-        public Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, Twin deviceTwin, string eTag)
-            => this.instance.UpdateTwinAsync(deviceId, moduleId, deviceTwin, eTag);
+        public async Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag)
+            => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceId, moduleId, deviceTwin.ToIoTHubDeviceTwin(), eTag));
 
-        public Task<Twin> UpdateTwinAsync(string deviceId, Twin twin, string eTag, CancellationToken cancellationToken)
-            => this.instance.UpdateTwinAsync(deviceId, twin, eTag, cancellationToken);
+        public async Task<IDeviceTwin> UpdateTwinAsync(string deviceId, IDeviceTwin twin, string eTag, CancellationToken cancellationToken)
+            => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceId, twin.ToIoTHubDeviceTwin(), eTag, cancellationToken));
 
-        public Task<Twin> UpdateTwinAsync(string deviceName, Twin twin, string eTag)
-            => this.instance.UpdateTwinAsync(deviceName, twin, eTag);
+        public async Task<IDeviceTwin> UpdateTwinAsync(string deviceName, IDeviceTwin twin, string eTag)
+            => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceName, twin.ToIoTHubDeviceTwin(), eTag));
 
-        public Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, Twin deviceTwin, string eTag, CancellationToken cancellationToken)
-            => this.instance.UpdateTwinAsync(deviceId, moduleId, deviceTwin, eTag, cancellationToken);
+        public async Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag, CancellationToken cancellationToken)
+            => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceId, moduleId, deviceTwin.ToIoTHubDeviceTwin(), eTag, cancellationToken));
 
         public Task RemoveDeviceAsync(string deviceId)
             => this.instance.RemoveDeviceAsync(deviceId);

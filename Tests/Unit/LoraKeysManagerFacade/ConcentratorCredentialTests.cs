@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using global::LoraKeysManagerFacade;
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
+    using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -133,7 +134,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'key': 'value'}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                                .ReturnsAsync(twin);
+                                .ReturnsAsync(new IoTHubDeviceTwin(twin));
 
             var actual = await this.concentratorCredential.RunFetchConcentratorCredentials(httpRequest.Object, CancellationToken.None);
 
@@ -177,7 +178,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             return httpRequest;
         }
 
-        private static Twin SetupDeviceTwin()
+        private static IDeviceTwin SetupDeviceTwin()
         {
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
@@ -189,7 +190,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 'tcCredentialUrl': 'https://storage.blob.core.windows.net/container/blob'
             }}"));
 
-            return twin;
+            return new IoTHubDeviceTwin(twin);
         }
     }
 }

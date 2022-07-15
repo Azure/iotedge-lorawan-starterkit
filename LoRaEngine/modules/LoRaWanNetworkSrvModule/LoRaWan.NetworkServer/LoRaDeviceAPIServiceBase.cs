@@ -70,6 +70,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetAuthCode(string value) => AuthCode = value;
 
+        public abstract Task SendJoinNotificationAsync(DeviceJoinNotification deviceJoinNotification, CancellationToken token);
+
         public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(DevEui devEUI, FunctionBundlerRequest request);
 
         protected LoRaDeviceAPIServiceBase()

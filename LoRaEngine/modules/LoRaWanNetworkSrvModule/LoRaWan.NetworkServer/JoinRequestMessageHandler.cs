@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -23,6 +24,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly Counter<int> joinRequestCounter;
         private readonly ILogger<JoinRequestMessageHandler> logger;
+        private readonly LoRaDeviceAPIServiceBase apiService;
         private readonly Counter<int> receiveWindowHits;
         private readonly Counter<int> receiveWindowMisses;
         private readonly Counter<int> unhandledExceptionCount;
@@ -33,6 +35,7 @@ namespace LoRaWan.NetworkServer
                                          IConcentratorDeduplication concentratorDeduplication,
                                          ILoRaDeviceRegistry deviceRegistry,
                                          ILogger<JoinRequestMessageHandler> logger,
+                                         LoRaDeviceAPIServiceBase apiService,
                                          Meter meter)
         {
             this.configuration = configuration;
@@ -40,6 +43,7 @@ namespace LoRaWan.NetworkServer
             this.deviceRegistry = deviceRegistry;
             this.joinRequestCounter = meter?.CreateCounter<int>(MetricRegistry.JoinRequests);
             this.logger = logger;
+            this.apiService = apiService;
             this.receiveWindowHits = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowHits);
             this.receiveWindowMisses = meter?.CreateCounter<int>(MetricRegistry.ReceiveWindowMisses);
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
@@ -286,6 +290,14 @@ namespace LoRaWan.NetworkServer
 
                 this.receiveWindowHits?.Add(1, KeyValuePair.Create(MetricRegistry.ReceiveWindowTagName, (object)windowToUse));
                 _ = request.DownstreamMessageSender.SendDownstreamAsync(downlinkMessage);
+                _ = this.apiService.SendJoinNotificationAsync(new DeviceJoinNotification
+                {
+                    DevAddr = devAddr,
+                    DevEUI = devEui,
+                    GatewayId = loRaDevice.GatewayID,
+                    NwkSKey = nwkSKey
+                }, joinAcceptCancellationToken.Token);
+
                 request.NotifySucceeded(loRaDevice, downlinkMessage);
 
                 if (this.logger.IsEnabled(LogLevel.Debug))
