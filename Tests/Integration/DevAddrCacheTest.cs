@@ -152,6 +152,7 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
             var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = TestEui.GenerateDevEui(), DevAddr = CreateDevAddr() } };
             var registryManagerMock = InitRegistryManager(managerInput);
+            registryManagerMock.Setup(x => x.GetAllLoRaDevices()).Throws(new RedisException(string.Empty));
             await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
 
             // When doing a full update, the FullUpdateKey lock should be reset to 1min, the GlobalDevAddrUpdateKey should be gone
