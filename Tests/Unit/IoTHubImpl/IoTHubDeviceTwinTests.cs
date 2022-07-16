@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             // Arrange
             var twin = new Twin("device1");
             var device1 = new IoTHubDeviceTwin(twin);
-            IDeviceTwin device2 = new FakeIoTHubDeviceTwin();
+            IDeviceTwin device2 = new FakeIoTHubDeviceTwinTests();
 
             // Act
             var result = device1.Equals(device2);

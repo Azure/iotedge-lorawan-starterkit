@@ -5,9 +5,11 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -407,6 +409,97 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
             // Assert
             await Assert.ThrowsAsync<OperationCanceledException>(() => manager.GetEdgeDevicesAsync(cancelationTokenSource.Token));
+        }
+
+        [Fact]
+        public void GetAllLoRaDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)"))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.GetAllLoRaDevices();
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void GetLastUpdatedLoRaDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var mockQuery = new Mock<IQuery>();
+
+            var lastUpdateDateTime = DateTime.UtcNow;
+            var formattedDateTime = lastUpdateDateTime.ToString(LoRaToolsConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{formattedDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{formattedDateTime}'"))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.GetLastUpdatedLoRaDevices(lastUpdateDateTime);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void FindLoRaDeviceByDevAddr()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var someDevAddr = new DevAddr(123456789);
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{someDevAddr}' OR properties.reported.DevAddr ='{someDevAddr}'", It.IsAny<int?>()))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.FindLoRaDeviceByDevAddr(someDevAddr);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void FindLnsByNetworkId()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var networkId = "aaa";
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.FindLnsByNetworkId(networkId);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void FindDeviceByDevEUI()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var devEUI = new DevEui(123456789);
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices WHERE deviceId = '{devEUI}'", 1))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.FindDeviceByDevEUI(devEUI);
+
+            // Assert
+            Assert.NotNull(result);
         }
     }
 }

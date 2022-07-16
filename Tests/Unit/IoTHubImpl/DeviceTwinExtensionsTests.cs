@@ -40,7 +40,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         public void WhenDeviceTwinIsNotIoTHubDeviceTwinShouldThrowArgumentException()
         {
             // Arrange
-            IDeviceTwin deviceTwin = new FakeIoTHubDeviceTwin();
+            IDeviceTwin deviceTwin = new FakeIoTHubDeviceTwinTests();
 
             // Act
             Assert.Throws<ArgumentException>(() => deviceTwin.ToIoTHubDeviceTwin());
