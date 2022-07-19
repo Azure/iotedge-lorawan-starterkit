@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Common
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.CommonAPI;
+    using LoRaTools.IoTHubImpl;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Azure.Devices;
@@ -119,7 +120,7 @@ namespace LoRaWan.Tests.Common
             return this.registryManager ??= IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
         }
 
-        public async Task<Twin> GetTwinAsync(string deviceId)
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceId)
         {
             return await GetRegistryManager().GetTwinAsync(deviceId);
         }
@@ -386,7 +387,7 @@ namespace LoRaWan.Tests.Common
                     twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
 
                     TestLogger.Log($"Creating device {testDevice.DeviceID}");
-                    await registryManager.AddDeviceWithTwinAsync(device, twin);
+                    await registryManager.AddDeviceWithTwinAsync(device, new IoTHubDeviceTwin(twin));
                 }
                 else
                 {
@@ -414,7 +415,7 @@ namespace LoRaWan.Tests.Common
 
                             var patch = new Twin();
                             patch.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(desiredProperties));
-                            await registryManager.UpdateTwinAsync(testDevice.DeviceID, patch, deviceTwin.ETag);
+                            await registryManager.UpdateTwinAsync(testDevice.DeviceID, new IoTHubDeviceTwin(patch), deviceTwin.ETag);
                             TestLogger.Log($"Update twin for device {testDevice.DeviceID}");
                             break;
                         }

@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
     using LoRaTools;
+    using LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -55,7 +56,7 @@ namespace LoRaWan.Tests.Integration
 
             mockRegistryManager
                 .Setup(x => x.GetTwinAsync(It.IsNotNull<string>()))
-                .ReturnsAsync((string deviceId) => new Twin(deviceId));
+                .ReturnsAsync((string deviceId) => new IoTHubDeviceTwin(new Twin(deviceId)));
 
             var numberOfDevices = deviceIds.Count;
 
@@ -89,7 +90,7 @@ namespace LoRaWan.Tests.Integration
                             DeviceId = devaddrItem.DevEUI.Value.ToString(),
                             Properties = new TwinProperties()
                             {
-                                Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
+                                Desired = new TwinCollection($"{{\"{TwinPropertiesConstants.DevAddr}\": \"{devaddrItem.DevAddr}\", \"{TwinPropertiesConstants.GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
                                 Reported = new TwinCollection($"{{}}", $"{{\"$lastUpdated\": \"0001-01-01T00:00:00Z\"}}"),
                             }
                         };

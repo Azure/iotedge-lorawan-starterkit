@@ -17,6 +17,7 @@ namespace LoRaWan.Tests.E2E
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
@@ -77,10 +78,10 @@ namespace LoRaWan.Tests.E2E
             {
                 await this.registryManager.AddDeviceAsync(new Device(lns.DeviceId));
                 await this.registryManager.AddModuleAsync(new Module(lns.DeviceId, LnsModuleName));
-                var twin = new Twin(new TwinProperties { Desired = new TwinCollection(JsonSerializer.Serialize(new { hostAddress = lns.HostAddress })) })
+                var twin = new IoTHubDeviceTwin(new Twin(new TwinProperties { Desired = new TwinCollection(JsonSerializer.Serialize(new { hostAddress = lns.HostAddress })) })
                 {
                     Tags = GetNetworkTags(lns.NetworkId)
-                };
+                });
                 await this.registryManager.UpdateTwinAsync(lns.DeviceId, LnsModuleName, twin, "*", CancellationToken.None);
             }
 
@@ -88,7 +89,7 @@ namespace LoRaWan.Tests.E2E
             {
                 var deviceId = station.StationEui.ToString();
                 await this.registryManager.AddDeviceAsync(new Device(deviceId));
-                await this.registryManager.UpdateTwinAsync(deviceId, new Twin { Tags = GetNetworkTags(station.NetworkId) }, "*", CancellationToken.None);
+                await this.registryManager.UpdateTwinAsync(deviceId, new IoTHubDeviceTwin(new Twin { Tags = GetNetworkTags(station.NetworkId) }), "*", CancellationToken.None);
             }
 
             var waitTime = TimeSpan.FromSeconds(60);

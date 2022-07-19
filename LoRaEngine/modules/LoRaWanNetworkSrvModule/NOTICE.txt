@@ -3000,7 +3000,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-Microsoft.Extensions.Http.Polly 6.0.6 - MIT
+Microsoft.Extensions.Http.Polly 6.0.7 - MIT
 
 
 

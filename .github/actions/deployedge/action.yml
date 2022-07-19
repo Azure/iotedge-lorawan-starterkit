@@ -43,7 +43,8 @@ runs:
   - run: |
       $LBS_IMAGE_TAG=$(az acr repository show-tags --username ${{ env.CONTAINER_REGISTRY_USERNAME }} --password "${{ env.CONTAINER_REGISTRY_PASSWORD }}" --name ${{ env.CONTAINER_REGISTRY_ADDRESS }} --repository lorabasicsstation --orderby time_desc -o json | ConvertFrom-Json)[0]
       echo $LBS_IMAGE_TAG
-      $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-${{ inputs.architecture }}",'')
+      $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-arm32v7",'')
+      $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-arm64v8",'')
       echo $LBS_IMAGE_TAG
       echo "::set-env name=LBS_VERSION::$LBS_IMAGE_TAG"
     shell: pwsh
