@@ -221,6 +221,55 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         }
 
         [Fact]
+        public async Task GetLoRaDeviceTwinAsync_With_CancellationToken()
+        {
+            // Arrange
+            using (var manager = CreateManager())
+            {
+                var deviceId = "deviceid";
+                var cancellationToken = CancellationToken.None;
+                var twin = new Twin(deviceId);
+
+                this.mockRegistryManager.Setup(c => c.GetTwinAsync(
+                        It.Is<string>(x => x == deviceId),
+                        It.Is<CancellationToken>(x => x == cancellationToken)))
+                    .ReturnsAsync(twin);
+
+                // Act
+                var result = await manager.GetLoRaDeviceTwinAsync(deviceId, cancellationToken);
+
+                // Assert
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
+            }
+
+            this.mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GetLoRaDeviceTwinAsync()
+        {
+            // Arrange
+            using (var manager = CreateManager())
+            {
+                var deviceId = "deviceid";
+                var twin = new Twin(deviceId);
+
+                this.mockRegistryManager.Setup(c => c.GetTwinAsync(
+                        It.Is<string>(x => x == deviceId),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(twin);
+
+                // Act
+                var result = await manager.GetLoRaDeviceTwinAsync(deviceId);
+
+                // Assert
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
+            }
+
+            this.mockRepository.VerifyAll();
+        }
+
+        [Fact]
         public async Task UpdateTwinAsync_With_Module()
         {
             // Arrange
@@ -359,7 +408,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         }
 
         [Fact]
-        public async Task GetEdgeDevices()
+        public void GetEdgeDevices()
         {
             // Arrange
             using var manager = CreateManager();
@@ -378,37 +427,10 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 .Returns(mockQuery.Object);
 
             // Act
-            var result = await manager.GetEdgeDevicesAsync(CancellationToken.None);
+            var result = manager.GetEdgeDevices();
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal("edgeDevice", result.First().DeviceId);
-        }
-
-        [Fact]
-        public async Task GetEdgeDevicesShouldThrowsAnExceptionIfCanceled()
-        {
-            // Arrange
-            using var manager = CreateManager();
-            using var cancelationTokenSource = new CancellationTokenSource();
-
-            var mockQuery = new Mock<IQuery>();
-            var twins = new List<Twin>()
-                {
-                    new Twin("edgeDevice") { Capabilities = new DeviceCapabilities() { IotEdge = true }},
-                };
-
-            cancelationTokenSource.Cancel(true);
-
-            mockQuery.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(twins);
-
-            mockRegistryManager
-                .Setup(x => x.CreateQuery(It.IsAny<string>()))
-                .Returns(mockQuery.Object);
-
-            // Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(() => manager.GetEdgeDevicesAsync(cancelationTokenSource.Token));
+            Assert.NotNull(result);
         }
 
         [Fact]

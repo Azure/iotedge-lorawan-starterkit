@@ -3,7 +3,6 @@
 
 namespace LoRaTools.IoTHubImpl
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
@@ -21,17 +20,5 @@ namespace LoRaTools.IoTHubImpl
         }
 
         public abstract Task<IEnumerable<TResultType>> GetNextPageAsync();
-
-        protected virtual void Dispose(bool disposing)
-        {
-
-        }
-
-        public void Dispose()
-        {
-            this.Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
     }
 }

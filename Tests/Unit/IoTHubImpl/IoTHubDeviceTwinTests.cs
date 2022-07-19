@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             var twin = new Twin();
             twin.Properties.Desired = twinCollection;
 
-            var ioTHubDeviceTwin = new IoTHubDeviceTwin(twin);
+            var ioTHubDeviceTwin = new IoTHubLoRaDeviceTwin(twin);
 
             // Act
             var result = ioTHubDeviceTwin.GetGatewayID();
@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             var twin = new Twin();
             twin.Properties.Desired = twinCollection;
 
-            var ioTHubDeviceTwin = new IoTHubDeviceTwin(twin);
+            var ioTHubDeviceTwin = new IoTHubLoRaDeviceTwin(twin);
 
             // Act
             var result = ioTHubDeviceTwin.GetGatewayID();

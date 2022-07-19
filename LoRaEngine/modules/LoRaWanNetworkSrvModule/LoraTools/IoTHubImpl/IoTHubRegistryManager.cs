@@ -4,9 +4,7 @@
 namespace LoRaTools.IoTHubImpl
 {
     using System;
-    using System.Collections.Generic;
     using System.Globalization;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan;
@@ -63,39 +61,29 @@ namespace LoRaTools.IoTHubImpl
         public Task RemoveDeviceAsync(string deviceId)
             => this.instance.RemoveDeviceAsync(deviceId);
 
-        public async Task<IEnumerable<IDeviceTwin>> GetEdgeDevicesAsync(CancellationToken token)
+        public IRegistryPageResult<IDeviceTwin> GetEdgeDevices()
         {
             var q = this.instance.CreateQuery($"SELECT * FROM devices.modules where moduleId = '{LoRaToolsConstants.NetworkServerModuleId}'");
-            var twins = new List<IDeviceTwin>();
-
-            do
-            {
-                token.ThrowIfCancellationRequested();
-
-                var items = await q.GetNextAsTwinAsync();
-                twins.AddRange(items.Select(c => new IoTHubDeviceTwin(c)));
-            } while (q.HasMoreResults);
-
-            return twins;
+            return new IoTHubDeviceTwinPageResult(q);
         }
 
-        public IRegistryPageResult<IDeviceTwin> GetAllLoRaDevices()
+        public IRegistryPageResult<ILoRaDeviceTwin> GetAllLoRaDevices()
         {
             var q = this.instance.CreateQuery("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)");
-            return new DeviceTwinPageResult(q);
+            return new IoTHubLoRaDeviceTwinPageResult(q);
         }
 
-        public IRegistryPageResult<IDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime)
+        public IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime)
         {
             var formattedDateTime = lastUpdateDateTime.ToString(LoRaToolsConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
             var q = this.instance.CreateQuery($"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{formattedDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{formattedDateTime}'");
-            return new DeviceTwinPageResult(q);
+            return new IoTHubLoRaDeviceTwinPageResult(q);
         }
 
-        public IRegistryPageResult<IDeviceTwin> FindLoRaDeviceByDevAddr(DevAddr someDevAddr)
+        public IRegistryPageResult<ILoRaDeviceTwin> FindLoRaDeviceByDevAddr(DevAddr someDevAddr)
         {
             var q = this.instance.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{someDevAddr}' OR properties.reported.DevAddr ='{someDevAddr}'", 100);
-            return new DeviceTwinPageResult(q);
+            return new IoTHubLoRaDeviceTwinPageResult(q);
         }
 
         public IRegistryPageResult<string> FindLnsByNetworkId(string networkId)
@@ -104,10 +92,16 @@ namespace LoRaTools.IoTHubImpl
             return new JsonPageResult(q);
         }
 
-        public IRegistryPageResult<IDeviceTwin> FindDeviceByDevEUI(DevEui devEUI)
+        public IRegistryPageResult<ILoRaDeviceTwin> FindDeviceByDevEUI(DevEui devEUI)
         {
             var q = this.instance.CreateQuery($"SELECT * FROM devices WHERE deviceId = '{devEUI}'", 1);
-            return new DeviceTwinPageResult(q);
+            return new IoTHubLoRaDeviceTwinPageResult(q);
         }
+
+        public async Task<ILoRaDeviceTwin> GetLoRaDeviceTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
+             => new IoTHubLoRaDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None));
+
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
+             => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None));
     }
 }

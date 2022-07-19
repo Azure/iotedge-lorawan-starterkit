@@ -225,11 +225,11 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
             mockDeviceTwin.SetupGet(c => c.Properties)
                            .Returns(new TwinProperties());
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });
@@ -256,7 +256,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ThrowsAsync(new IotHubCommunicationException(string.Empty));
@@ -284,10 +284,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
-                .ReturnsAsync(Array.Empty<IDeviceTwin>());
+                .ReturnsAsync(Array.Empty<ILoRaDeviceTwin>());
 
             this.registryManager.Setup(x => x.FindDeviceByDevEUI(It.IsNotNull<DevEui>()))
                 .Returns(query.Object);
@@ -316,7 +316,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var devEui = new DevEui(123456789);
 
-            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
             mockDeviceTwin.SetupGet(c => c.Properties)
                 .Returns(new TwinProperties()
@@ -325,7 +325,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                     Reported = new TwinCollection($"{{\"PreferredGatewayID\": \"gateway1\" }}"),
                 });
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });
@@ -385,7 +385,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.edgeDeviceGetter.Setup(m => m.IsEdgeDeviceAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(isEdgeDevice);
             var devEui = new DevEui(123456789);
 
-            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
             mockDeviceTwin.SetupGet(c => c.Properties)
                 .Returns(new TwinProperties()
@@ -394,7 +394,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                     Reported = new TwinCollection(),
                 });
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });
@@ -449,7 +449,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(0123456789);
             var devAddr = new DevAddr(03010101);
-            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
             mockDeviceTwin.SetupGet(c => c.Properties)
                 .Returns(new TwinProperties()
@@ -458,7 +458,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                     Reported = new TwinCollection(),
                 });
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });
@@ -490,7 +490,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
             mockDeviceTwin.SetupGet(c => c.Properties)
                 .Returns(new TwinProperties()
@@ -498,7 +498,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                     Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
                 });
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });
@@ -545,7 +545,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         {
             var devEui = new DevEui(123456789);
 
-            var mockDeviceTwin = new Mock<IDeviceTwin>();
+            var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
             mockDeviceTwin.SetupGet(c => c.Properties)
                 .Returns(new TwinProperties()
@@ -553,7 +553,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                     Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
                 });
 
-            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
+            var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });

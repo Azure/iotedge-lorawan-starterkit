@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
@@ -43,7 +44,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             Assert.False(await edgeDeviceGetter.IsEdgeDeviceAsync("anotherDevice", default));
             Assert.False(await edgeDeviceGetter.IsEdgeDeviceAsync("anotherDevice", default));
 
-            this.mockRegistryManager.Verify(x => x.GetEdgeDevicesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            this.mockRegistryManager.Verify(x => x.GetEdgeDevices(), Times.Once);
         }
 
         [Fact]
@@ -60,9 +61,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
         public async Task ListEdgeDevicesAsync_Returns_Empty_Device_List()
         {
             this.mockRegistryManager = new Mock<IDeviceRegistryManager>();
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
 
-            this.mockRegistryManager.Setup(c => c.GetEdgeDevicesAsync(It.IsAny<CancellationToken>()))
+            query.Setup(x => x.HasMoreResults).Returns(true);
+            query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(Array.Empty<IDeviceTwin>());
+
+            this.mockRegistryManager.Setup(c => c.GetEdgeDevices())
+                .Returns(query.Object);
 
             var edgeDeviceGetter = new EdgeDeviceGetter(this.mockRegistryManager.Object, new LoRaInMemoryDeviceStore(), NullLogger<EdgeDeviceGetter>.Instance);
 
@@ -77,14 +83,14 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var mockDeviceTwin = new Mock<IDeviceTwin>();
             mockDeviceTwin.SetupGet(c => c.DeviceId).Returns(EdgeDevice1);
+            var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
 
-            var twins = new List<IDeviceTwin>()
-            {
-                mockDeviceTwin.Object
-            };
+            query.Setup(x => x.HasMoreResults).Returns(true);
+            query.Setup(x => x.GetNextPageAsync())
+                .ReturnsAsync(new[] { mockDeviceTwin.Object });
 
-            mockRegistryManager.Setup(c => c.GetEdgeDevicesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(twins);
+            mockRegistryManager.Setup(c => c.GetEdgeDevices())
+                .Returns(query.Object);
 
             return mockRegistryManager.Object;
         }

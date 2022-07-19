@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using Moq;
     using Xunit;
 
-    public class IoTHubRegistryPageResultTests
+    public class IoTHubDeviceTwinPageResultTets
     {
         [Theory]
         [InlineData(false)]
@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             mockQuery.SetupGet(c => c.HasMoreResults)
                 .Returns(expectedResult);
 
-            using var instance = new DeviceTwinPageResult(mockQuery.Object);
+            var instance = new IoTHubDeviceTwinPageResult(mockQuery.Object);
 
             // Assert
             Assert.Equal(expectedResult, instance.HasMoreResults);
@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     new Twin("22222")
                 });
 
-            using var instance = new DeviceTwinPageResult(mockQuery.Object);
+            var instance = new IoTHubDeviceTwinPageResult(mockQuery.Object);
 
             // Act
             var result = await instance.GetNextPageAsync();

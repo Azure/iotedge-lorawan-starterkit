@@ -14,9 +14,5 @@ namespace LoRaTools
         TwinCollection Tags { get; }
 
         string DeviceId { get; }
-
-        string GetGatewayID();
-
-        string GetNwkSKey();
     }
 }

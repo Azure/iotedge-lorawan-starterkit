@@ -20,11 +20,6 @@ namespace LoRaTools.IoTHubImpl
             this.TwinInstance = twin;
         }
 
-        public string GetGatewayID()
-            => TwinInstance.Properties.Desired.TryRead<string>(TwinPropertiesConstants.GatewayID, null, out var someGatewayId)
-             ? someGatewayId
-             : string.Empty;
-
         public string ETag => this.TwinInstance.ETag;
 
         public string DeviceId => this.TwinInstance.DeviceId;
@@ -44,22 +39,6 @@ namespace LoRaTools.IoTHubImpl
         public override int GetHashCode()
         {
             return TwinInstance.GetHashCode();
-        }
-
-        public string GetNwkSKey()
-        {
-            if (TwinInstance.Properties.Desired.TryRead(TwinPropertiesConstants.NwkSKey, null, out string nwkSKey))
-            {
-                return nwkSKey;
-            }
-            else if (TwinInstance.Properties.Reported.TryRead(TwinPropertiesConstants.NwkSKey, null, out nwkSKey))
-            {
-                return nwkSKey;
-            }
-            else
-            {
-                return null;
-            }
         }
     }
 }

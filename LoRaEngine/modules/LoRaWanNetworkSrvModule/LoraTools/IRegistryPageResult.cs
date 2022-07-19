@@ -3,11 +3,10 @@
 
 namespace LoRaTools
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    public interface IRegistryPageResult<TResult> : IDisposable
+    public interface IRegistryPageResult<TResult>
     {
         Task<IEnumerable<TResult>> GetNextPageAsync();
 

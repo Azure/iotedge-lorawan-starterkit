@@ -9,6 +9,7 @@ namespace LoraKeysManagerFacade
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
@@ -31,8 +32,17 @@ namespace LoraKeysManagerFacade
         private async Task<IEnumerable<IDeviceTwin>> GetEdgeDevicesAsync(CancellationToken cancellationToken)
         {
             this.logger.LogDebug("Getting Azure IoT Edge devices");
+            var twins = new List<IDeviceTwin>();
+            var query = this.registryManager.GetEdgeDevices();
 
-            return await this.registryManager.GetEdgeDevicesAsync(cancellationToken);
+            do
+            {
+                var items = await query.GetNextPageAsync();
+
+                twins.AddRange(items);
+            } while (query.HasMoreResults || !cancellationToken.IsCancellationRequested);
+
+            return twins;
         }
 
         public async Task<bool> IsEdgeDeviceAsync(string lnsId, CancellationToken cancellationToken)

@@ -222,13 +222,13 @@ namespace LoraKeysManagerFacade
             BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
 
-        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IRegistryPageResult<IDeviceTwin> results, long? lastDeltaUpdateFromCacheTicks)
+        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IRegistryPageResult<ILoRaDeviceTwin> query, long? lastDeltaUpdateFromCacheTicks)
         {
             var isFullReload = lastDeltaUpdateFromCacheTicks is null;
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
-            while (results.HasMoreResults)
+            while (query.HasMoreResults)
             {
-                var page = await results.GetNextPageAsync();
+                var page = await query.GetNextPageAsync();
 
                 foreach (var twin in page.Where(twin => twin.DeviceId != null))
                 {
