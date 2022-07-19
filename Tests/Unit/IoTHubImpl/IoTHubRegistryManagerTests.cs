@@ -458,7 +458,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             var mockQuery = new Mock<IQuery>();
 
             var lastUpdateDateTime = DateTime.UtcNow;
-            var formattedDateTime = lastUpdateDateTime.ToString(LoRaToolsConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+            var formattedDateTime = lastUpdateDateTime.ToString(Constants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
 
             mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{formattedDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{formattedDateTime}'"))
                 .Returns(mockQuery.Object);

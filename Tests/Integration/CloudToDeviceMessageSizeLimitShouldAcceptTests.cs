@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Integration
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 - upstreamMessageMacCommandSize
-                - Constants.LoraProtocolOverheadSize;
+                - NetworkServer.Constants.LoraProtocolOverheadSize;
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 

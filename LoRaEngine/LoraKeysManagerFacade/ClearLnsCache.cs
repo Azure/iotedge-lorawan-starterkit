@@ -80,7 +80,7 @@ namespace LoraKeysManagerFacade
             //Reason why the yield is needed is to avoid any potential "synchronous" code that might fail the publishing of a message on the pub/sub channel
             await Task.Yield();
             var res = await this.serviceClient.InvokeDeviceMethodAsync(lnsId,
-                                                                       LoRaToolsConstants.NetworkServerModuleId,
+                                                                       Constants.NetworkServerModuleId,
                                                                        new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.ClearCacheMethodName),
                                                                        cancellationToken);
             if (HttpUtilities.IsSuccessStatusCode(res.Status))

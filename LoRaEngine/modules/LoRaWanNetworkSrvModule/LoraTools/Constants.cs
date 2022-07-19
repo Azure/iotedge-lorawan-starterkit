@@ -3,7 +3,7 @@
 
 namespace LoRaTools
 {
-    public static class LoRaToolsConstants
+    public static class Constants
     {
         public const string NetworkServerModuleId = "LoRaWanNetworkSrvModule";
         public const string RoundTripDateTimeStringFormat = "o";

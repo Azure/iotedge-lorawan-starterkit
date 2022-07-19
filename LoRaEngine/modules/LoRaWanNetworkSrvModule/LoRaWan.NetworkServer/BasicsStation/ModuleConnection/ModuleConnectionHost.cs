@@ -95,15 +95,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 // Mapping via the constants for backwards compatibility.
                 LnsRemoteCall lnsRemoteCall;
-                if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(NetworkServer.Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     lnsRemoteCall = new LnsRemoteCall(RemoteCallKind.ClearCache, null);
                 }
-                else if (string.Equals(Constants.CloudToDeviceCloseConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(NetworkServer.Constants.CloudToDeviceCloseConnection, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     lnsRemoteCall = new LnsRemoteCall(RemoteCallKind.CloseConnection, methodRequest.DataAsJson);
                 }
-                else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(NetworkServer.Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     lnsRemoteCall = new LnsRemoteCall(RemoteCallKind.CloudToDeviceMessage, methodRequest.DataAsJson);
                 }
@@ -155,7 +155,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             var reader = new TwinCollectionReader(desiredProperties, this.logger);
 
-            if (reader.TryRead<int>(Constants.ProcessingDelayKey, out var processingDelay))
+            if (reader.TryRead<int>(NetworkServer.Constants.ProcessingDelayKey, out var processingDelay))
             {
                 if (processingDelay >= 0)
                 {
@@ -165,16 +165,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 else
                 {
                     this.logger.LogError("Processing delay for LNS was set to an invalid value {ProcessingDelay}, " +
-                        "using default delay of {DefaultDelay} ms", processingDelay, Constants.DefaultProcessingDelayInMilliseconds);
+                        "using default delay of {DefaultDelay} ms", processingDelay, NetworkServer.Constants.DefaultProcessingDelayInMilliseconds);
                 }
             }
 
-            if (reader.TryRead<string>(Constants.FacadeServerUrlKey, out var faceServerUrl))
+            if (reader.TryRead<string>(NetworkServer.Constants.FacadeServerUrlKey, out var faceServerUrl))
             {
                 if (Uri.TryCreate(faceServerUrl, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
                 {
                     this.loRaDeviceAPIService.URL = url;
-                    if (reader.TryRead<string>(Constants.FacadeServerAuthCodeKey, out var authCode))
+                    if (reader.TryRead<string>(NetworkServer.Constants.FacadeServerAuthCodeKey, out var authCode))
                     {
                         this.loRaDeviceAPIService.SetAuthCode(authCode);
                     }

@@ -63,7 +63,7 @@ namespace LoRaTools.IoTHubImpl
 
         public IRegistryPageResult<IDeviceTwin> GetEdgeDevices()
         {
-            var q = this.instance.CreateQuery($"SELECT * FROM devices.modules where moduleId = '{LoRaToolsConstants.NetworkServerModuleId}'");
+            var q = this.instance.CreateQuery($"SELECT * FROM devices.modules where moduleId = '{Constants.NetworkServerModuleId}'");
             return new IoTHubDeviceTwinPageResult(q);
         }
 
@@ -75,7 +75,7 @@ namespace LoRaTools.IoTHubImpl
 
         public IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime)
         {
-            var formattedDateTime = lastUpdateDateTime.ToString(LoRaToolsConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+            var formattedDateTime = lastUpdateDateTime.ToString(Constants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
             var q = this.instance.CreateQuery($"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{formattedDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{formattedDateTime}'");
             return new IoTHubLoRaDeviceTwinPageResult(q);
         }

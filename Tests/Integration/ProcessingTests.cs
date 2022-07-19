@@ -499,10 +499,10 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(payloadFcnt, loRaDeviceInfo.FCntUp);
 
             Assert.NotNull(actualProperties);
-            Assert.True(actualProperties.ContainsKey(Constants.C2D_MSG_PROPERTY_VALUE_NAME));
+            Assert.True(actualProperties.ContainsKey(NetworkServer.Constants.C2D_MSG_PROPERTY_VALUE_NAME));
 
             if (msgId == null)
-                Assert.True(actualProperties.ContainsValue(Constants.C2D_MSG_ID_PLACEHOLDER));
+                Assert.True(actualProperties.ContainsValue(NetworkServer.Constants.C2D_MSG_ID_PLACEHOLDER));
             else
                 Assert.True(actualProperties.ContainsValue(msgId));
         }
@@ -1322,14 +1322,14 @@ namespace LoRaWan.Tests.Integration
             }
             else
             {
-                Assert.Equal(simulatedDevice1.FrmCntDown + Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(simulatedDevice1.FrmCntDown + NetworkServer.Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
 
             Assert.True(DeviceCache.TryGetByDevEui(simulatedDevice2.DevEUI, out var loRaDevice2));
             Assert.Equal(simulatedDevice2.FrmCntUp, loRaDevice2.FCntUp);
-            Assert.Equal(simulatedDevice2.FrmCntDown + Constants.MaxFcntUnsavedDelta - 1U, loRaDevice2.FCntDown);
+            Assert.Equal(simulatedDevice2.FrmCntDown + NetworkServer.Constants.MaxFcntUnsavedDelta - 1U, loRaDevice2.FCntDown);
 
             deviceClient1.VerifyAll();
             deviceClient2.VerifyAll();
@@ -1430,7 +1430,7 @@ namespace LoRaWan.Tests.Integration
             }
             else
             {
-                Assert.Equal(Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(NetworkServer.Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);

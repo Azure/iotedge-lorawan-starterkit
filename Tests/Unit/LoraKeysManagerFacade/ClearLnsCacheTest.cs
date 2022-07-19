@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             foreach (var edgeDevice in listEdgeDevices)
             {
                 this.serviceClient.Verify(c => c.InvokeDeviceMethodAsync(edgeDevice,
-                                                                    LoRaToolsConstants.NetworkServerModuleId,
+                                                                    Constants.NetworkServerModuleId,
                                                                     It.Is<CloudToDeviceMethod>(c => c.MethodName == LoraKeysManagerFacadeConstants.ClearCacheMethodName),
                                                                     It.IsAny<CancellationToken>()), Times.Once());
             }
