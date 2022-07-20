@@ -149,9 +149,3 @@ dotnet_diagnostic.CA2254.severity = suggestion
 
 # Extract strings to resource table (the solution will not be localized).
 dotnet_diagnostic.CA1303.severity = none
-
-# Use compound assignment
-dotnet_diagnostic.IDE0074.severity = suggestion
-
-# Nullable directive is redundant
-dotnet_diagnostic.IDE0240.severity = suggestion

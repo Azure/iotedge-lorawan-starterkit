@@ -40,7 +40,7 @@ namespace LoraKeysManagerFacade
                 var items = await query.GetNextPageAsync();
 
                 twins.AddRange(items);
-            } while (query.HasMoreResults || !cancellationToken.IsCancellationRequested);
+            } while (query.HasMoreResults && !cancellationToken.IsCancellationRequested);
 
             return twins;
         }

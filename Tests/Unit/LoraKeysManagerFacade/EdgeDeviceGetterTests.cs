@@ -63,7 +63,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.mockRegistryManager = new Mock<IDeviceRegistryManager>();
             var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
 
-            query.Setup(x => x.HasMoreResults).Returns(true);
+            query.Setup(x => x.HasMoreResults).Returns(false);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(Array.Empty<IDeviceTwin>());
 
@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             mockDeviceTwin.SetupGet(c => c.DeviceId).Returns(EdgeDevice1);
             var query = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
 
-            query.Setup(x => x.HasMoreResults).Returns(true);
+            query.Setup(x => x.HasMoreResults).Returns(false);
             query.Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(new[] { mockDeviceTwin.Object });
 

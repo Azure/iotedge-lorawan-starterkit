@@ -56,13 +56,13 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync((string deviceId) => new Device(deviceId) { Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } } });
 
             mockRegistryManager
-                .Setup(x => x.GetTwinAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string deviceId) => new IoTHubDeviceTwin(new Twin(deviceId)));
+                .Setup(x => x.GetTwinAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken?>()))
+                .ReturnsAsync((string deviceId, CancellationToken _) => new IoTHubLoRaDeviceTwin(new Twin(deviceId)));
 
             var numberOfDevices = deviceIds.Count;
 
             // mock Page Result
-            var mockPageResult = new Mock<IRegistryPageResult<IDeviceTwin>>();
+            var mockPageResult = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>();
 
             // we only want to run hasmoreresult once
             mockPageResult
@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(() =>
                 {
                     var devAddressesToConsider = currentDevAddrContext;
-                    var twins = new List<IDeviceTwin>();
+                    var twins = new List<ILoRaDeviceTwin>();
                     foreach (var devaddrItem in devAddressesToConsider)
                     {
                         var deviceTwin = new Twin
@@ -96,7 +96,7 @@ namespace LoRaWan.Tests.Integration
                             }
                         };
 
-                        twins.Add(new IoTHubDeviceTwin(deviceTwin));
+                        twins.Add(new IoTHubLoRaDeviceTwin(deviceTwin));
                     }
 
                     return twins;
