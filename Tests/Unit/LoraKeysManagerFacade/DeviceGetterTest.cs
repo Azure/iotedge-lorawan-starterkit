@@ -42,8 +42,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
                 .ReturnsAsync((string deviceId) => new Device(deviceId) { Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } } });
 
             mockRegistryManager
-                .Setup(x => x.GetLoRaDeviceTwinAsync(It.Is(devEui.ToString(), StringComparer.Ordinal), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string deviceId) => new IoTHubLoRaDeviceTwin (new Twin(deviceId)));
+                .Setup(x => x.GetLoRaDeviceTwinAsync(It.Is(devEui.ToString(), StringComparer.Ordinal), It.IsAny<CancellationToken?>()))
+                .ReturnsAsync((string deviceId, CancellationToken _) => new IoTHubLoRaDeviceTwin (new Twin(deviceId)));
 
             return mockRegistryManager.Object;
         }
