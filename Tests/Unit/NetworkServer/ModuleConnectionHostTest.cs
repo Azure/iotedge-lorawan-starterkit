@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(1000)]
         public async Task On_Desired_Properties_Correct_Update_Should_Update_Processing_Delay(int processingDelay)
         {
-            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            Assert.Equal(LoRaWan.NetworkServer.Constants.DefaultProcessingDelayInMilliseconds, this.networkServerConfiguration.ProcessingDelayInMilliseconds);
 
             var input = JsonSerializer.Serialize(new
             {
@@ -133,7 +133,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update_Processing_Delay(string twinUpdate)
         {
             await this.subject.OnDesiredPropertiesUpdate(new TwinCollection(twinUpdate), null);
-            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            Assert.Equal(LoRaWan.NetworkServer.Constants.DefaultProcessingDelayInMilliseconds, this.networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Fact]
@@ -212,7 +212,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
             await this.subject.CreateAsync(CancellationToken.None);
-            Assert.Equal(Constants.DefaultProcessingDelayInMilliseconds, networkServerConfiguration.ProcessingDelayInMilliseconds);
+            Assert.Equal(LoRaWan.NetworkServer.Constants.DefaultProcessingDelayInMilliseconds, this.networkServerConfiguration.ProcessingDelayInMilliseconds);
         }
 
         [Fact]
@@ -230,7 +230,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [Fact]
         public async Task OnDirectMethodCall_Should_Invoke_ClearCache()
         {
-            await this.subject.OnDirectMethodCalled(new MethodRequest(Constants.CloudToDeviceClearCache), null);
+            await this.subject.OnDirectMethodCalled(new MethodRequest(LoRaWan.NetworkServer.Constants.CloudToDeviceClearCache), null);
             this.lnsRemoteCall.Verify(l => l.ExecuteAsync(new LnsRemoteCall(RemoteCallKind.ClearCache, null), CancellationToken.None), Times.Once);
         }
 
@@ -239,7 +239,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             var json = @"{""foo"":""bar""}";
-            var methodRequest = new MethodRequest(Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(json));
+            var methodRequest = new MethodRequest(LoRaWan.NetworkServer.Constants.CloudToDeviceCloseConnection, Encoding.UTF8.GetBytes(json));
 
             // act
             await this.subject.OnDirectMethodCalled(methodRequest, null);
@@ -253,7 +253,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             var json = @"{""foo"":""bar""}";
-            var methodRequest = new MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(json));
+            var methodRequest = new MethodRequest(LoRaWan.NetworkServer.Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(json));
 
             // act
             await this.subject.OnDirectMethodCalled(methodRequest, null);

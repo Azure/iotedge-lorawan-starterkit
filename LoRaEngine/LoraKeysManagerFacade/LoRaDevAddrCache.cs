@@ -196,8 +196,8 @@ namespace LoraKeysManagerFacade
         /// </summary>
         private async Task PerformFullReload(IDeviceRegistryManager registryManager)
         {
-            var query = $"SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)";
-            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query, null);
+            var query = registryManager.GetAllLoRaDevices();
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(query, null);
             BulkSaveDevAddrCache(devAddrCacheInfos, true);
         }
 
@@ -216,20 +216,19 @@ namespace LoraKeysManagerFacade
         {
             // if the value is null (first call), we take updates from one hour before this call
             var lastUpdate = long.TryParse(this.cacheStore.StringGet(LastDeltaUpdateKeyValue), out var cachedTicks) ? cachedTicks : DateTime.UtcNow.AddHours(-1).Ticks;
-            var lastUpdateDateTime = new DateTime(lastUpdate, DateTimeKind.Utc).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
-            var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdateDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdateDateTime}'";
-            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query, lastUpdate);
+            var lastUpdateDateTime = new DateTime(lastUpdate, DateTimeKind.Utc);
+            var query = registryManager.GetLastUpdatedLoRaDevices(lastUpdateDateTime);
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(query, lastUpdate);
             BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
 
-        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IDeviceRegistryManager registryManager, string inputQuery, long? lastDeltaUpdateFromCacheTicks)
+        private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(IRegistryPageResult<ILoRaDeviceTwin> query, long? lastDeltaUpdateFromCacheTicks)
         {
-            var query = registryManager.CreateQuery(inputQuery);
             var isFullReload = lastDeltaUpdateFromCacheTicks is null;
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
-                var page = await query.GetNextAsTwinAsync();
+                var page = await query.GetNextPageAsync();
 
                 foreach (var twin in page.Where(twin => twin.DeviceId != null))
                 {

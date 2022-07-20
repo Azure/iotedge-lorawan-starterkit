@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using global::LoRaTools;
     using Microsoft.Azure.Devices.Shared;
 
-    internal sealed class FakeIoTHubDeviceTwin : IDeviceTwin
+    internal sealed class FakeIoTHubDeviceTwinTests : IDeviceTwin
     {
         public string ETag => throw new NotImplementedException();
 
@@ -15,7 +15,14 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
         public TwinCollection Tags => throw new NotImplementedException();
 
+        public string DeviceId => throw new NotImplementedException();
+
         public string GetGatewayID()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetNwkSKey()
         {
             throw new NotImplementedException();
         }

@@ -5,11 +5,9 @@ namespace LoraKeysManagerFacade
 {
     internal static class LoraKeysManagerFacadeConstants
     {
-        internal const string NetworkServerModuleId = "LoRaWanNetworkSrvModule";
         internal const string ClearCacheMethodName = "clearcache";
         internal const string CloudToDeviceMessageMethodName = "cloudtodevicemessage";
         internal const string CloudToDeviceCloseConnection = "closeconnection";
-        public const string RoundTripDateTimeStringFormat = "o";
         internal const string MetricNamespace = "LoRaWAN";
     }
 }

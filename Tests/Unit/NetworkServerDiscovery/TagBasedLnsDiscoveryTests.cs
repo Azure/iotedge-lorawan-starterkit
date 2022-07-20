@@ -34,7 +34,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
         public TagBasedLnsDiscoveryTests()
         {
             this.registryManagerMock = new Mock<IDeviceRegistryManager>();
-            this.registryManagerMock.Setup(rm => rm.CreateQuery(It.IsAny<string>())).Returns(Mock.Of<IQuery>());
+            this.registryManagerMock.Setup(rm => rm.FindLnsByNetworkId(It.IsAny<string>())).Returns(Mock.Of<IRegistryPageResult<string>>());
             this.memoryCache = new MemoryCache(new MemoryCacheOptions());
             this.subject = new TagBasedLnsDiscovery(memoryCache, this.registryManagerMock.Object, NullLogger<TagBasedLnsDiscovery>.Instance);
         }
@@ -140,7 +140,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             _ = await this.subject.ResolveLnsAsync(secondStation, CancellationToken.None);
 
             // assert
-            this.registryManagerMock.Verify(rm => rm.CreateQuery(It.IsAny<string>()), Times.Once);
+            this.registryManagerMock.Verify(rm => rm.FindLnsByNetworkId(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -210,14 +210,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
 
         private void SetupIotHubQueryResponse(string networkId, IList<string?> hostAddresses)
         {
-            var queryMock = new Mock<IQuery>();
+            var queryMock = new Mock<IRegistryPageResult<string>>();
             var i = 0;
             queryMock.Setup(q => q.HasMoreResults).Returns(() => i++ % 2 == 0);
-            queryMock.Setup(q => q.GetNextAsJsonAsync()).ReturnsAsync(from ha in hostAddresses
+            queryMock.Setup(q => q.GetNextPageAsync()).ReturnsAsync(from ha in hostAddresses
                                                                       select ha is { } someHa ? JsonSerializer.Serialize(new { hostAddress = ha, deviceId = Guid.NewGuid().ToString() })
                                                                                               : JsonSerializer.Serialize(new { deviceId = Guid.NewGuid().ToString() }));
             this.registryManagerMock
-                .Setup(rm => rm.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Setup(rm => rm.FindLnsByNetworkId(networkId))
                 .Returns(queryMock.Object);
         }
 

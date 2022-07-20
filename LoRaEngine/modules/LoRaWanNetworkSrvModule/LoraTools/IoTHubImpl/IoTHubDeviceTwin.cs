@@ -20,12 +20,9 @@ namespace LoRaTools.IoTHubImpl
             this.TwinInstance = twin;
         }
 
-        public string GetGatewayID()
-            => TwinInstance.Properties.Desired.TryRead<string>(TwinPropertiesConstants.GatewayID, null, out var someGatewayId)
-             ? someGatewayId
-             : string.Empty;
-
         public string ETag => this.TwinInstance.ETag;
+
+        public string DeviceId => this.TwinInstance.DeviceId;
 
         public override bool Equals(object obj)
         {

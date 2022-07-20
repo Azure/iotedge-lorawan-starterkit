@@ -13,6 +13,6 @@ namespace LoRaTools
 
         TwinCollection Tags { get; }
 
-        string GetGatewayID();
+        string DeviceId { get; }
     }
 }

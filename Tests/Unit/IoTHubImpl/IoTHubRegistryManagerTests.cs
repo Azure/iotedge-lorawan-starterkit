@@ -3,8 +3,13 @@
 
 namespace LoRaWan.Tests.Unit.IoTHubImpl
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -145,54 +150,6 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         }
 
         [Fact]
-        public void CreateQuery()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var query = "new query";
-                var mockQuery = this.mockRepository.Create<IQuery>();
-
-                this.mockRegistryManager.Setup(c => c.CreateQuery(
-                        It.Is<string>(x => x == query)))
-                    .Returns(mockQuery.Object);
-
-                // Act
-                var result = manager.CreateQuery(query);
-
-                // Assert
-                Assert.Equal(mockQuery.Object, result);
-            }
-
-            this.mockRepository.VerifyAll();
-        }
-
-        [Fact]
-        public void CreateQuery_WithPageSize()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var pageSize = 10;
-                var query = "new query";
-                var mockQuery = this.mockRepository.Create<IQuery>();
-
-                this.mockRegistryManager.Setup(c => c.CreateQuery(
-                        It.Is<string>(x => x == query),
-                        It.Is<int>(x => x == pageSize)))
-                    .Returns(mockQuery.Object);
-
-                // Act
-                var result = manager.CreateQuery(query, pageSize);
-
-                // Assert
-                Assert.Equal(mockQuery.Object, result);
-            }
-
-            this.mockRepository.VerifyAll();
-        }
-
-        [Fact]
         public async Task GetDeviceAsync()
         {
             // Arrange
@@ -255,6 +212,55 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
                 // Act
                 var result = await manager.GetTwinAsync(deviceId);
+
+                // Assert
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
+            }
+
+            this.mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GetLoRaDeviceTwinAsync_With_CancellationToken()
+        {
+            // Arrange
+            using (var manager = CreateManager())
+            {
+                var deviceId = "deviceid";
+                var cancellationToken = CancellationToken.None;
+                var twin = new Twin(deviceId);
+
+                this.mockRegistryManager.Setup(c => c.GetTwinAsync(
+                        It.Is<string>(x => x == deviceId),
+                        It.Is<CancellationToken>(x => x == cancellationToken)))
+                    .ReturnsAsync(twin);
+
+                // Act
+                var result = await manager.GetLoRaDeviceTwinAsync(deviceId, cancellationToken);
+
+                // Assert
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
+            }
+
+            this.mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GetLoRaDeviceTwinAsync()
+        {
+            // Arrange
+            using (var manager = CreateManager())
+            {
+                var deviceId = "deviceid";
+                var twin = new Twin(deviceId);
+
+                this.mockRegistryManager.Setup(c => c.GetTwinAsync(
+                        It.Is<string>(x => x == deviceId),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(twin);
+
+                // Act
+                var result = await manager.GetLoRaDeviceTwinAsync(deviceId);
 
                 // Assert
                 Assert.Equal(twin, result.ToIoTHubDeviceTwin());
@@ -399,6 +405,123 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
             // Assert
             this.mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public void GetEdgeDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+
+            var mockQuery = new Mock<IQuery>();
+            var twins = new List<Twin>()
+                {
+                    new Twin("edgeDevice") { Capabilities = new DeviceCapabilities() { IotEdge = true }},
+                };
+
+            mockQuery.Setup(x => x.GetNextAsTwinAsync())
+                .ReturnsAsync(twins);
+
+            mockRegistryManager
+                .Setup(x => x.CreateQuery(It.IsAny<string>()))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.GetEdgeDevices();
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void GetAllLoRaDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)"))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.GetAllLoRaDevices();
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void GetLastUpdatedLoRaDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var mockQuery = new Mock<IQuery>();
+
+            var lastUpdateDateTime = DateTime.UtcNow;
+            var formattedDateTime = lastUpdateDateTime.ToString(Constants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{formattedDateTime}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{formattedDateTime}'"))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.GetLastUpdatedLoRaDevices(lastUpdateDateTime);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void FindLoRaDeviceByDevAddr()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var someDevAddr = new DevAddr(123456789);
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{someDevAddr}' OR properties.reported.DevAddr ='{someDevAddr}'", It.IsAny<int?>()))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.FindLoRaDeviceByDevAddr(someDevAddr);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void FindLnsByNetworkId()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var networkId = "aaa";
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT properties.desired.hostAddress, deviceId FROM devices.modules WHERE tags.network = '{networkId}'"))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.FindLnsByNetworkId(networkId);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void FindDeviceByDevEUI()
+        {
+            // Arrange
+            using var manager = CreateManager();
+            var devEUI = new DevEui(123456789);
+            var mockQuery = new Mock<IQuery>();
+
+            mockRegistryManager.Setup(c => c.CreateQuery($"SELECT * FROM devices WHERE deviceId = '{devEUI}'", 1))
+                .Returns(mockQuery.Object);
+
+            // Act
+            var result = manager.FindDeviceByDevEUI(devEUI);
+
+            // Assert
+            Assert.NotNull(result);
         }
     }
 }
