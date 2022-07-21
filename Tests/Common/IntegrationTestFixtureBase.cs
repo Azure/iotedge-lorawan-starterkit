@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -117,7 +118,10 @@ namespace LoRaWan.Tests.Common
 
         private IDeviceRegistryManager GetRegistryManager()
         {
-            return this.registryManager ??= IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            return this.registryManager ??= IoTHubRegistryManager.CreateWithProvider(() =>
+                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString), new MockHttpClientFactory(), null);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId)

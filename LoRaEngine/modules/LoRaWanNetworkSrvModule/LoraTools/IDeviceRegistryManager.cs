@@ -26,9 +26,10 @@ namespace LoRaTools
         IRegistryPageResult<ILoRaDeviceTwin> FindDeviceByDevEUI(DevEui devEUI);
         Task<Device> AddDeviceAsync(Device edgeGatewayDevice);
         Task<Module> AddModuleAsync(Module moduleToAdd);
-        Task ApplyConfigurationContentOnDeviceAsync(string deviceName, ConfigurationContent deviceConfigurationContent);
-        Task<Configuration> AddConfigurationAsync(Configuration configuration);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceName, IDeviceTwin twin, string eTag);
         Task RemoveDeviceAsync(string deviceId);
+        Task DeployEdgeDevice(string deviceId, string resetPin, string spiSpeed, string spiDev, string publishingUserName, string publishingPassword);
+        Task DeployConcentrator(string stationEuiString, string region);
+        Task<bool> DeployEndDevices();
     }
 }

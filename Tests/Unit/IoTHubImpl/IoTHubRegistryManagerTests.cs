@@ -7,12 +7,14 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Moq.Protected;
     using Xunit;
@@ -21,39 +23,22 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     {
         private readonly MockRepository mockRepository;
         private readonly Mock<RegistryManager> mockRegistryManager;
+        private readonly Mock<ILogger<IoTHubRegistryManager>> mockLogger;
+        private readonly Mock<IHttpClientFactory> mockHttpClientFactory;
 
         public IoTHubRegistryManagerTests()
         {
             this.mockRepository = new MockRepository(MockBehavior.Strict);
             this.mockRegistryManager = this.mockRepository.Create<RegistryManager>();
+            this.mockLogger = this.mockRepository.Create<ILogger<IoTHubRegistryManager>>();
+            this.mockHttpClientFactory = this.mockRepository.Create<IHttpClientFactory>();
         }
 
         private IoTHubRegistryManager CreateManager()
         {
             this.mockRegistryManager.Protected().Setup("Dispose", ItExpr.Is<bool>(_ => true));
 
-            return new IoTHubRegistryManager(() => this.mockRegistryManager.Object);
-        }
-
-        [Fact]
-        public async Task AddConfigurationAsync()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var configuration = new Configuration("testConfiguration");
-
-                this.mockRegistryManager.Setup(c => c.AddConfigurationAsync(It.Is<Configuration>(x => x == configuration)))
-                    .ReturnsAsync(configuration);
-
-                // Act
-                var result = await manager.AddConfigurationAsync(configuration);
-
-                // Assert
-                Assert.Equal(configuration, result);
-            }
-
-            this.mockRepository.VerifyAll();
+            return new IoTHubRegistryManager(() => this.mockRegistryManager.Object, this.mockHttpClientFactory.Object, this.mockLogger.Object);
         }
 
         [Fact]
@@ -124,28 +109,6 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 Assert.Equal(moduleToAdd, result);
             }
 
-            this.mockRepository.VerifyAll();
-        }
-
-        [Fact]
-        public async Task ApplyConfigurationContentOnDeviceAsync()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var deviceName = "deviceid";
-                var deviceConfigurationContent = new ConfigurationContent();
-
-                this.mockRegistryManager.Setup(c => c.ApplyConfigurationContentOnDeviceAsync(
-                        It.Is<string>(x => x == deviceName),
-                        It.Is<ConfigurationContent>(x => x == deviceConfigurationContent)))
-                    .Returns(Task.CompletedTask);
-
-                // Act
-                await manager.ApplyConfigurationContentOnDeviceAsync(deviceName, deviceConfigurationContent);
-            }
-
-            // Assert
             this.mockRepository.VerifyAll();
         }
 

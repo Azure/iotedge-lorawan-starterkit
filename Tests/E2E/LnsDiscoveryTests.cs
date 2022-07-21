@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.E2E
     using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
+    using System.Net.Http;
     using System.Net.WebSockets;
     using System.Security.Cryptography;
     using System.Text;
@@ -60,11 +61,19 @@ namespace LoRaWan.Tests.E2E
 
         private readonly IDeviceRegistryManager registryManager;
 
-        public LnsDiscoveryFixture() =>
-            this.registryManager = IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString));
+#pragma warning disable CA2000 // Dispose objects before losing scope
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public LnsDiscoveryFixture()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        {
+            this.registryManager = IoTHubRegistryManager.CreateWithProvider(() =>
+                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString), new MockHttpClientFactory(), null);
+        }
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         public void Dispose()
         {
+
         }
 
         public Task DisposeAsync() =>

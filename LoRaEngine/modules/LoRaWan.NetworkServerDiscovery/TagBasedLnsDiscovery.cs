@@ -42,17 +42,17 @@ namespace LoRaWan.NetworkServerDiscovery
         private readonly object lastLnsUriByStationIdLock = new();
         private readonly SemaphoreSlim lnsByNetworkCacheSemaphore = new SemaphoreSlim(1);
 
-        public TagBasedLnsDiscovery(IMemoryCache memoryCache, IConfiguration configuration, ILogger<TagBasedLnsDiscovery> logger)
-            : this(memoryCache, InitializeRegistryManager(configuration, logger), logger)
+        public TagBasedLnsDiscovery(IMemoryCache memoryCache, IConfiguration configuration, ILogger<TagBasedLnsDiscovery> logger, ILogger<IDeviceRegistryManager> registryManagerLogger, IHttpClientFactory httpClientFactory)
+            : this(memoryCache, InitializeRegistryManager(configuration, logger, registryManagerLogger, httpClientFactory), logger)
         { }
 
-        private static IDeviceRegistryManager InitializeRegistryManager(IConfiguration configuration, ILogger logger)
+        private static IDeviceRegistryManager InitializeRegistryManager(IConfiguration configuration, ILogger logger, ILogger<IDeviceRegistryManager> registryManagerLogger, IHttpClientFactory httpClientFactory)
         {
             var iotHubConnectionString = configuration.GetConnectionString(IotHubConnectionStringName);
             if (!string.IsNullOrEmpty(iotHubConnectionString))
             {
                 logger.LogInformation("Using connection string based auth for IoT Hub.");
-                return IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+                return IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(iotHubConnectionString), httpClientFactory, registryManagerLogger);
             }
 
             var hostName = configuration.GetValue<string>(HostName);
@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServerDiscovery
             logger.LogInformation("Using managed identity based auth for IoT Hub.");
 
             return IoTHubRegistryManager.CreateWithProvider(() =>
-                RegistryManager.Create(hostName, new ManagedIdentityCredential()));
+                RegistryManager.Create(hostName, new ManagedIdentityCredential()), httpClientFactory, registryManagerLogger);
         }
 
         internal TagBasedLnsDiscovery(IMemoryCache memoryCache, IDeviceRegistryManager registryManager, ILogger<TagBasedLnsDiscovery> logger)
