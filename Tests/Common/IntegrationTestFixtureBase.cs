@@ -386,12 +386,11 @@ namespace LoRaWan.Tests.Common
                 if (getDeviceResult == null)
                 {
                     TestLogger.Log($"Device {testDevice.DeviceID} does not exist. Creating");
-                    var device = new Device(testDevice.DeviceID);
                     var twin = new Twin(testDevice.DeviceID);
                     twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
 
                     TestLogger.Log($"Creating device {testDevice.DeviceID}");
-                    await registryManager.AddDeviceWithTwinAsync(device, new IoTHubDeviceTwin(twin));
+                    await registryManager.AddDevice(new IoTHubDeviceTwin(twin));
                 }
                 else
                 {

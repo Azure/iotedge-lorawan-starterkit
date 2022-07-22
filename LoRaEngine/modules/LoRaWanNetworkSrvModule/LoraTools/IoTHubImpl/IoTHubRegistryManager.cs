@@ -42,7 +42,17 @@ namespace LoRaTools.IoTHubImpl
             this.logger = logger;
         }
 
-        public Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, IDeviceTwin twin) => this.instance.AddDeviceWithTwinAsync(device, twin.ToIoTHubDeviceTwin());
+        public async Task<bool> AddDevice(IDeviceTwin twin)
+        {
+            var result = await this.instance.AddDeviceWithTwinAsync(new Device(twin?.DeviceId), twin.ToIoTHubDeviceTwin());
+
+            if (result.IsSuccessful)
+                return true;
+
+            this.logger.LogWarning($"Failed to add Device with twin: \n{result.Errors}");
+
+            return false;
+        }
 
         public void Dispose() => this.instance?.Dispose();
 
