@@ -30,17 +30,16 @@ namespace LoRaWan.Tests.E2E
 
     internal sealed class LnsDiscoveryFixture : IAsyncLifetime, IDisposable
     {
-        private const string LnsModuleName = "LoRaWanNetworkSrvModule";
         private const string FirstNetworkName = "network1";
         private const string SecondNetworkName = "network2";
 
-        internal sealed record Lns(string DeviceId, Uri HostAddress, string NetworkId);
+        internal sealed record Lns(string DeviceId, string HostAddress, string NetworkId);
         internal sealed record Station(StationEui StationEui, string NetworkId);
 
         private static readonly Lns[] LnsInfo = new[]
         {
-            new Lns("discoverylns1", new Uri("wss://lns1:5001"), FirstNetworkName), new Lns("discoverylns2", new Uri("wss://lns2:5001"), FirstNetworkName),
-            new Lns("discoverylns3", new Uri("wss://lns3:5001"), SecondNetworkName), new Lns("discoverylns4", new Uri("wss://lns4:5001"), SecondNetworkName),
+            new Lns("discoverylns1", "wss://lns1:5001", FirstNetworkName), new Lns("discoverylns2", "wss://lns2:5001", FirstNetworkName),
+            new Lns("discoverylns3", "wss://lns3:5001", SecondNetworkName), new Lns("discoverylns4", "wss://lns4:5001", SecondNetworkName),
         };
 
         public static readonly ImmutableArray<Station> StationInfo = new[]
@@ -85,27 +84,17 @@ namespace LoRaWan.Tests.E2E
         {
             foreach (var lns in LnsInfo)
             {
-                await this.registryManager.AddDeviceAsync(new Device(lns.DeviceId));
-                await this.registryManager.AddModuleAsync(new Module(lns.DeviceId, LnsModuleName));
-                var twin = new IoTHubDeviceTwin(new Twin(new TwinProperties { Desired = new TwinCollection(JsonSerializer.Serialize(new { hostAddress = lns.HostAddress })) })
-                {
-                    Tags = GetNetworkTags(lns.NetworkId)
-                });
-                await this.registryManager.UpdateTwinAsync(lns.DeviceId, LnsModuleName, twin, "*", CancellationToken.None);
+                await this.registryManager.DeployEdgeDevice(lns.DeviceId, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, lns.NetworkId, lns.HostAddress);
             }
 
             foreach (var station in StationInfo)
             {
-                var deviceId = station.StationEui.ToString();
-                await this.registryManager.AddDeviceAsync(new Device(deviceId));
-                await this.registryManager.UpdateTwinAsync(deviceId, new IoTHubDeviceTwin(new Twin { Tags = GetNetworkTags(station.NetworkId) }), "*", CancellationToken.None);
+                await this.registryManager.DeployConcentrator(station.StationEui.ToString(), "EU");
             }
 
             var waitTime = TimeSpan.FromSeconds(60);
             Console.WriteLine($"Waiting for {waitTime.TotalSeconds} seconds.");
             await Task.Delay(waitTime);
-
-            static TwinCollection GetNetworkTags(string networkId) => new TwinCollection(JsonSerializer.Serialize(new { network = networkId }));
         }
     }
 
@@ -218,7 +207,7 @@ namespace LoRaWan.Tests.E2E
         }
 
         private static void AssertLnsResponsesForStation(StationEui station, IReadOnlyCollection<LnsDiscoveryFixture.Lns> expected, IReadOnlyCollection<Uri> actual) =>
-            Assert.Equal(expected.Select(l => new Uri(l.HostAddress, $"router-data/{station}")).OrderBy(l => l.AbsoluteUri),
+            Assert.Equal(expected.Select(l => new Uri(new Uri(l.HostAddress), $"router-data/{station}")).OrderBy(l => l.AbsoluteUri),
                          actual.OrderBy(l => l.AbsoluteUri));
 
         private async Task<Uri> GetLnsAddressAndAssertAsync(StationEui station, CancellationToken cancellationToken)

@@ -42,11 +42,7 @@ namespace LoRaTools.IoTHubImpl
             this.logger = logger;
         }
 
-        public Task<Device> AddDeviceAsync(Device edgeGatewayDevice) => this.instance.AddDeviceAsync(edgeGatewayDevice);
-
         public Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, IDeviceTwin twin) => this.instance.AddDeviceWithTwinAsync(device, twin.ToIoTHubDeviceTwin());
-
-        public Task<Module> AddModuleAsync(Module moduleToAdd) => this.instance.AddModuleAsync(moduleToAdd);
 
         public void Dispose() => this.instance?.Dispose();
 
@@ -115,7 +111,15 @@ namespace LoRaTools.IoTHubImpl
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
              => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None));
 
-        public async Task DeployEdgeDevice(string deviceId, string resetPin, string spiSpeed, string spiDev, string publishingUserName, string publishingPassword)
+        public async Task DeployEdgeDevice(
+                string deviceId,
+                string resetPin,
+                string spiSpeed,
+                string spiDev,
+                string publishingUserName,
+                string publishingPassword,
+                string networkId = Constants.NetworkId,
+                string lnsHostAddress = "ws://mylns:5000")
         {
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
@@ -189,14 +193,14 @@ namespace LoRaTools.IoTHubImpl
 
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{Environment.GetEnvironmentVariable("FACADE_HOST_NAME", EnvironmentVariableTarget.Process)}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
-            twin.Properties.Desired["hostAddress"] = new Uri("ws://mylns:5000");
-            twin.Tags[Constants.NetworkTagName] = Constants.NetworkId;
+            twin.Properties.Desired["hostAddress"] = new Uri(lnsHostAddress);
+            twin.Tags[Constants.NetworkTagName] = networkId;
             var remoteTwin = await this.instance.GetTwinAsync(deviceId);
 
             _ = await this.instance.UpdateTwinAsync(deviceId, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
         }
 
-        public async Task DeployConcentrator(string stationEuiString, string region)
+        public async Task DeployConcentrator(string stationEuiString, string region, string networkId = Constants.NetworkId)
         {
             // Deploy concentrator
             using var httpClient = this.httpClientFactory.CreateClient();
@@ -211,7 +215,7 @@ namespace LoRaTools.IoTHubImpl
             _ = await this.instance.AddDeviceAsync(concentratorDevice);
             var concentratorTwin = await this.instance.GetTwinAsync(stationEuiString);
             concentratorTwin.Properties.Desired["routerConfig"] = JsonConvert.DeserializeObject<JObject>(regionalConfiguration);
-            concentratorTwin.Tags[Constants.NetworkTagName] = Constants.NetworkId;
+            concentratorTwin.Tags[Constants.NetworkTagName] = networkId;
             _ = await this.instance.UpdateTwinAsync(stationEuiString, concentratorTwin, concentratorTwin.ETag);
         }
 
