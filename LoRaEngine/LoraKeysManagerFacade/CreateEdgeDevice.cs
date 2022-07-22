@@ -76,7 +76,7 @@ namespace LoraKeysManagerFacade
                 log.LogWarning(ex.Message);
 
                 // In case of an exception in device provisioning we want to make sure that we return a proper template if our devices are successfullycreated
-                var edgeGateway = await this.registryManager.GetDeviceAsync(deviceName);
+                var edgeGateway = await this.registryManager.GetTwinAsync(deviceName);
 
                 if (edgeGateway == null)
                 {

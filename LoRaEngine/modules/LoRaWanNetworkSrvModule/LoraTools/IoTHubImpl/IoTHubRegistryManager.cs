@@ -56,7 +56,12 @@ namespace LoRaTools.IoTHubImpl
 
         public void Dispose() => this.instance?.Dispose();
 
-        public Task<Device> GetDeviceAsync(string deviceId) => this.instance.GetDeviceAsync(deviceId);
+        public async Task<string> GetDevicePrimaryKeyAsync(string deviceId)
+        {
+            var device = await this.instance.GetDeviceAsync(deviceId);
+
+            return device.Authentication.SymmetricKey.PrimaryKey;
+        }
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken cancellationToken)
             => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken));

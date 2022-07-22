@@ -69,8 +69,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI.ToString(format, null)}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
-            registryManager.Setup(x => x.GetDeviceAsync(devEUI.ToString()))
-                .ReturnsAsync((Device)null);
+            registryManager.Setup(x => x.GetDevicePrimaryKeyAsync(devEUI.ToString()))
+                .ReturnsAsync((string)null);
 
             var searchDeviceByDevEUI = SetupSubject(registryManager.Object);
 
@@ -122,13 +122,9 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             ctx.Request.QueryString = new QueryString($"?devEUI={devEui}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
-            var deviceInfo = new Device(devEui)
-            {
-                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(primaryKey)) } },
-            };
 
-            registryManager.Setup(x => x.GetDeviceAsync(devEui))
-                           .ReturnsAsync(deviceInfo);
+            registryManager.Setup(x => x.GetDevicePrimaryKeyAsync(devEui))
+                           .ReturnsAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(primaryKey)));
 
             return (registryManager, ctx.Request);
         }

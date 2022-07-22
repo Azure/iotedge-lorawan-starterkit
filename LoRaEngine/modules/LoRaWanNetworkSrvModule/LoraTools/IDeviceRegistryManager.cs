@@ -7,13 +7,12 @@ namespace LoRaTools
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan;
-    using Microsoft.Azure.Devices;
 
     public interface IDeviceRegistryManager
     {
         Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null);
         Task<ILoRaDeviceTwin> GetLoRaDeviceTwinAsync(string deviceId, CancellationToken? cancellationToken = null);
-        Task<Device> GetDeviceAsync(string deviceId);
+        Task<string> GetDevicePrimaryKeyAsync(string deviceId);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag, CancellationToken cancellationToken);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, IDeviceTwin twin, string eTag, CancellationToken cancellationToken);

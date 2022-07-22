@@ -313,7 +313,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
@@ -332,7 +332,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
@@ -351,7 +351,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for fw upgrades of concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
@@ -382,7 +382,7 @@ namespace LoRaWan.Tests.Common
                     testDevice.DeviceID = deviceID;
                 }
 
-                var getDeviceResult = await registryManager.GetDeviceAsync(testDevice.DeviceID);
+                var getDeviceResult = await registryManager.GetTwinAsync(testDevice.DeviceID);
                 if (getDeviceResult == null)
                 {
                     TestLogger.Log($"Device {testDevice.DeviceID} does not exist. Creating");

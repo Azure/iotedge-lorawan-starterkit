@@ -52,14 +52,14 @@ namespace LoraKeysManagerFacade
 
             using var deviceScope = this.logger.BeginDeviceScope(parsedDevEui);
 
-            var device = await this.registryManager.GetDeviceAsync(parsedDevEui.ToString());
-            if (device != null)
+            var primaryKey = await this.registryManager.GetDevicePrimaryKeyAsync(parsedDevEui.ToString());
+            if (primaryKey != null)
             {
                 this.logger.LogDebug($"Search for {devEui} found 1 device");
                 return new OkObjectResult(new
                 {
                     DevEUI = devEui,
-                    device.Authentication.SymmetricKey.PrimaryKey
+                    PrimaryKey = primaryKey
                 });
             }
             else

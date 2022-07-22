@@ -42,29 +42,6 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         }
 
         [Fact]
-        public async Task GetDeviceAsync()
-        {
-            // Arrange
-            using (var manager = CreateManager())
-            {
-                var deviceId = "deviceid";
-                var device = new Device(deviceId);
-
-                this.mockRegistryManager.Setup(c => c.GetDeviceAsync(
-                        It.Is<string>(x => x == deviceId)))
-                    .ReturnsAsync(device);
-
-                // Act
-                var result = await manager.GetDeviceAsync(deviceId);
-
-                // Assert
-                Assert.Equal(device, result);
-            }
-
-            this.mockRepository.VerifyAll();
-        }
-
-        [Fact]
         public async Task GetTwinAsync_With_CancellationToken()
         {
             // Arrange
