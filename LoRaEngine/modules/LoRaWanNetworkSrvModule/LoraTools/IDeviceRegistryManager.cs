@@ -14,8 +14,6 @@ namespace LoRaTools
         Task<ILoRaDeviceTwin> GetLoRaDeviceTwinAsync(string deviceId, CancellationToken? cancellationToken = null);
         Task<string> GetDevicePrimaryKeyAsync(string deviceId);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag, CancellationToken cancellationToken);
-        Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag);
-        Task<IDeviceTwin> UpdateTwinAsync(string deviceId, IDeviceTwin twin, string eTag, CancellationToken cancellationToken);
         Task<bool> AddDevice(IDeviceTwin twin);
         IRegistryPageResult<IDeviceTwin> GetEdgeDevices();
         IRegistryPageResult<ILoRaDeviceTwin> GetAllLoRaDevices();

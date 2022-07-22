@@ -11,7 +11,6 @@ namespace LoRaTools.IoTHubImpl
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools.Regions;
     using LoRaWan;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
@@ -62,17 +61,6 @@ namespace LoRaTools.IoTHubImpl
 
             return device.Authentication.SymmetricKey.PrimaryKey;
         }
-
-        public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken cancellationToken)
-            => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken));
-
-        public async Task<IDeviceTwin> GetTwinAsync(string deviceName) => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceName));
-
-        public async Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag)
-            => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceId, moduleId, deviceTwin.ToIoTHubDeviceTwin(), eTag));
-
-        public async Task<IDeviceTwin> UpdateTwinAsync(string deviceId, IDeviceTwin twin, string eTag, CancellationToken cancellationToken)
-            => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceId, twin.ToIoTHubDeviceTwin(), eTag, cancellationToken));
 
         public async Task<IDeviceTwin> UpdateTwinAsync(string deviceName, IDeviceTwin twin, string eTag)
             => new IoTHubDeviceTwin(await this.instance.UpdateTwinAsync(deviceName, twin.ToIoTHubDeviceTwin(), eTag));
@@ -138,13 +126,13 @@ namespace LoRaTools.IoTHubImpl
         {
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
-            var apiUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.scm.azurewebsites.net/api");
+            var apiUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.scm.azurewebsites.net");
             var siteUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.azurewebsites.net");
             string jwt;
             using (var client = this.httpClientFactory.CreateClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Auth}");
-                var result = await client.GetAsync(new Uri($"{apiUrl}/functions/admin/token"));
+                var result = await client.GetAsync(new Uri(apiUrl, "/api/functions/admin/token"));
                 jwt = (await result.Content.ReadAsStringAsync()).Trim('"'); // get  JWT for call funtion key
             }
 
@@ -152,7 +140,7 @@ namespace LoRaTools.IoTHubImpl
             using (var client = this.httpClientFactory.CreateClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + jwt);
-                var response = await client.GetAsync(new Uri($"{siteUrl}/admin/host/keys"));
+                var response = await client.GetAsync(new Uri(siteUrl, "/admin/host/keys"));
                 var jsonResult = await response.Content.ReadAsStringAsync();
                 dynamic resObject = JsonConvert.DeserializeObject(jsonResult);
                 facadeKey = resObject.keys[0].value;
