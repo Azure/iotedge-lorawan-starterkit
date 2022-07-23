@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using System.Net.Http;
     using System.Net.Mime;
     using System.Runtime.CompilerServices;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -466,8 +467,8 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         [Fact]
         public async Task DeployEdgeDeviceWhenOmmitingSpiDevAndAndSpiSpeedSettingsAreNotSendToConfiguration()
         {
-            var publishingUserName = RandomString(16);
-            var publishingPassword = RandomString(24);
+            var publishingUserName = Guid.NewGuid().ToString();
+            var publishingPassword = Guid.NewGuid().ToString();
 
             // Arrange
             using var manager = CreateManager();
@@ -503,8 +504,8 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         [Fact]
         public async Task DeployEdgeDeviceSettingLogAnalyticsWorkspaceShouldDeployIotHubMetricsCollectorModule()
         {
-            var publishingUserName = RandomString(16);
-            var publishingPassword = RandomString(24);
+            var publishingUserName = Guid.NewGuid().ToString();
+            var publishingPassword = Guid.NewGuid().ToString();
 
             // Arrange
             using var manager = CreateManager();
@@ -734,30 +735,6 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     .ReturnsAsync(onUpdateLoRaWanNetworkServerModuleTwin);
 
             return deviceId;
-        }
-
-        private static string RandomString(int size)
-        {
-            var rand = new Random();
-
-            int randValue;
-            var str = "";
-            char letter;
-
-            for (var i = 0; i < size; i++)
-            {
-                // Generating a random number.
-                randValue = rand.Next(0, 26);
-
-                // Generating random character by converting
-                // the random number into character.
-                letter = Convert.ToChar(randValue + 65);
-
-                // Appending the letter to string.
-                str += letter;
-            }
-
-            return str;
         }
 
         protected virtual ValueTask DisposeAsync(bool disposing)
