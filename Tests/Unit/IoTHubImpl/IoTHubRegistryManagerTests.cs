@@ -457,7 +457,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                             It.Is(deviceId, StringComparer.OrdinalIgnoreCase),
                             It.Is("LoRaWanNetworkSrvModule", StringComparer.OrdinalIgnoreCase),
                             It.IsAny<Twin>(),
-                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+                            It.IsAny<string>()), Times.Once);
 
             this.mockHttpClientHandler.VerifyNoOutstandingRequest();
             this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
@@ -466,8 +466,8 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         [Fact]
         public async Task DeployEdgeDeviceWhenOmmitingSpiDevAndAndSpiSpeedSettingsAreNotSendToConfiguration()
         {
-            const string publishingUserName = "fakeUser";
-            const string publishingPassword = "fakePassword";
+            var publishingUserName = RandomString(16);
+            var publishingPassword = RandomString(24);
 
             // Arrange
             using var manager = CreateManager();
@@ -494,7 +494,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                             It.Is(deviceId, StringComparer.OrdinalIgnoreCase),
                             It.Is("LoRaWanNetworkSrvModule", StringComparer.OrdinalIgnoreCase),
                             It.IsAny<Twin>(),
-                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+                            It.IsAny<string>()), Times.Once);
 
             this.mockHttpClientHandler.VerifyNoOutstandingRequest();
             this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
@@ -537,7 +537,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 #pragma warning restore JSON001 // Invalid JSON pattern
 
             // Act
-            await manager.DeployEdgeDevice(deviceId, "2", null, null, "fakeUser", "fakePassword", Constants.NetworkId, "ws://mylns:5000");
+            await manager.DeployEdgeDevice(deviceId, "2", null, null, publishingUserName, publishingPassword, Constants.NetworkId, "ws://mylns:5000");
 
             // Assert
             Assert.Equal(/*lang=json,strict*/ "{\"modulesContent\":{\"$edgeAgent\":{\"properties.desired\":{\"modules\":{\"LoRaBasicsStationModule\":{\"env\":{\"RESET_PIN\":{\"value\":\"2\"},\"TC_URI\":{\"value\":\"ws://172.17.0.1:5000\"}}}}}}},\"moduleContent\":{},\"deviceContent\":{}}", JsonConvert.SerializeObject(configurationContent));
@@ -554,7 +554,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                             It.Is(deviceId, StringComparer.OrdinalIgnoreCase),
                             It.Is("LoRaWanNetworkSrvModule", StringComparer.OrdinalIgnoreCase),
                             It.IsAny<Twin>(),
-                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+                            It.IsAny<string>()), Times.Once);
 
             this.mockHttpClientHandler.VerifyNoOutstandingRequest();
             this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
@@ -615,7 +615,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(
                             It.Is(stationEui, StringComparer.OrdinalIgnoreCase),
                             It.IsAny<Twin>(),
-                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+                            It.Is(eTag, StringComparer.OrdinalIgnoreCase)), Times.Once);
 
             this.mockHttpClientHandler.VerifyNoOutstandingRequest();
             this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
