@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using System.Threading;
     using System.Threading.Tasks;
     using Azure;
+    using Bogus.DataSets;
     using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
@@ -480,7 +481,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     (string _, string _, Twin t, string _) => networkServerModuleTwin = t);
 
             // Act
-            await manager.DeployEdgeDevice(deviceId, "2", null, null, "fakeUser", "fakePassword", Constants.NetworkId, "ws://mylns:5000");
+            await manager.DeployEdgeDevice(deviceId, "2", null, null, publishingUserName, publishingPassword, Constants.NetworkId, "ws://mylns:5000");
 
             // Assert
             Assert.Equal($"{{\"modulesContent\":{{\"$edgeAgent\":{{\"properties.desired\":{{\"modules\":{{\"LoRaBasicsStationModule\":{{\"env\":{{\"RESET_PIN\":{{\"value\":\"2\"}},\"TC_URI\":{{\"value\":\"ws://172.17.0.1:5000\"}}}}}}}}}}}}}},\"moduleContent\":{{}},\"deviceContent\":{{}}}}", JsonConvert.SerializeObject(configurationContent));
@@ -502,8 +503,8 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         [Fact]
         public async Task DeployEdgeDeviceSettingLogAnalyticsWorkspaceShouldDeployIotHubMetricsCollectorModule()
         {
-            const string publishingUserName = "fakeUser";
-            const string publishingPassword = "fakePassword";
+            var publishingUserName = RandomString(16);
+            var publishingPassword = RandomString(24);
 
             // Arrange
             using var manager = CreateManager();
@@ -733,6 +734,30 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     .ReturnsAsync(onUpdateLoRaWanNetworkServerModuleTwin);
 
             return deviceId;
+        }
+
+        private static string RandomString(int size)
+        {
+            var rand = new Random();
+
+            int randValue;
+            var str = "";
+            char letter;
+
+            for (var i = 0; i < size; i++)
+            {
+                // Generating a random number.
+                randValue = rand.Next(0, 26);
+
+                // Generating random character by converting
+                // the random number into character.
+                letter = Convert.ToChar(randValue + 65);
+
+                // Appending the letter to string.
+                str += letter;
+            }
+
+            return str;
         }
 
         protected virtual ValueTask DisposeAsync(bool disposing)
