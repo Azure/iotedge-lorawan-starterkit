@@ -6,6 +6,13 @@ root = true
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+indent_size = 4
+end_of_line = crlf
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
 
 [*.cs]
 dotnet_naming_rule.private_constants_rule.severity = warning
@@ -33,6 +40,21 @@ dotnet_naming_symbols.private_static_fields_symbols.required_modifiers = static
 dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
 dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static,readonly
+csharp_indent_labels = one_less_than_current
+csharp_using_directive_placement = inside_namespace:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_braces = when_multiline:silent
+csharp_style_namespace_declarations = block_scoped:silent
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_operators = true:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+csharp_style_expression_bodied_lambdas = true:silent
+csharp_style_expression_bodied_local_functions = false:silent
 
 [*.md]
 charset = utf-8
