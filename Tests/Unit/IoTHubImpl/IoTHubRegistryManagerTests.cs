@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using System.Net;
     using System.Net.Http;
     using System.Net.Mime;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -555,6 +556,79 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
             this.mockHttpClientHandler.VerifyNoOutstandingRequest();
             this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
+        }
+
+        [Theory]
+        [InlineData("EU")]
+        [InlineData("US")]
+        [InlineData("EU", "fakeNetwork")]
+        [InlineData("US", "fakeNetwork")]
+        public async Task DeployConcentrator(string region, string networkId = Constants.NetworkId)
+        {
+            // Arrange
+            using var manager = CreateManager();
+            Environment.SetEnvironmentVariable("EU863_CONFIG_LOCATION", "https://fake.local/eu863.config.json");
+            Environment.SetEnvironmentVariable("US902_CONFIG_LOCATION", "https://fake.local/us902.config.json");
+            const string stationEui = "123456789";
+
+            this.mockHttpClientFactory.Setup(c => c.CreateClient(It.IsAny<string>()))
+                .Returns(() => mockHttpClientHandler.ToHttpClient());
+
+            _ = region switch
+            {
+                "EU" => this.mockHttpClientHandler.When(HttpMethod.Get, "/eu863.config.json")
+                                        .Respond(HttpStatusCode.OK, MediaTypeNames.Application.Json, /*lang=json,strict*/ "{\"config\":\"EU\"}"),
+                "US" => this.mockHttpClientHandler.When(HttpMethod.Get, "/us902.config.json")
+                                        .Respond(HttpStatusCode.OK, MediaTypeNames.Application.Json, /*lang=json,strict*/ "{\"config\":\"US\"}"),
+                _ => throw new ArgumentException($"{region} is not supported."),
+            };
+
+            this.mockRegistryManager.Setup(c => c.AddDeviceAsync(It.Is<Device>(d => d.Id == stationEui)))
+                .ReturnsAsync((Device d) => d);
+
+            _ = this.mockRegistryManager.Setup(c => c.GetTwinAsync(It.Is<string>(stationEui, StringComparer.OrdinalIgnoreCase)))
+                .ReturnsAsync(new Twin(stationEui)
+                {
+                    ETag = "eTagTwin"
+                });
+
+            _ = this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
+                            It.Is(stationEui, StringComparer.OrdinalIgnoreCase),
+                            It.IsAny<Twin>(),
+                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)))
+                    .ReturnsAsync((string _, Twin t, string _) => t)
+                    .Callback((string _, Twin t, string _) =>
+                    {
+                        Assert.Equal($"{{\"config\":\"{region}\"}}", JsonConvert.SerializeObject(t.Properties.Desired["routerConfig"]));
+                        Assert.Equal($"\"{networkId}\"", JsonConvert.SerializeObject(t.Tags[Constants.NetworkTagName]));
+                    });
+
+            // Act
+            await manager.DeployConcentrator(stationEui, region, networkId);
+
+            // Assert
+            this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.Is<string>(stationEui, StringComparer.OrdinalIgnoreCase)), Times.Once);
+            this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(
+                            It.Is(stationEui, StringComparer.OrdinalIgnoreCase),
+                            It.IsAny<Twin>(),
+                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+
+            this.mockHttpClientHandler.VerifyNoOutstandingRequest();
+            this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
+        }
+
+        [Fact]
+        public async Task DeployConcentratorWithNotImplementedRegionShouldThrowSwitchExpressionException()
+        {
+            // Arrange
+            using var manager = CreateManager();
+
+            this.mockHttpClientFactory.Setup(c => c.CreateClient(It.IsAny<string>()))
+                .Returns(() => mockHttpClientHandler.ToHttpClient());
+
+            // Act
+            _ = await Assert.ThrowsAsync<SwitchExpressionException>(() => manager.DeployConcentrator("123456789", "FAKE"));
         }
 
         private string SetupForEdgeDeployment(string publishingUserName, string publishingPassword,
