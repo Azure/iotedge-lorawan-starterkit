@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure;
     using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
@@ -570,6 +571,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             Environment.SetEnvironmentVariable("EU863_CONFIG_LOCATION", "https://fake.local/eu863.config.json");
             Environment.SetEnvironmentVariable("US902_CONFIG_LOCATION", "https://fake.local/us902.config.json");
             const string stationEui = "123456789";
+            var eTag = $"{DateTime.Now.Ticks}";
 
             this.mockHttpClientFactory.Setup(c => c.CreateClient(It.IsAny<string>()))
                 .Returns(() => mockHttpClientHandler.ToHttpClient());
@@ -589,13 +591,13 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             _ = this.mockRegistryManager.Setup(c => c.GetTwinAsync(It.Is<string>(stationEui, StringComparer.OrdinalIgnoreCase)))
                 .ReturnsAsync(new Twin(stationEui)
                 {
-                    ETag = "eTagTwin"
+                    ETag = eTag
                 });
 
             _ = this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
                             It.Is(stationEui, StringComparer.OrdinalIgnoreCase),
                             It.IsAny<Twin>(),
-                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)))
+                            It.Is(eTag, StringComparer.OrdinalIgnoreCase)))
                     .ReturnsAsync((string _, Twin t, string _) => t)
                     .Callback((string _, Twin t, string _) =>
                     {
@@ -631,6 +633,44 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             _ = await Assert.ThrowsAsync<SwitchExpressionException>(() => manager.DeployConcentrator("123456789", "FAKE"));
         }
 
+        [Fact]
+        public async Task DeployEndDevices()
+        {
+            // Arrange
+            using var manager = CreateManager();
+
+            Dictionary<string, Twin> deviceTwins = new();
+            var eTag = $"{DateTime.Now.Ticks}";
+
+            this.mockRegistryManager.Setup(c => c.AddDeviceAsync(It.IsAny<Device>()))
+                .ReturnsAsync((Device d) => d);
+
+            this.mockRegistryManager.Setup(c => c.GetTwinAsync(It.IsAny<string>()))
+                .ReturnsAsync((string id) => new Twin(id)
+                {
+                    ETag = eTag
+                });
+
+            this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(It.IsAny<string>(), It.IsAny<Twin>(), It.Is(eTag, StringComparer.OrdinalIgnoreCase)))
+                .ReturnsAsync((string _, Twin t, string _) => t)
+                .Callback((string id, Twin t, string _) => deviceTwins.Add(id, t));
+
+            // Act
+            var result = await manager.DeployEndDevices();
+
+            // Assert
+            Assert.True(result);
+            var abpDevice = deviceTwins[Constants.AbpDeviceId];
+            var otaaDevice = deviceTwins[Constants.OtaaDeviceId];
+
+            Assert.Equal(/*lang=json*/ "{\"AppEUI\":\"BE7A0000000014E2\",\"AppKey\":\"8AFE71A145B253E49C3031AD068277A1\",\"GatewayID\":\"\",\"SensorDecoder\":\"DecoderValueSensor\"}", JsonConvert.SerializeObject(otaaDevice.Properties.Desired));
+            Assert.Equal(/*lang=json*/ "{\"AppSKey\":\"2B7E151628AED2A6ABF7158809CF4F3C\",\"NwkSKey\":\"3B7E151628AED2A6ABF7158809CF4F3C\",\"GatewayID\":\"\",\"DevAddr\":\"0228B1B1\",\"SensorDecoder\":\"DecoderValueSensor\"}", JsonConvert.SerializeObject(abpDevice.Properties.Desired));
+
+            this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Exactly(2));
+            this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.IsAny<string>()), Times.Exactly(2));
+            this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(It.IsAny<string>(), It.IsAny<Twin>(), It.IsAny<string>()), Times.Exactly(2));
+        }
+
         private string SetupForEdgeDeployment(string publishingUserName, string publishingPassword,
                         Action<string, ConfigurationContent> onApplyConfigurationContentOnDevice,
                         Func<string, string, Twin, string, Twin> onUpdateLoRaWanNetworkServerModuleTwin)
@@ -639,6 +679,8 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 .Returns(() => mockHttpClientHandler.ToHttpClient());
 
             const string deviceId = "edgeTest";
+            var eTag = $"{DateTime.Now.Ticks}";
+
             Environment.SetEnvironmentVariable("FACADE_HOST_NAME", "fake-facade");
             Environment.SetEnvironmentVariable("WEBSITE_CONTENTSHARE", "fake.local");
             Environment.SetEnvironmentVariable("DEVICE_CONFIG_LOCATION", "https://fake.local/deviceConfiguration.json");
@@ -680,14 +722,14 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             _ = this.mockRegistryManager.Setup(c => c.GetTwinAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase)))
                 .ReturnsAsync(new Twin(deviceId)
                 {
-                    ETag = "eTagTwin"
+                    ETag = eTag
                 });
 
             _ = this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(
                             It.Is(deviceId, StringComparer.OrdinalIgnoreCase),
                             It.Is("LoRaWanNetworkSrvModule", StringComparer.OrdinalIgnoreCase),
                             It.IsAny<Twin>(),
-                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)))
+                            It.Is(eTag, StringComparer.OrdinalIgnoreCase)))
                     .ReturnsAsync(onUpdateLoRaWanNetworkServerModuleTwin);
 
             return deviceId;
