@@ -444,9 +444,107 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 
             // Assert
             Assert.Equal($"{{\"modulesContent\":{{\"$edgeAgent\":{{\"properties.desired\":{{\"modules\":{{\"LoRaBasicsStationModule\":{{\"env\":{{\"RESET_PIN\":{{\"value\":\"{resetPin}\"}},\"TC_URI\":{{\"value\":\"ws://172.17.0.1:5000\"}},\"SPI_DEV\":{{\"value\":\"{spiDev}\"}},\"SPI_SPEED\":{{\"value\":\"2\"}}}}}}}}}}}}}},\"moduleContent\":{{}},\"deviceContent\":{{}}}}", JsonConvert.SerializeObject(configurationContent));
+            Assert.Equal($"{{\"deviceId\":null,\"etag\":null,\"version\":null,\"tags\":{{\"network\":\"{networkId}\"}},\"properties\":{{\"desired\":{{\"FacadeServerUrl\":\"https://fake-facade.azurewebsites.net/api/\",\"FacadeAuthCode\":\"uzW4cD3VH88di5UB8kr7U8Ri\",\"hostAddress\":\"{lnsHostAddress}\"}},\"reported\":{{}}}}}}", JsonConvert.SerializeObject(networkServerModuleTwin));
 
             this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Once);
             this.mockRegistryManager.Verify(c => c.AddModuleAsync(It.IsAny<Module>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.ApplyConfigurationContentOnDeviceAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase), It.IsAny<ConfigurationContent>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase)), Times.Once);
+            this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(
+                            It.Is(deviceId, StringComparer.OrdinalIgnoreCase),
+                            It.Is("LoRaWanNetworkSrvModule", StringComparer.OrdinalIgnoreCase),
+                            It.IsAny<Twin>(),
+                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+
+            this.mockHttpClientHandler.VerifyNoOutstandingRequest();
+            this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
+        }
+
+        [Fact]
+        public async Task DeployEdgeDeviceWhenOmmitingSpiDevAndAndSpiSpeedSettingsAreNotSendToConfiguration()
+        {
+            const string publishingUserName = "fakeUser";
+            const string publishingPassword = "fakePassword";
+
+            // Arrange
+            using var manager = CreateManager();
+            ConfigurationContent configurationContent = null;
+            Twin networkServerModuleTwin = null;
+
+            var deviceId = this.SetupForEdgeDeployment(
+                    publishingUserName,
+                    publishingPassword,
+                    (string _, ConfigurationContent content) => configurationContent = content,
+                    (string _, string _, Twin t, string _) => networkServerModuleTwin = t);
+
+            // Act
+            await manager.DeployEdgeDevice(deviceId, "2", null, null, "fakeUser", "fakePassword", Constants.NetworkId, "ws://mylns:5000");
+
+            // Assert
+            Assert.Equal($"{{\"modulesContent\":{{\"$edgeAgent\":{{\"properties.desired\":{{\"modules\":{{\"LoRaBasicsStationModule\":{{\"env\":{{\"RESET_PIN\":{{\"value\":\"2\"}},\"TC_URI\":{{\"value\":\"ws://172.17.0.1:5000\"}}}}}}}}}}}}}},\"moduleContent\":{{}},\"deviceContent\":{{}}}}", JsonConvert.SerializeObject(configurationContent));
+
+            this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.AddModuleAsync(It.IsAny<Module>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.ApplyConfigurationContentOnDeviceAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase), It.IsAny<ConfigurationContent>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase)), Times.Once);
+            this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(
+                            It.Is(deviceId, StringComparer.OrdinalIgnoreCase),
+                            It.Is("LoRaWanNetworkSrvModule", StringComparer.OrdinalIgnoreCase),
+                            It.IsAny<Twin>(),
+                            It.Is("eTagTwin", StringComparer.OrdinalIgnoreCase)), Times.Once);
+
+            this.mockHttpClientHandler.VerifyNoOutstandingRequest();
+            this.mockHttpClientHandler.VerifyNoOutstandingExpectation();
+        }
+
+        [Fact]
+        public async Task DeployEdgeDeviceSettingLogAnalyticsWorkspaceShouldDeployIotHubMetricsCollectorModule()
+        {
+            const string publishingUserName = "fakeUser";
+            const string publishingPassword = "fakePassword";
+
+            // Arrange
+            using var manager = CreateManager();
+            ConfigurationContent configurationContent = null;
+            Configuration iotHubMetricsCollectorModuleConfiguration = null;
+
+            Twin networkServerModuleTwin = null;
+
+            Environment.SetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID", "fake-workspace-id");
+            Environment.SetEnvironmentVariable("IOT_HUB_RESOURCE_ID", "fake-hub-id");
+            Environment.SetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_KEY", "fake-workspace-key");
+            Environment.SetEnvironmentVariable("OBSERVABILITY_CONFIG_LOCATION", "https://fake.local/observabilityConfig.json");
+
+            var deviceId = this.SetupForEdgeDeployment(
+                    publishingUserName,
+                    publishingPassword,
+                    (string _, ConfigurationContent content) => configurationContent = content,
+                    (string _, string _, Twin t, string _) => networkServerModuleTwin = t);
+
+            this.mockRegistryManager.Setup(c => c.AddModuleAsync(It.Is<Module>(m => m.DeviceId == deviceId && m.Id == "IotHubMetricsCollectorModule")))
+                .ReturnsAsync((Module m) => m);
+
+            this.mockRegistryManager.Setup(c => c.AddConfigurationAsync(It.Is<Configuration>(conf => conf.TargetCondition == $"deviceId='{deviceId}'")))
+                .ReturnsAsync((Configuration c) => c)
+                .Callback((Configuration c) => iotHubMetricsCollectorModuleConfiguration = c);
+
+#pragma warning disable JSON001 // Invalid JSON pattern
+            _ = this.mockHttpClientHandler.When(HttpMethod.Get, "/observabilityConfig.json")
+                .Respond(HttpStatusCode.OK, MediaTypeNames.Application.Json, /*lang=json,strict*/ "{\"modulesContent\":{\"$edgeAgent\":{\"properties.desired.modules.IotHubMetricsCollectorModule\":{\"settings\":{\"image\":\"mcr.microsoft.com/azureiotedge-metrics-collector:1.0\"},\"type\":\"docker\",\"env\":{\"ResourceId\":{\"value\":\"[$iot_hub_resource_id]\"},\"UploadTarget\":{\"value\":\"AzureMonitor\"},\"LogAnalyticsWorkspaceId\":{\"value\":\"[$log_analytics_workspace_id]\"},\"LogAnalyticsSharedKey\":{\"value\":\"[$log_analytics_shared_key]\"},\"MetricsEndpointsCSV\":{\"value\":\"http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics\"}},\"status\":\"running\",\"restartPolicy\":\"always\",\"version\":\"1.0\"}}}}");
+#pragma warning restore JSON001 // Invalid JSON pattern
+
+            // Act
+            await manager.DeployEdgeDevice(deviceId, "2", null, null, "fakeUser", "fakePassword", Constants.NetworkId, "ws://mylns:5000");
+
+            // Assert
+            Assert.Equal(/*lang=json,strict*/ "{\"modulesContent\":{\"$edgeAgent\":{\"properties.desired\":{\"modules\":{\"LoRaBasicsStationModule\":{\"env\":{\"RESET_PIN\":{\"value\":\"2\"},\"TC_URI\":{\"value\":\"ws://172.17.0.1:5000\"}}}}}}},\"moduleContent\":{},\"deviceContent\":{}}", JsonConvert.SerializeObject(configurationContent));
+            Assert.Equal(/*lang=json,strict*/ "{\"modulesContent\":{\"$edgeAgent\":{\"properties.desired.modules.IotHubMetricsCollectorModule\":{\"settings\":{\"image\":\"mcr.microsoft.com/azureiotedge-metrics-collector:1.0\"},\"type\":\"docker\",\"env\":{\"ResourceId\":{\"value\":\"fake-hub-id\"},\"UploadTarget\":{\"value\":\"AzureMonitor\"},\"LogAnalyticsWorkspaceId\":{\"value\":\"fake-workspace-id\"},\"LogAnalyticsSharedKey\":{\"value\":\"fake-workspace-key\"},\"MetricsEndpointsCSV\":{\"value\":\"http://edgeHub:9600/metrics,http://edgeAgent:9600/metrics\"}},\"status\":\"running\",\"restartPolicy\":\"always\",\"version\":\"1.0\"}}},\"moduleContent\":{},\"deviceContent\":{}}", JsonConvert.SerializeObject(iotHubMetricsCollectorModuleConfiguration.Content));
+
+            this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Once);
+            this.mockRegistryManager.Verify(c => c.AddModuleAsync(It.IsAny<Module>()), Times.Exactly(2));
+            this.mockRegistryManager.Verify(c => c.AddModuleAsync(It.Is<Module>(m => m.DeviceId == deviceId && m.Id == "IotHubMetricsCollectorModule")), Times.Once);
+            this.mockRegistryManager.Verify(c => c.AddConfigurationAsync(It.Is<Configuration>(conf => conf.TargetCondition == $"deviceId='{deviceId}'")), Times.Once);
+
             this.mockRegistryManager.Verify(c => c.ApplyConfigurationContentOnDeviceAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase), It.IsAny<ConfigurationContent>()), Times.Once);
             this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.Is<string>(deviceId, StringComparer.OrdinalIgnoreCase)), Times.Once);
             this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(
@@ -467,6 +565,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 .Returns(() => mockHttpClientHandler.ToHttpClient());
 
             const string deviceId = "edgeTest";
+            Environment.SetEnvironmentVariable("FACADE_HOST_NAME", "fake-facade");
             Environment.SetEnvironmentVariable("WEBSITE_CONTENTSHARE", "fake.local");
             Environment.SetEnvironmentVariable("DEVICE_CONFIG_LOCATION", "https://fake.local/deviceConfiguration.json");
 
