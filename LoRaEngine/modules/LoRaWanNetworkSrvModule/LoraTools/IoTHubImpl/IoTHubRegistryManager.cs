@@ -224,14 +224,16 @@ namespace LoRaTools.IoTHubImpl
 
         public async Task<bool> DeployEndDevicesAsync()
         {
-            var otaaDevice = await this.instance.AddDeviceAsync(new Device(Constants.OtaaDeviceId));
+            var otaaDevice = await this.instance.GetDeviceAsync(Constants.OtaaDeviceId)
+                                ?? await this.instance.AddDeviceAsync(new Device(Constants.OtaaDeviceId));
 
             var otaaEndTwin = new Twin();
             otaaEndTwin.Properties.Desired = new TwinCollection(/*lang=json*/ @"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
             var otaaRemoteTwin = _ = await this.instance.GetTwinAsync(Constants.OtaaDeviceId);
             _ = await this.instance.UpdateTwinAsync(Constants.OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
 
-            var abpDevice = await this.instance.AddDeviceAsync(new Device(Constants.AbpDeviceId));
+            var abpDevice = await this.instance.GetDeviceAsync(Constants.AbpDeviceId)
+                                ?? await this.instance.AddDeviceAsync(new Device(Constants.AbpDeviceId));
             var abpTwin = new Twin();
             abpTwin.Properties.Desired = new TwinCollection(/*lang=json*/ @"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
             var abpRemoteTwin = await this.instance.GetTwinAsync(Constants.AbpDeviceId);

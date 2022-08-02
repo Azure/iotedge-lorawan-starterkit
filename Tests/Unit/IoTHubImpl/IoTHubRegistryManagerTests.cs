@@ -636,13 +636,16 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         }
 
         [Fact]
-        public async Task DeployEndDevices()
+        public async Task DeployEndDevicesShouldCreateEndDevices()
         {
             // Arrange
             using var manager = CreateManager();
 
             Dictionary<string, Twin> deviceTwins = new();
             var eTag = $"{DateTime.Now.Ticks}";
+
+            this.mockRegistryManager.Setup(c => c.GetDeviceAsync(It.IsAny<string>()))
+                    .ReturnsAsync((string _) => null);
 
             this.mockRegistryManager.Setup(c => c.AddDeviceAsync(It.IsAny<Device>()))
                 .ReturnsAsync((Device d) => d);
@@ -668,7 +671,46 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
             Assert.Equal(/*lang=json*/ "{\"AppEUI\":\"BE7A0000000014E2\",\"AppKey\":\"8AFE71A145B253E49C3031AD068277A1\",\"GatewayID\":\"\",\"SensorDecoder\":\"DecoderValueSensor\"}", JsonConvert.SerializeObject(otaaDevice.Properties.Desired));
             Assert.Equal(/*lang=json*/ "{\"AppSKey\":\"2B7E151628AED2A6ABF7158809CF4F3C\",\"NwkSKey\":\"3B7E151628AED2A6ABF7158809CF4F3C\",\"GatewayID\":\"\",\"DevAddr\":\"0228B1B1\",\"SensorDecoder\":\"DecoderValueSensor\"}", JsonConvert.SerializeObject(abpDevice.Properties.Desired));
 
+            this.mockRegistryManager.Verify(c => c.GetDeviceAsync(It.IsAny<string>()), Times.Exactly(2));
             this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Exactly(2));
+            this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.IsAny<string>()), Times.Exactly(2));
+            this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(It.IsAny<string>(), It.IsAny<Twin>(), It.IsAny<string>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task DeployEndDevicesShouldBeIdempotent()
+        {
+            // Arrange
+            using var manager = CreateManager();
+
+            Dictionary<string, Twin> deviceTwins = new();
+            var eTag = $"{DateTime.Now.Ticks}";
+
+            this.mockRegistryManager.Setup(c => c.GetDeviceAsync(It.IsAny<string>()))
+                    .ReturnsAsync((string id) => new Device(id));
+
+            this.mockRegistryManager.Setup(c => c.GetTwinAsync(It.IsAny<string>()))
+                .ReturnsAsync((string id) => new Twin(id)
+                {
+                    ETag = eTag
+                });
+
+            this.mockRegistryManager.Setup(c => c.UpdateTwinAsync(It.IsAny<string>(), It.IsAny<Twin>(), It.Is(eTag, StringComparer.OrdinalIgnoreCase)))
+                .ReturnsAsync((string _, Twin t, string _) => t)
+                .Callback((string id, Twin t, string _) => deviceTwins.Add(id, t));
+
+            // Act
+            var result = await manager.DeployEndDevicesAsync();
+
+            // Assert
+            Assert.True(result);
+            var abpDevice = deviceTwins[Constants.AbpDeviceId];
+            var otaaDevice = deviceTwins[Constants.OtaaDeviceId];
+
+            Assert.Equal(/*lang=json*/ "{\"AppEUI\":\"BE7A0000000014E2\",\"AppKey\":\"8AFE71A145B253E49C3031AD068277A1\",\"GatewayID\":\"\",\"SensorDecoder\":\"DecoderValueSensor\"}", JsonConvert.SerializeObject(otaaDevice.Properties.Desired));
+            Assert.Equal(/*lang=json*/ "{\"AppSKey\":\"2B7E151628AED2A6ABF7158809CF4F3C\",\"NwkSKey\":\"3B7E151628AED2A6ABF7158809CF4F3C\",\"GatewayID\":\"\",\"DevAddr\":\"0228B1B1\",\"SensorDecoder\":\"DecoderValueSensor\"}", JsonConvert.SerializeObject(abpDevice.Properties.Desired));
+
+            this.mockRegistryManager.Verify(c => c.GetDeviceAsync(It.IsAny<string>()), Times.Exactly(2));
             this.mockRegistryManager.Verify(c => c.GetTwinAsync(It.IsAny<string>()), Times.Exactly(2));
             this.mockRegistryManager.Verify(c => c.UpdateTwinAsync(It.IsAny<string>(), It.IsAny<Twin>(), It.IsAny<string>()), Times.Exactly(2));
         }
