@@ -59,7 +59,7 @@ namespace LoRaTools.IoTHubImpl
         {
             var device = await this.instance.GetDeviceAsync(deviceId);
 
-            return device.Authentication.SymmetricKey.PrimaryKey;
+            return device?.Authentication?.SymmetricKey?.PrimaryKey;
         }
 
         public async Task<IDeviceTwin> UpdateTwinAsync(string deviceName, IDeviceTwin twin, string eTag)
