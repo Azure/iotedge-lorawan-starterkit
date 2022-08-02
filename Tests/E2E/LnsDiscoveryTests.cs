@@ -84,12 +84,12 @@ namespace LoRaWan.Tests.E2E
         {
             foreach (var lns in LnsInfo)
             {
-                await this.registryManager.DeployEdgeDevice(lns.DeviceId, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, lns.NetworkId, lns.HostAddress);
+                await this.registryManager.DeployEdgeDeviceAsync(lns.DeviceId, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, lns.NetworkId, lns.HostAddress);
             }
 
             foreach (var station in StationInfo)
             {
-                await this.registryManager.DeployConcentrator(station.StationEui.ToString(), "EU");
+                await this.registryManager.DeployConcentratorAsync(station.StationEui.ToString(), "EU");
             }
 
             var waitTime = TimeSpan.FromSeconds(60);

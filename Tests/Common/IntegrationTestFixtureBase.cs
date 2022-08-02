@@ -390,7 +390,7 @@ namespace LoRaWan.Tests.Common
                     twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
 
                     TestLogger.Log($"Creating device {testDevice.DeviceID}");
-                    await registryManager.AddDevice(new IoTHubDeviceTwin(twin));
+                    await registryManager.AddDeviceAsync(new IoTHubDeviceTwin(twin));
                 }
                 else
                 {

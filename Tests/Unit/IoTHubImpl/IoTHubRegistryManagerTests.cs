@@ -391,7 +391,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 });
 
             // Act
-            var result = await manager.AddDevice(mockDeviceTwin);
+            var result = await manager.AddDeviceAsync(mockDeviceTwin);
 
             // Assert
             Assert.True(result);
@@ -414,7 +414,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 });
 
             // Act
-            var result = await manager.AddDevice(mockDeviceTwin);
+            var result = await manager.AddDeviceAsync(mockDeviceTwin);
 
             // Assert
             Assert.False(result);
@@ -444,7 +444,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     (string _, string _, Twin t, string _) => networkServerModuleTwin = t);
 
             // Act
-            await manager.DeployEdgeDevice(deviceId, resetPin, spiSpeed, spiDev, publishingUserName, publishingPassword, networkId, lnsHostAddress);
+            await manager.DeployEdgeDeviceAsync(deviceId, resetPin, spiSpeed, spiDev, publishingUserName, publishingPassword, networkId, lnsHostAddress);
 
             // Assert
             Assert.Equal($"{{\"modulesContent\":{{\"$edgeAgent\":{{\"properties.desired\":{{\"modules\":{{\"LoRaBasicsStationModule\":{{\"env\":{{\"RESET_PIN\":{{\"value\":\"{resetPin}\"}},\"TC_URI\":{{\"value\":\"ws://172.17.0.1:5000\"}},\"SPI_DEV\":{{\"value\":\"{spiDev}\"}},\"SPI_SPEED\":{{\"value\":\"2\"}}}}}}}}}}}}}},\"moduleContent\":{{}},\"deviceContent\":{{}}}}", JsonConvert.SerializeObject(configurationContent));
@@ -482,7 +482,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     (string _, string _, Twin t, string _) => networkServerModuleTwin = t);
 
             // Act
-            await manager.DeployEdgeDevice(deviceId, "2", null, null, publishingUserName, publishingPassword, Constants.NetworkId, "ws://mylns:5000");
+            await manager.DeployEdgeDeviceAsync(deviceId, "2", null, null, publishingUserName, publishingPassword, Constants.NetworkId, "ws://mylns:5000");
 
             // Assert
             Assert.Equal($"{{\"modulesContent\":{{\"$edgeAgent\":{{\"properties.desired\":{{\"modules\":{{\"LoRaBasicsStationModule\":{{\"env\":{{\"RESET_PIN\":{{\"value\":\"2\"}},\"TC_URI\":{{\"value\":\"ws://172.17.0.1:5000\"}}}}}}}}}}}}}},\"moduleContent\":{{}},\"deviceContent\":{{}}}}", JsonConvert.SerializeObject(configurationContent));
@@ -538,7 +538,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
 #pragma warning restore JSON001 // Invalid JSON pattern
 
             // Act
-            await manager.DeployEdgeDevice(deviceId, "2", null, null, publishingUserName, publishingPassword, Constants.NetworkId, "ws://mylns:5000");
+            await manager.DeployEdgeDeviceAsync(deviceId, "2", null, null, publishingUserName, publishingPassword, Constants.NetworkId, "ws://mylns:5000");
 
             // Assert
             Assert.Equal(/*lang=json,strict*/ "{\"modulesContent\":{\"$edgeAgent\":{\"properties.desired\":{\"modules\":{\"LoRaBasicsStationModule\":{\"env\":{\"RESET_PIN\":{\"value\":\"2\"},\"TC_URI\":{\"value\":\"ws://172.17.0.1:5000\"}}}}}}},\"moduleContent\":{},\"deviceContent\":{}}", JsonConvert.SerializeObject(configurationContent));
@@ -608,7 +608,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                     });
 
             // Act
-            await manager.DeployConcentrator(stationEui, region, networkId);
+            await manager.DeployConcentratorAsync(stationEui, region, networkId);
 
             // Assert
             this.mockRegistryManager.Verify(c => c.AddDeviceAsync(It.IsAny<Device>()), Times.Once);
@@ -632,7 +632,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 .Returns(() => mockHttpClientHandler.ToHttpClient());
 
             // Act
-            _ = await Assert.ThrowsAsync<SwitchExpressionException>(() => manager.DeployConcentrator("123456789", "FAKE"));
+            _ = await Assert.ThrowsAsync<SwitchExpressionException>(() => manager.DeployConcentratorAsync("123456789", "FAKE"));
         }
 
         [Fact]
@@ -658,7 +658,7 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
                 .Callback((string id, Twin t, string _) => deviceTwins.Add(id, t));
 
             // Act
-            var result = await manager.DeployEndDevices();
+            var result = await manager.DeployEndDevicesAsync();
 
             // Assert
             Assert.True(result);

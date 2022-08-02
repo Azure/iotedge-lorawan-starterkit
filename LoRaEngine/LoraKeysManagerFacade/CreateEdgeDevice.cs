@@ -58,15 +58,15 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                await this.registryManager.DeployEdgeDevice(deviceName, resetPin, spiSpeed, spiDev, publishingUserName, publishingPassword);
+                await this.registryManager.DeployEdgeDeviceAsync(deviceName, resetPin, spiSpeed, spiDev, publishingUserName, publishingPassword);
 
-                await this.registryManager.DeployConcentrator(stationEuiString, region);
+                await this.registryManager.DeployConcentratorAsync(stationEuiString, region);
 
                 // This section will get deployed ONLY if the user selected the "deploy end device" options.
                 // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
                 if (deployEndDevice)
                 {
-                    _ = await this.registryManager.DeployEndDevices();
+                    _ = await this.registryManager.DeployEndDevicesAsync();
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types. This will go away when we implement #242
@@ -83,7 +83,7 @@ namespace LoraKeysManagerFacade
                     return PrepareResponse(HttpStatusCode.Conflict);
                 }
 
-                if (deployEndDevice && !await this.registryManager.DeployEndDevices())
+                if (deployEndDevice && !await this.registryManager.DeployEndDevicesAsync())
                 {
                     return PrepareResponse(HttpStatusCode.Conflict);
                 }

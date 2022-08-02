@@ -41,7 +41,7 @@ namespace LoRaTools.IoTHubImpl
             this.logger = logger;
         }
 
-        public async Task<bool> AddDevice(IDeviceTwin twin)
+        public async Task<bool> AddDeviceAsync(IDeviceTwin twin)
         {
             var result = await this.instance.AddDeviceWithTwinAsync(new Device(twin?.DeviceId), twin.ToIoTHubDeviceTwin());
 
@@ -114,7 +114,7 @@ namespace LoRaTools.IoTHubImpl
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
              => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None));
 
-        public async Task DeployEdgeDevice(
+        public async Task DeployEdgeDeviceAsync(
                 string deviceId,
                 string resetPin,
                 string spiSpeed,
@@ -203,7 +203,7 @@ namespace LoRaTools.IoTHubImpl
             _ = await this.instance.UpdateTwinAsync(deviceId, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
         }
 
-        public async Task DeployConcentrator(string stationEuiString, string region, string networkId = Constants.NetworkId)
+        public async Task DeployConcentratorAsync(string stationEuiString, string region, string networkId = Constants.NetworkId)
         {
             // Deploy concentrator
             using var httpClient = this.httpClientFactory.CreateClient();
@@ -222,7 +222,7 @@ namespace LoRaTools.IoTHubImpl
             _ = await this.instance.UpdateTwinAsync(stationEuiString, concentratorTwin, concentratorTwin.ETag);
         }
 
-        public async Task<bool> DeployEndDevices()
+        public async Task<bool> DeployEndDevicesAsync()
         {
             var otaaDevice = await this.instance.AddDeviceAsync(new Device(Constants.OtaaDeviceId));
 

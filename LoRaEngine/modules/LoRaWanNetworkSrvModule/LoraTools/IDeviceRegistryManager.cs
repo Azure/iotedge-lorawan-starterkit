@@ -14,7 +14,7 @@ namespace LoRaTools
         Task<ILoRaDeviceTwin> GetLoRaDeviceTwinAsync(string deviceId, CancellationToken? cancellationToken = null);
         Task<string> GetDevicePrimaryKeyAsync(string deviceId);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag, CancellationToken cancellationToken);
-        Task<bool> AddDevice(IDeviceTwin twin);
+        Task<bool> AddDeviceAsync(IDeviceTwin twin);
         IRegistryPageResult<IDeviceTwin> GetEdgeDevices();
         IRegistryPageResult<ILoRaDeviceTwin> GetAllLoRaDevices();
         IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime);
@@ -23,7 +23,7 @@ namespace LoRaTools
         IRegistryPageResult<ILoRaDeviceTwin> FindDeviceByDevEUI(DevEui devEUI);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceName, IDeviceTwin twin, string eTag);
         Task RemoveDeviceAsync(string deviceId);
-        Task DeployEdgeDevice(
+        Task DeployEdgeDeviceAsync(
                 string deviceId,
                 string resetPin,
                 string spiSpeed,
@@ -32,7 +32,7 @@ namespace LoRaTools
                 string publishingPassword,
                 string networkId = Constants.NetworkId,
                 string lnsHostAddress = "ws://mylns:5000");
-        Task DeployConcentrator(string stationEuiString, string region, string networkId = Constants.NetworkId);
-        Task<bool> DeployEndDevices();
+        Task DeployConcentratorAsync(string stationEuiString, string region, string networkId = Constants.NetworkId);
+        Task<bool> DeployEndDevicesAsync();
     }
 }
