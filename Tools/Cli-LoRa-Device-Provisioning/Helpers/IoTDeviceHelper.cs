@@ -265,7 +265,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             if (!string.IsNullOrEmpty(opts.FCntResetCounter))
                 opts.FCntResetCounter = ValidationHelper.CleanString(opts.FCntResetCounter);
 
-            return (object)opts;
+            return opts;
         }
 
         public static AddOptions CompleteMissingAddOptions(AddOptions opts, ConfigurationHelper configurationHelper)
@@ -944,7 +944,8 @@ namespace LoRaWan.Tools.CLI.Helpers
             var fileName = Path.Combine(DefaultRouterConfigFolder, $"{opts.Region.ToUpperInvariant()}.json");
             var jsonString = File.ReadAllText(fileName);
             var propObject = JsonConvert.DeserializeObject<JObject>(jsonString);
-            twinProperties.Desired[TwinProperty.RouterConfig] = propObject;
+            twinProperties.Desired[TwinProperty.RouterConfig] = propObject[TwinProperty.RouterConfig];
+            twinProperties.Desired[TwinProperty.DesiredTxParams] = propObject[TwinProperty.DesiredTxParams];
 
             if (!opts.NoCups)
             {
