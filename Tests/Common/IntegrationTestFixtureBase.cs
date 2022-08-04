@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Common
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
@@ -117,7 +118,10 @@ namespace LoRaWan.Tests.Common
 
         private IDeviceRegistryManager GetRegistryManager()
         {
-            return this.registryManager ??= IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            return this.registryManager ??= IoTHubRegistryManager.CreateWithProvider(() =>
+                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString), new MockHttpClientFactory(), null);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId)
@@ -309,7 +313,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
@@ -328,7 +332,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
@@ -347,7 +351,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for fw upgrades of concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetDeviceAsync(stationDeviceId);
+            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
@@ -378,16 +382,15 @@ namespace LoRaWan.Tests.Common
                     testDevice.DeviceID = deviceID;
                 }
 
-                var getDeviceResult = await registryManager.GetDeviceAsync(testDevice.DeviceID);
+                var getDeviceResult = await registryManager.GetTwinAsync(testDevice.DeviceID);
                 if (getDeviceResult == null)
                 {
                     TestLogger.Log($"Device {testDevice.DeviceID} does not exist. Creating");
-                    var device = new Device(testDevice.DeviceID);
                     var twin = new Twin(testDevice.DeviceID);
                     twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
 
                     TestLogger.Log($"Creating device {testDevice.DeviceID}");
-                    await registryManager.AddDeviceWithTwinAsync(device, new IoTHubDeviceTwin(twin));
+                    await registryManager.AddDeviceAsync(new IoTHubDeviceTwin(twin));
                 }
                 else
                 {

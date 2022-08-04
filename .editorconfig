@@ -135,6 +135,8 @@ dotnet_diagnostic.IDE1003.severity=suggestion
 dotnet_diagnostic.IDE1004.severity=suggestion
 dotnet_diagnostic.IDE1007.severity=suggestion
 dotnet_diagnostic.IDE1008.severity=suggestion
+dotnet_diagnostic.IDE0074.severity=suggestion
+dotnet_diagnostic.IDE0240.severity=suggestion
 
  # Enforce file header
 dotnet_diagnostic.IDE0073.severity = error
