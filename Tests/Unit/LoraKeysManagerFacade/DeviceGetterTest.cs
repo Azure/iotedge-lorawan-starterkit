@@ -38,8 +38,8 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             mockRegistryManager
-                .Setup(x => x.GetDeviceAsync(It.Is(devEui.ToString(), StringComparer.Ordinal)))
-                .ReturnsAsync((string deviceId) => new Device(deviceId) { Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } } });
+                .Setup(x => x.GetDevicePrimaryKeyAsync(It.Is(devEui.ToString(), StringComparer.Ordinal)))
+                .ReturnsAsync((string _) => primaryKey);
 
             mockRegistryManager
                 .Setup(x => x.GetLoRaDeviceTwinAsync(It.Is(devEui.ToString(), StringComparer.Ordinal), It.IsAny<CancellationToken?>()))
