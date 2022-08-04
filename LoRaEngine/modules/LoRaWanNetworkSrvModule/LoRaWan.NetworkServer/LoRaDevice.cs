@@ -448,10 +448,7 @@ namespace LoRaWan.NetworkServer
                 // before checking the current state and update again.
                 await this.syncSave.WaitAsync();
 
-                if (reportedProperties == null)
-                {
-                    reportedProperties = new TwinCollection();
-                }
+                reportedProperties ??= new TwinCollection();
 
                 var savedProperties = new List<IChangeTrackingProperty>();
                 foreach (var prop in GetTrackableProperties())
