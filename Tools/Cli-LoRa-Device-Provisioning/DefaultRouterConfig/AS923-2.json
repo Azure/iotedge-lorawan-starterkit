@@ -51,14 +51,14 @@
       {
         "radio_0": {
           "enable": true,
-          "freq": 916900000
+          "freq": 921700000
         },
         "radio_1": {
           "enable": true,
-          "freq": 917700000
+          "freq": 922500000
         },
         "chan_FSK": {
-          "enable": false,
+          "enable": true,
           "radio": 1,
           "if": 300000
         },

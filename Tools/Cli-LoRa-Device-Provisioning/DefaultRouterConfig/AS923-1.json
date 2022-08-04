@@ -58,7 +58,7 @@
           "freq": 917700000
         },
         "chan_FSK": {
-          "enable": false,
+          "enable": true,
           "radio": 1,
           "if": 300000
         },

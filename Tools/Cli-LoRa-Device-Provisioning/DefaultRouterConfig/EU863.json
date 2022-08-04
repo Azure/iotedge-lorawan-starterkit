@@ -91,7 +91,7 @@
         },
         "chan_multiSF_3": {
           "enable": true,
-          "radio": 0,
+          "radio": 1,
           "if": -400000
         },
         "chan_multiSF_4": {
