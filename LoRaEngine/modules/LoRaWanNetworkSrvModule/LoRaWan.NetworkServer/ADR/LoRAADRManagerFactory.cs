@@ -42,6 +42,7 @@ namespace LoRaWan.NetworkServer.ADR
 
                 lock (InMemoryStoreLock)
                 {
+#pragma warning disable IDE0074 // Use compound assignment
 #pragma warning disable CA1508 // Avoid dead conditional code
                     // False positive.
                     if (inMemoryStore == null)
@@ -49,6 +50,7 @@ namespace LoRaWan.NetworkServer.ADR
                     {
                         inMemoryStore = new LoRaADRInMemoryStore();
                     }
+#pragma warning restore IDE0074 // Use compound assignment
                 }
 
                 return inMemoryStore;
