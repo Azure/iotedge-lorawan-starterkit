@@ -51,21 +51,21 @@
       {
         "radio_0": {
           "enable": true,
-          "freq": 916900000
+          "freq": 923500000
         },
         "radio_1": {
           "enable": true,
-          "freq": 917700000
+          "freq": 924300000
         },
         "chan_FSK": {
           "enable": true,
           "radio": 1,
-          "if": 300000
+          "if": 500000
         },
         "chan_Lora_std": {
           "enable": true,
           "radio": 1,
-          "if": -200000,
+          "if": 200000,
           "bandwidth": 250000,
           "spread_factor": 7
         },

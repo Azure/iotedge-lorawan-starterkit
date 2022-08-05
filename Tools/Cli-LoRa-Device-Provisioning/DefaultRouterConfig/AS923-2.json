@@ -59,13 +59,13 @@
         },
         "chan_FSK": {
           "enable": true,
-          "radio": 1,
+          "radio": 0,
           "if": 300000
         },
         "chan_Lora_std": {
           "enable": true,
           "radio": 1,
-          "if": -200000,
+          "if": 200000,
           "bandwidth": 250000,
           "spread_factor": 7
         },

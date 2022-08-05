@@ -60,12 +60,12 @@
         "chan_FSK": {
           "enable": false,
           "radio": 1,
-          "if": 300000
+          "if": 500000
         },
         "chan_Lora_std": {
           "enable": true,
           "radio": 1,
-          "if": -200000,
+          "if": 200000,
           "bandwidth": 250000,
           "spread_factor": 7
         },
