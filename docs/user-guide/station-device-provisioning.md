@@ -321,21 +321,21 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
               {
                 "radio_0": {
                   "enable": true,
-                  "freq": 916900000
+                  "freq": 923500000
                 },
                 "radio_1": {
                   "enable": true,
-                  "freq": 917700000
+                  "freq": 924300000
                 },
                 "chan_FSK": {
                   "enable": true,
                   "radio": 1,
-                  "if": 300000
+                  "if": 500000
                 },
                 "chan_Lora_std": {
                   "enable": true,
                   "radio": 1,
-                  "if": -200000,
+                  "if": 200000,
                   "bandwidth": 250000,
                   "spread_factor": 7
                 },
@@ -383,7 +383,12 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
             ],
             "nocca": true,
             "nodc": true,
-            "nodwell": true
+            "nodwell": true,
+            "desiredTxParams": {
+              "downlinkDwellLimit": true,
+              "uplinkDwellLimit": true,
+              "eirp": 5
+            }
           },
           "desiredTxParams": {
             "downlinkDwellLimit": true,
