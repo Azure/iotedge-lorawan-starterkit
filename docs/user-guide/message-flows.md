@@ -128,7 +128,7 @@ JoinRequestMessageHandler->>LoRaDeviceRegistry: GetDeviceForJoinRequestAsync
 LoRaDeviceRegistry->>API: SearchAndLockForJoinAsync
 LoRaDeviceRegistry->>JoinDeviceLoader: ctor
 activate LoRaDevice
-  par 
+  par
    JoinDeviceLoader->>JoinDeviceLoader:LoadAsync
    JoinDeviceLoader->>ILoRaDeviceFactory: Create
    ILoRaDeviceFactory-->>JoinDeviceLoader: LoRaDevice
@@ -155,7 +155,7 @@ deactivate LoRaDevice
 
 4. The `LoRaDeviceRegistry` is queried for the device matching the join request.
 
-5. The `LoRaDeviceRegistry` is asking the functions API to lookup the device using the DevEUI, AppEUI and the DevNonce. Also the Gateway Id is sent to allow locking the join request.  see the [GetDevice flow](#function-GetDevice---OTAA)
+5. The `LoRaDeviceRegistry` is asking the functions API to lookup the device using the DevEUI, AppEUI and the DevNonce. Also the Gateway Id is sent to allow locking the join request.  see the [GetDevice flow](#function-getdevice---otaa)
 
    1. Q: why do we send the **AppEUI**? It looks like that's not used for the OTAA join?
 
@@ -220,7 +220,7 @@ else
 end
 ```
 
-1. The LNS requests the device for a [join request](#Join-Request---OTAA)
+1. The LNS requests the device for a [join request](#join-request---otaa)
 
 2. The DeviceGetter calls `TryGetJoinInfoAndValidateAsync`
 

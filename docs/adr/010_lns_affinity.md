@@ -1,8 +1,8 @@
 # 010. LNS sticky affinity over multiple sessions
 
-**Feature**: [#1475](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1475)  
-**Authors**: Spyros Giannakakis, Daniele Antonio Maggio, Patrick Schuler  
-**Status**: Accepted  
+**Feature**: [#1475](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1475)
+**Authors**: Spyros Giannakakis, Daniele Antonio Maggio, Patrick Schuler
+**Status**: Accepted
 __________
 
 ## Problem statement
@@ -19,7 +19,7 @@ IoT Hub limits active connections that an IoT device can have to one. Assuming t
 already open and a message from LNS2 arrives, IoT Hub will close connection 1 and open connection 2.
 Edge Hub on LNS1, will detect this and assume it's a transient network issue, therefore will try
 proactively to reconnect to IoT Hub. IoT Hub will now drop the connection 2 to re-establish the
-original connection 1.  
+original connection 1.
 
 This connection "ping-pong" will continue happening, negatively impacting the scalability due to the
 high costs of setting up/disposing the connections. From our load tests we observed that in this
@@ -52,13 +52,13 @@ stations.
 
 - Background tasks
   - Periodically we refresh the LoRaDeviceCache, which results in device twin reads that could
-    switch the connection -> see [handling of background tasks section](#handling-of-background-tasks)
+    switch the connection -> see [handling of background tasks section](#handling-of-cache-refresh)
 - Message flows
-  - Join -> see [handling of Join requests section](#Handling-of-Join-requests)
+  - Join -> see [handling of Join requests section](#handling-of-join-requests)
   - Data:
     - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [main data flow section](#main-data-message-flow)
     - assuming we have the device twin (in the cache or fetched) in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
-    - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-device-resets)
+    - if a frame counter reset happened, we update the twin immediately -> see [handling of resets section](#handling-of-abp-relax-frame-counter-reset)
   - C2D message via Direct method -> see [handling class C downstream messages section](#handling-class-c-downstream-messages)
 
 Version, LNS discovery and CUPS update endpoints are not affected by this issue.
@@ -72,7 +72,7 @@ The information whether the current LNS is the connection owner is stored locall
 the connection owner will keep the connection open. Any other network servers receiving messages,
 will not maintain an active connection to IoT Hub. If the owning network server stops responding or
 gets out of reach, the ownership is transferred to the next winning network server.
-  
+
 ### Handling of cache refresh
 
 When we create the (singleton) instance of the NetworkServer.LoRaDeviceCache, we start a background
@@ -126,7 +126,7 @@ the data flow re-establish it if needs to be. Disadvantage is that the first dat
   somehow the preferred gateway for this device when it joined: if the data message comes from the
   same gateway it is allowed to process the message. If not, we should inform the previously owning
   LNS to drop the connection and allow the new LNS to process the message. This was not preferred as
-  it has more complexity for unclear results.  
+  it has more complexity for unclear results.
 
 ### Main data message flow
 
@@ -253,7 +253,7 @@ ping pong because LNS1 will stop retrying).
 A potential advantage of delaying on the LNS is that we can dynamically (based on how long we took in
 previous steps) choose the delay amount before contacting the Function, so that we have higher
 chances of not missing the window.
-  
+
 #### Delay amount configuration
 
 The delay amount should be configurable to allow users to customize behavior for their scenarios.

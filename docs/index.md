@@ -45,7 +45,7 @@ that outlines some of the scenarios this Starter Kit enables.
 ## Features
 
 - LoRaWAN 1.0.2 implementation
-(see [LoRaWAN Specification Support](#LoRaWAN-1.0.2-Specification-Support)
+(see [LoRaWAN Specification Support](#LoRaWAN Specification Support)
 for more details)
 - Device and Concentrator management done through Azure IoT Hub.
 - Bi-directional communication between LoRa end devices and Azure cloud.

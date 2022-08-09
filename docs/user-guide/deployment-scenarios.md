@@ -4,9 +4,9 @@ The Starter Kit support a wide variety of deployments, and this article will
 highlight some of them.
 
 - [Keep data on-premise](#keep-data-on-premise)
-- [Redundancy with multiple concentrators and gateways](#redundancy-with-multiple-concentrators-and-gateways)
+- [Redundancy with multiple concentrators and gateways](#multiple-concentrator-with-multiple-lns)
 - [Deployment on Windows Server](#deployment-on-windows-server)
-- [Deployment of IoT Edge in the cloud](#deployment-of-iotedge-in-the-cloud)
+- [Deployment of IoT Edge in the cloud](#deployment-of-iot-edge-in-the-cloud)
 
 Other scenarios are supported, and combinations of the below scenarios are possible.
 

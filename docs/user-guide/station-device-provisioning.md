@@ -94,7 +94,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
               "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
               "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
               "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
-              "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
+              "chan_multiSF_3": { "enable": true, "radio": 1, "if": -400000 },
               "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
               "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
               "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
@@ -109,7 +109,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 
     === "US902 Example Configuration"
 
-        US902 defines several uplink channels and sub-bands. Router configuration below is suited for sub-band 1.  
+        US902 defines several uplink channels and sub-bands. Router configuration below is suited for sub-band 1.
         Please adjust `radio_0` and `radio_1` freq fields accordingly for your sub-band needs.
 
         | **Uplink sub-bands** | **Frequency range (MHz)** | **Channels** | **Radio 0 Frequency** | **Radio 1 Frequency** |
@@ -174,8 +174,9 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         }
         ```
 
-        === "CN470RP1 Example Configuration"
+    === "CN470RP1 Example Configuration"
         This Configuration is using channels 1-4 (470.3, 470.5, 470.7, 470.9) and 40-43 (478.1, 478.3, 478.5, 478.7) to avoid colliding with reserved China Electric frequencies
+
         ``` json
         "routerConfig": {
           "NetID": [ 1 ],
@@ -220,8 +221,9 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         }
         ```
 
-        === "CN470RP2 Example Configuration"
+    === "CN470RP2 Example Configuration"
         Frequencies used are 498.3, 498.7, 498.9, 499.1, 499.3, 499.5, 499.7, 499.9 to avoid colliding with reserved China Electric frequencies
+
         ``` json
         {
           "NetID": [ 1 ],
@@ -260,6 +262,409 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
           "nodwell": true
         }
 
+        ```
+    === "AS923-1 Example Configuration"
+
+        For more details on the 'desiredTxParams' field, refer to the [AS923 specificities section](./as923.md). For information where you should use AS923-1, AS923-2,... please refer to the LoRaWan Regional parameters to see which one your country supports.
+
+        ``` json
+        {
+          "routerConfig": {
+            "NetID": [
+              1
+            ],
+            "JoinEui": [],
+            "region": "AS923",
+            "hwspec": "sx1301/1",
+            "freq_range": [
+              915000000,
+              928000000
+            ],
+            "DRs": [
+              [
+                12,
+                125,
+                0
+              ],
+              [
+                11,
+                125,
+                0
+              ],
+              [
+                10,
+                125,
+                0
+              ],
+              [
+                9,
+                125,
+                0
+              ],
+              [
+                8,
+                125,
+                0
+              ],
+              [
+                7,
+                125,
+                0
+              ],
+              [
+                7,
+                250,
+                0
+              ]
+            ],
+            "sx1301_conf": [
+              {
+                "radio_0": {
+                  "enable": true,
+                  "freq": 923500000
+                },
+                "radio_1": {
+                  "enable": true,
+                  "freq": 924300000
+                },
+                "chan_FSK": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 500000
+                },
+                "chan_Lora_std": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 200000,
+                  "bandwidth": 250000,
+                  "spread_factor": 7
+                },
+                "chan_multiSF_0": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -300000
+                },
+                "chan_multiSF_1": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -100000
+                },
+                "chan_multiSF_2": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 100000
+                },
+                "chan_multiSF_3": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 300000
+                },
+                "chan_multiSF_4": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": -300000
+                },
+                "chan_multiSF_5": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": -100000
+                },
+                "chan_multiSF_6": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 100000
+                },
+                "chan_multiSF_7": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 300000
+                }
+              }
+            ],
+            "nocca": true,
+            "nodc": true,
+            "nodwell": true,
+            "desiredTxParams": {
+              "downlinkDwellLimit": true,
+              "uplinkDwellLimit": true,
+              "eirp": 5
+            }
+          },
+          "desiredTxParams": {
+            "downlinkDwellLimit": true,
+            "uplinkDwellLimit": true,
+            "eirp": 5
+          }
+        }
+        ```
+    === "AS923-2 Example Configuration"
+
+        For more details on the 'desiredTxParams' field, refer to the [AS923 specificities section](./as923.md). For information where you should use AS923-1, AS923-2,... please refer to the LoRaWan Regional parameters to see which one your country supports.
+
+        ``` json
+        {
+          "routerConfig": {
+            "NetID": [
+              1
+            ],
+            "JoinEui": [],
+            "region": "AS923",
+            "hwspec": "sx1301/1",
+            "freq_range": [
+              915000000,
+              928000000
+            ],
+            "DRs": [
+              [
+                12,
+                125,
+                0
+              ],
+              [
+                11,
+                125,
+                0
+              ],
+              [
+                10,
+                125,
+                0
+              ],
+              [
+                9,
+                125,
+                0
+              ],
+              [
+                8,
+                125,
+                0
+              ],
+              [
+                7,
+                125,
+                0
+              ],
+              [
+                7,
+                250,
+                0
+              ]
+            ],
+            "sx1301_conf": [
+              {
+                "radio_0": {
+                  "enable": true,
+                  "freq": 921700000
+                },
+                "radio_1": {
+                  "enable": true,
+                  "freq": 922500000
+                },
+                "chan_FSK": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 300000
+                },
+                "chan_Lora_std": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -200000,
+                  "bandwidth": 250000,
+                  "spread_factor": 7
+                },
+                "chan_multiSF_0": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -300000
+                },
+                "chan_multiSF_1": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -100000
+                },
+                "chan_multiSF_2": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 100000
+                },
+                "chan_multiSF_3": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 300000
+                },
+                "chan_multiSF_4": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": -300000
+                },
+                "chan_multiSF_5": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": -100000
+                },
+                "chan_multiSF_6": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 100000
+                },
+                "chan_multiSF_7": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 300000
+                }
+              }
+            ],
+            "nocca": true,
+            "nodc": true,
+            "nodwell": true,
+            "desiredTxParams": {
+              "downlinkDwellLimit": true,
+              "uplinkDwellLimit": true,
+              "eirp": 5
+            }
+          },
+          "desiredTxParams": {
+            "downlinkDwellLimit": true,
+            "uplinkDwellLimit": true,
+            "eirp": 5
+          }
+        }
+        ```
+
+    === "AS923-3 Example Configuration"
+
+        For more details on the 'desiredTxParams' field, refer to the [AS923 specificities section](./as923.md). For information where you should use AS923-1, AS923-2,... please refer to the LoRaWan Regional parameters to see which one your country supports.
+
+        ``` json
+        {
+          "routerConfig": {
+            "NetID": [
+              1
+            ],
+            "JoinEui": [],
+            "region": "AS923",
+            "hwspec": "sx1301/1",
+            "freq_range": [
+              915000000,
+              928000000
+            ],
+            "DRs": [
+              [
+                12,
+                125,
+                0
+              ],
+              [
+                11,
+                125,
+                0
+              ],
+              [
+                10,
+                125,
+                0
+              ],
+              [
+                9,
+                125,
+                0
+              ],
+              [
+                8,
+                125,
+                0
+              ],
+              [
+                7,
+                125,
+                0
+              ],
+              [
+                7,
+                250,
+                0
+              ]
+            ],
+            "sx1301_conf": [
+              {
+                "radio_0": {
+                  "enable": true,
+                  "freq": 916900000
+                },
+                "radio_1": {
+                  "enable": true,
+                  "freq": 917700000
+                },
+                "chan_FSK": {
+                  "enable": false,
+                  "radio": 1,
+                  "if": 300000
+                },
+                "chan_Lora_std": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -200000,
+                  "bandwidth": 250000,
+                  "spread_factor": 7
+                },
+                "chan_multiSF_0": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -300000
+                },
+                "chan_multiSF_1": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": -100000
+                },
+                "chan_multiSF_2": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 100000
+                },
+                "chan_multiSF_3": {
+                  "enable": true,
+                  "radio": 1,
+                  "if": 300000
+                },
+                "chan_multiSF_4": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": -300000
+                },
+                "chan_multiSF_5": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": -100000
+                },
+                "chan_multiSF_6": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 100000
+                },
+                "chan_multiSF_7": {
+                  "enable": true,
+                  "radio": 0,
+                  "if": 300000
+                }
+              }
+            ],
+            "nocca": true,
+            "nodc": true,
+            "nodwell": true,
+            "desiredTxParams": {
+              "downlinkDwellLimit": true,
+              "uplinkDwellLimit": true,
+              "eirp": 5
+            }
+          },
+          "desiredTxParams": {
+            "downlinkDwellLimit": true,
+            "uplinkDwellLimit": true,
+            "eirp": 5
+          }
+        }
         ```
 
    - <!-- markdownlint-enable MD046 --> A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
