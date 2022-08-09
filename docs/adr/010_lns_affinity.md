@@ -54,7 +54,7 @@ stations.
   - Periodically we refresh the LoRaDeviceCache, which results in device twin reads that could
     switch the connection -> see [handling of background tasks section](#handling-of-cache-refresh)
 - Message flows
-  - Join -> see [handling of Join requests section](#handling-of-Join-requests)
+  - Join -> see [handling of Join requests section](#handling-of-join-requests)
   - Data:
     - if the device is not in LoRaDeviceCache, we fetch the device twin -> see [main data flow section](#main-data-message-flow)
     - assuming we have the device twin (in the cache or fetched) in the main data flow we send upstream, downstream and write the new twin -> see [main data flow section](#main-data-message-flow)
