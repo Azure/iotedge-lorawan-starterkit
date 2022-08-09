@@ -23,7 +23,7 @@ to see how it works.
 [LoRa Alliance website](https://lora-alliance.org/resource_hub/what-is-lorawan/).
 - To test the solution on a device, you need to have a LoRaWAN Device Kit
 Gateway and a LoRa end node. We have some recommendations in the
-[Tested Gateways](#tested-gateways) section below.
+[Tested Gateways](index.md#tested-gateways) section below.
 
 The template supports x86 and ARM architectures and will automatically deploy the correct version to your gateway. Make sure to provide your gateway's reset pin in the dialog before the deployment.
 
@@ -44,7 +44,7 @@ The template will deploy in your Azure subscription the Following resources:
 
 ## Step-by-step instructions
 
-1. Press on the button here below to start your Azure Deployment.  
+1. Press on the button here below to start your Azure Deployment.
     <!-- markdownlint-disable MD033 -->
     <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fv2.1.0%2FTemplate%2Fazuredeploy.json" target="_blank">
         <img src="https://aka.ms/deploytoazurebutton"/>
@@ -53,16 +53,16 @@ The template will deploy in your Azure subscription the Following resources:
 
 2. You will get to a page asking you to fill the following fields :
 
-    - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.  
-    - **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)  
-    - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.  
-    - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.  
-    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.  
-    - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)  
-    - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)  
-    - **Station Eui** - The EUI of the Basics Station concentrator that will be used for connecting to LoRaWAN Network Server  
-    - **Spi speed** - (In Mbps) Custom SPI speed for your gateway, currently only supported for ARM gateways  
-    - **Spi dev** - A number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)  
+    - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
+    - **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)
+    - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.
+    - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
+    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Arduino) would be ready to use immediately.
+    - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
+    - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
+    - **Station Eui** - The EUI of the Basics Station concentrator that will be used for connecting to LoRaWAN Network Server
+    - **Spi speed** - (In Mbps) Custom SPI speed for your gateway, currently only supported for ARM gateways
+    - **Spi dev** - A number identifying the SPI location where the board should be accessed (i.e.: when X, board accessed at /dev/spidevX.0)
     - **Use Azure Monitor On Edge** - You can opt out of using Azure Monitor services for observability on IoT Edge.
     - **Use Discovery Service** - You can opt in to use a standalone discovery service. This deploys an additional App Service (including a dedicated App Service Plan). Detailed information can be found [LNS Discovery](#lns-discovery).
 

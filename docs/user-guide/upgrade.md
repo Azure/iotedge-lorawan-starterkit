@@ -47,7 +47,7 @@ To support .NET 6 you will need to upgrade the Azure Functions runtime to v4. To
 
 ## Release 1.0.7
 
-To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#release-1.0.3) section below.
 
 ### Update the IoT Edge security daemon when upgrading from IoT Edge 1.1 (release prior to 1.0.6)
 
@@ -64,11 +64,11 @@ On the same `Set Modules` page, also update your current edge version to 1.2.2 b
 
 ### Updating the Azure Function Facade
 
-If you are upgrading from release 1.0.5, There are no changes on the Azure function therefore you can use the same bin. If you are upgrading from a previous release please follow function deployment guidance under release [Release 1.0.5](#Release-1.0.5).
+If you are upgrading from release 1.0.5, There are no changes on the Azure function therefore you can use the same bin. If you are upgrading from a previous release please follow function deployment guidance under release [Release 1.0.5](#release-1.0.5).
 
 ## Release 1.0.6
 
-To update from version 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+To update from version 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#release-1.0.3) section below.
 
 ### Update the IoT Edge security daemon when upgrading from IoT Edge 1.1
 
@@ -89,7 +89,7 @@ There are no changes on the Azure function therefore you can use the same versio
 
 ## Release 1.0.5
 
-To update from version 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+To update from version 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#release-1.0.3) section below.
 
 ### Updating from 1.0.4 or 1.0.3
 
@@ -112,7 +112,7 @@ https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.5/fun
 
 ## Release 1.0.4
 
-To update from version 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+To update from version 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#release-1.0.3) section below.
 
 ### Updating from 1.0.3
 
