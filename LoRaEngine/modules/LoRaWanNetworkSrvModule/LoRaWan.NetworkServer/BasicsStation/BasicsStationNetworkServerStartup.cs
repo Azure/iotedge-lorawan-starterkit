@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.ApplicationInsights;
+    using Microsoft.ApplicationInsights.AspNetCore.Extensions;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -49,8 +50,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
             ITransportSettings[] settings = { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
             var loraModuleFactory = new LoRaModuleClientFactory(settings);
 
-            var appInsightsKey = Configuration.GetValue<string>("APPINSIGHTS_INSTRUMENTATIONKEY");
-            var useApplicationInsights = !string.IsNullOrEmpty(appInsightsKey);
+            var appInsightsConnectionString = Configuration.GetValue<string>("APPINSIGHTS_CONNECTIONSTRING");
+            var useApplicationInsights = !string.IsNullOrEmpty(appInsightsConnectionString);
             _ = services.AddLogging(loggingBuilder =>
                 {
                     _ = loggingBuilder.ClearProviders();
@@ -72,7 +73,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
                     if (useApplicationInsights)
                     {
-                        _ = loggingBuilder.AddApplicationInsights(appInsightsKey)
+                        _ = loggingBuilder.AddApplicationInsights(telemetryConfiguration => { telemetryConfiguration.ConnectionString = appInsightsConnectionString; },
+                                                                  loggerOptions => { })
                                           .AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, logLevel);
                         _ = services.AddSingleton<ITelemetryInitializer>(_ => new TelemetryInitializer(NetworkServerConfiguration));
                     }
@@ -116,7 +118,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             if (useApplicationInsights)
             {
-                _ = services.AddApplicationInsightsTelemetry(appInsightsKey)
+                _ = services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions { ConnectionString = appInsightsConnectionString })
                             .AddSingleton<ITracing, ApplicationInsightsTracing>();
             }
             else
