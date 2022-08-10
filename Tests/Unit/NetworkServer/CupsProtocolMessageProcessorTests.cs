@@ -6,7 +6,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System;
     using System.IO;
     using System.IO.Pipelines;
-    using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Text;
@@ -84,7 +83,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         [InlineData(null)]
         [InlineData(1)]
         [InlineData(int.MaxValue)]
-        public async Task HandleUpdateInfoAsync_Fails_WithInvalidContentLength(long? requestContentLength)
+        public async Task HandleUpdateInfoAsync_Fails_WithInvalidContentLength(int? requestContentLength)
         {
             // setup
             var (httpContext, httpRequest, _) = SetupHttpContextWithRequest(CupsRequestJson, null);
