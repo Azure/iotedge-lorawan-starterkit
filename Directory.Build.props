@@ -26,7 +26,7 @@
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.20.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>6.0.0</PrometheusNetVersion>
-      <AzureIdentityVersion>1.6.0</AzureIdentityVersion>
+      <AzureIdentityVersion>1.6.1</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
@@ -46,7 +46,7 @@
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>34.0.2</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
-      <MicrosoftAspNetCoreMvcTestingVersion>6.0.7</MicrosoftAspNetCoreMvcTestingVersion>
+      <MicrosoftAspNetCoreMvcTestingVersion>6.0.8</MicrosoftAspNetCoreMvcTestingVersion>
       <AzureMessagingEventHubsVersion>5.7.2</AzureMessagingEventHubsVersion>
     </PropertyGroup>
 
