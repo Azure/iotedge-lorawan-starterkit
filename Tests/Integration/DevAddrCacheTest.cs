@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
@@ -15,7 +14,6 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools;
     using LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -25,7 +23,9 @@ namespace LoRaWan.Tests.Integration
     using Xunit.Abstractions;
 
     [Collection(RedisFixture.CollectionName)]
+#pragma warning disable xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     public class DevAddrCacheTest : FunctionTestBase, IClassFixture<RedisFixture>
+#pragma warning restore xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     {
         private const string FullUpdateKey = "fullUpdateKey";
         private const string GlobalDevAddrUpdateKey = "globalUpdateKey";

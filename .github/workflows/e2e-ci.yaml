@@ -92,7 +92,7 @@ jobs:
 
   power_on_azure_vm:
     name: Power ON EFLOW
-    if: always()
+    if: always() && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -109,7 +109,7 @@ jobs:
 
   reset_redis_cache:
     name: Reset the Redis Cache
-    if: always()
+    if: always() && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Flush the database
