@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             ITransportSettings[] settings = { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
             var loraModuleFactory = new LoRaModuleClientFactory(settings);
 
-            var appInsightsConnectionString = Configuration.GetValue<string>("APPINSIGHTS_CONNECTIONSTRING");
+            var appInsightsConnectionString = Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING");
             var useApplicationInsights = !string.IsNullOrEmpty(appInsightsConnectionString);
             _ = services.AddLogging(loggingBuilder =>
                 {
