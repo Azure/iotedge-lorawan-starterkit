@@ -73,12 +73,7 @@ namespace LoRaTools.ADR
 
             if (result.CanConfirmToDevice)
             {
-                if (table == null)
-                {
-                    // in a reset case, we may not have a table, but still want to store the default
-                    // values that we sent to the client
-                    table = new LoRaADRTable();
-                }
+                table ??= new LoRaADRTable();
 
                 table.CurrentNbRep = result.NbRepetition;
                 table.CurrentTxPower = result.TxPower;

@@ -191,7 +191,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             // arrange
             const string gateway = "mygateway";
-            Assert.NotEqual(desiredProperties.GatewayId, gateway);
+            Assert.NotEqual(gateway, desiredProperties.GatewayId);
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync(CancellationToken.None))
                                  .ReturnsAsync(LoRaDeviceTwin.Create(desiredProperties with { GatewayId = gateway }));
             await using var loRaDevice = CreateDefaultDevice();

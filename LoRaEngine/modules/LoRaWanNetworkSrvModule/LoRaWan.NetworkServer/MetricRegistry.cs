@@ -150,15 +150,12 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // fall back to tag bag lookup
-                if (tagValue == null)
+                tagValue ??= tagName switch
                 {
-                    tagValue = tagName switch
-                    {
-                        MetricRegistry.ConcentratorIdTagName when metricTagBag.StationEui.Value is { } stationEui => stationEui.ToString(),
-                        MetricRegistry.GatewayIdTagName => metricTagBag.GatewayId,
-                        _ => null
-                    };
-                }
+                    MetricRegistry.ConcentratorIdTagName when metricTagBag.StationEui.Value is { } stationEui => stationEui.ToString(),
+                    MetricRegistry.GatewayIdTagName => metricTagBag.GatewayId,
+                    _ => null
+                };
 
                 if (string.IsNullOrEmpty(tagValue))
                     throw new LoRaProcessingException($"Tag '{tagName}' is not defined.", LoRaProcessingErrorCode.TagNotSet);
