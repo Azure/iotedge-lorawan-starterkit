@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.E2E
     using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
-    using System.Net.Http;
     using System.Net.WebSockets;
     using System.Security.Cryptography;
     using System.Text;
@@ -23,7 +22,6 @@ namespace LoRaWan.Tests.E2E
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Xunit;
@@ -115,7 +113,9 @@ namespace LoRaWan.Tests.E2E
     }
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
+#pragma warning disable xUnit1033 // We don't need to use the fixture, but only start/stop features. Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     public sealed class LnsDiscoveryTests : IClassFixture<LnsDiscoveryFixture>, IDisposable
+#pragma warning restore xUnit1033 // We don't need to use the fixture, but only start/stop features. Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     {
         private static readonly IJsonReader<(Uri LnsUri, string Muxs, StationEui StationEui)> RouterInfoResponseReader =
             JsonReader.Object(JsonReader.Property("uri", from u in JsonReader.String()

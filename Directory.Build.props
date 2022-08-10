@@ -33,7 +33,7 @@
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
       <MicrosoftNETTestSdkVersion>17.2.0</MicrosoftNETTestSdkVersion>
       <MoqVersion>4.18.2</MoqVersion>
-      <XUnitVersion>2.4.1</XUnitVersion>
+      <XUnitVersion>2.4.2</XUnitVersion>
       <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.1</MicrosoftExtensionsConfigurationVersion>
       <MicrosoftExtensionsConfigurationBinderVersion>6.0.0</MicrosoftExtensionsConfigurationBinderVersion>

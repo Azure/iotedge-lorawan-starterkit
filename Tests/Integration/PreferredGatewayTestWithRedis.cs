@@ -15,7 +15,9 @@ namespace LoRaWan.Tests.Integration
     /// Tests to run against a real redis instance.
     /// </summary>
     [Collection(RedisFixture.CollectionName)]
+#pragma warning disable xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     public class PreferredGatewayTestWithRedis : IClassFixture<RedisFixture>
+#pragma warning restore xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     {
         private readonly ILoRaDeviceCacheStore cache;
         private readonly PreferredGatewayExecutionItem preferredGatewayExecutionItem;
