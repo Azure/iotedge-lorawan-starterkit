@@ -138,7 +138,7 @@ workloads on Windows machines.
 
 ![Redundancy](../images/scenarios/scenario-eflow.png)
 
-## Deployment in the cloud without IoT Edge
+## Deployment in the cloud outside of IoT Edge
 
 It is also possible to run the LNS directly in the cloud. You can run the LNS
 for example on AKS in the cloud without using IoT Edge. For detailed information
