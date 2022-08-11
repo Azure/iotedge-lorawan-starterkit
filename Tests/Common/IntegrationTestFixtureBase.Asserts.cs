@@ -207,9 +207,10 @@ namespace LoRaWan.Tests.Common
                 await Task.Delay(DelayForJoinTwinStore);
 
                 var twins = await GetTwinAsync(devEUI.ToString());
-                if (twins.Properties.Reported.Contains(DevAddrProperty))
+
+                if (twins.Properties.Reported.TryGetValue(DevAddrProperty, out var item))
                 {
-                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.OrdinalIgnoreCase);
+                    reported = devAddr.Equals(item as string, StringComparison.OrdinalIgnoreCase);
                 }
             }
 
