@@ -201,8 +201,8 @@ namespace LoRaWan.Tests.Integration
         {
             this.subject
                 .RegistryManagerMock?
-                .Setup(rm => rm.GetTwinAsync(stationEui.ToString(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new IoTHubDeviceTwin(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") }));
+                .Setup(rm => rm.GetStationTwinAsync(stationEui, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new IoTHubStationTwin(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") }));
         }
 
         private void SetupIotHubQueryResponse(string networkId, IList<string> hostAddresses)

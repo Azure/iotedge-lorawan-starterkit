@@ -9,8 +9,6 @@ namespace LoraKeysManagerFacade
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
-    using LoRaTools.IoTHubImpl;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
     public class EdgeDeviceGetter : IEdgeDeviceGetter

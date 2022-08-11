@@ -13,6 +13,5 @@ namespace LoRaTools
 
         public const string NetworkTagName = "network";
         public const string NetworkId = "quickstartnetwork";
-
     }
 }

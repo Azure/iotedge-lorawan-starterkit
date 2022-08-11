@@ -84,7 +84,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
         public async Task ResolveLnsAsync_Throws_If_Network_Is_Empty()
         {
             SetupLbsTwinResponse(StationEui, string.Empty);
-            _ = await Assert.ThrowsAsync<InvalidOperationException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
+            _ = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.subject.ResolveLnsAsync(StationEui, CancellationToken.None));
         }
 
         [Fact]
@@ -198,14 +198,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
             _ = await this.subject.ResolveLnsAsync(StationEui, CancellationToken.None);
 
             // assert
-            this.registryManagerMock.Verify(rm => rm.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.registryManagerMock.Verify(rm => rm.GetStationTwinAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private void SetupLbsTwinResponse(StationEui stationEui, string networkId)
         {
             this.registryManagerMock
-                .Setup(rm => rm.GetTwinAsync(stationEui.ToString(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new IoTHubDeviceTwin(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") }));
+                .Setup(rm => rm.GetStationTwinAsync(stationEui, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new IoTHubStationTwin(new Twin { Tags = new TwinCollection(@$"{{""network"":""{networkId}""}}") }));
         }
 
         private void SetupIotHubQueryResponse(string networkId, IList<string?> hostAddresses)

@@ -4,7 +4,6 @@
 namespace LoRaTools.IoTHubImpl
 {
     using System;
-    using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Shared;
 
     public class IoTHubDeviceTwin : IDeviceTwin
@@ -13,10 +12,10 @@ namespace LoRaTools.IoTHubImpl
 
         public TwinProperties Properties => this.TwinInstance.Properties;
 
-        public TwinCollection Tags => this.TwinInstance.Tags;
-
         public IoTHubDeviceTwin(Twin twin)
         {
+            ArgumentNullException.ThrowIfNull(twin, nameof(twin));
+
             this.TwinInstance = twin;
         }
 

@@ -12,6 +12,7 @@ namespace LoRaTools
     {
         Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null);
         Task<ILoRaDeviceTwin> GetLoRaDeviceTwinAsync(string deviceId, CancellationToken? cancellationToken = null);
+        Task<IStationTwin> GetStationTwinAsync(StationEui stationEui, CancellationToken? cancellationToken = null);
         Task<string> GetDevicePrimaryKeyAsync(string deviceId);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag, CancellationToken cancellationToken);
         Task<bool> AddDeviceAsync(IDeviceTwin twin);
