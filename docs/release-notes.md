@@ -6,9 +6,21 @@ title: Release Notes
 
 ### New features
 
+- [#1746](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1746): Running LoRaWAN Network Server decoupled from IoT Edge
+- [#1780](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1780): arm64v8 support
+- [#1807](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1807), [#1810](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1810): AS923 Arduino examples and Documentation
+
 ### Breaking Changes
 
 - [#1794](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1794): Application Insights is now requiring a connection string instead of instrumentation key. Make sure that, when updating to this version, the `APPLICATIONINSIGHTS_CONNECTION_STRING` is set instead of obsolete `APPINSIGHTS_INSTRUMENTATIONKEY`. More information on how to [migrate from Application Insights instrumentation keys to connection strings](https://docs.microsoft.com/en-us/azure/azure-monitor/app/migrate-from-instrumentation-keys-to-connection-strings) on the official Azure documentation.
+
+### Bugfixes
+
+- [#1711](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1711): Remove unused DevEUI that breaks deserialization
+- [#1728](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1728): Fix restart of the Basic Station Docker container
+- [#1729](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1729): Don't use rx1droffset during join accept
+- [#1776](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1776): Redis cache not properly updated because of IoT Hub query results delay
+- Various additional fixes covered in [v2.1.0 <-> v2.2.0](https://github.com/Azure/iotedge-lorawan-starterkit/compare/v2.1.0...v2.2.0)
 
 ## v2.1.0
 
