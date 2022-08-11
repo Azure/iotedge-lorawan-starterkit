@@ -233,7 +233,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(primaryKey);
-                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify(/*lang=json*/ "{ 'anotherProp': '1'}"));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
@@ -246,7 +246,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(primaryKey);
-                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'clientThumbprint': 'x'}"));
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify(/*lang=json*/ "{ 'clientThumbprint': 'x'}"));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetAllowedClientThumbprintsAsync(this.stationEui, CancellationToken.None));
@@ -281,7 +281,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(primaryKey);
-                SetupTwinResponse(primaryKey, JsonUtil.Strictify("{ 'anotherProp': '1'}"));
+                SetupTwinResponse(primaryKey, JsonUtil.Strictify(/*lang=json*/ "{ 'anotherProp': '1'}"));
 
                 // act and assert
                 var exception = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetCupsConfigAsync(this.stationEui, CancellationToken.None));
@@ -331,7 +331,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
                                                 select this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
 
                 // assert
-                Assert.Equal(result.Length, numberOfConcurrentAccess);
+                Assert.Equal(numberOfConcurrentAccess, result.Length);
                 this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()), Times.Once);
                 foreach (var r in result)

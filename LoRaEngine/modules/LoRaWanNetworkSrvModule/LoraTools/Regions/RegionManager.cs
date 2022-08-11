@@ -47,10 +47,7 @@ namespace LoRaTools.Regions
         {
             get
             {
-                if (eu868 == null)
-                {
-                    eu868 = new RegionEU868();
-                }
+                eu868 ??= new RegionEU868();
 
                 return eu868;
             }
@@ -62,10 +59,7 @@ namespace LoRaTools.Regions
         {
             get
             {
-                if (us915 == null)
-                {
-                    us915 = new RegionUS915();
-                }
+                us915 ??= new RegionUS915();
 
                 return us915;
             }
@@ -77,10 +71,7 @@ namespace LoRaTools.Regions
         {
             get
             {
-                if (cn470RP1 == null)
-                {
-                    cn470RP1 = new RegionCN470RP1();
-                }
+                cn470RP1 ??= new RegionCN470RP1();
 
                 return cn470RP1;
             }
@@ -92,10 +83,7 @@ namespace LoRaTools.Regions
         {
             get
             {
-                if (cn470RP2 == null)
-                {
-                    cn470RP2 = new RegionCN470RP2();
-                }
+                cn470RP2 ??= new RegionCN470RP2();
 
                 return cn470RP2;
             }

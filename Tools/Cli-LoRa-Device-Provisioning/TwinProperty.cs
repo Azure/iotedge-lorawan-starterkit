@@ -58,5 +58,10 @@ namespace LoRaWan.Tools.CLI
         /// Defines the connection keep alive timeout
         /// </summary>
         public const string KeepAliveTimeout = "KeepAliveTimeout";
+
+        /// <summary>
+        /// Defines the tx params in case of a dwell time enabled network
+        /// </summary>
+        public const string DesiredTxParams = "desiredTxParams";
     }
 }

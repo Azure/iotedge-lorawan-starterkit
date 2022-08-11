@@ -20,7 +20,9 @@ namespace LoRaWan.Tests.Simulation
     using static MoreLinq.Extensions.TransposeExtension;
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
+#pragma warning disable xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     public sealed class SimulatedLoadTests : IntegrationTestBaseSim, IAsyncLifetime
+#pragma warning restore xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     {
         private static readonly TimeSpan IntervalBetweenMessages = TimeSpan.FromSeconds(5);
         private readonly List<SimulatedBasicsStation> simulatedBasicsStations;

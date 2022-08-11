@@ -6,6 +6,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Net.Http;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -51,7 +52,10 @@ namespace LoraKeysManagerFacade
             });
             _ = builder.Services
                 .AddHttpClient()
-                .AddSingleton<IDeviceRegistryManager>(IoTHubRegistryManager.CreateWithProvider(() => RegistryManager.CreateFromConnectionString(iotHubConnectionString)))
+                .AddSingleton(sp => IoTHubRegistryManager.CreateWithProvider(() =>
+                    RegistryManager.CreateFromConnectionString(iotHubConnectionString),
+                    sp.GetRequiredService<IHttpClientFactory>(),
+                    sp.GetRequiredService<ILogger<IoTHubRegistryManager>>()))
                 .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
                 .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
                 .AddSingleton<ILoRaADRManager>(sp => new LoRaADRServerManager(new LoRaADRRedisStore(redisCache, sp.GetRequiredService<ILogger<LoRaADRRedisStore>>()),

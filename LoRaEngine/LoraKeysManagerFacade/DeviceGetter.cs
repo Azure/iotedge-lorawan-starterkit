@@ -181,12 +181,11 @@ namespace LoraKeysManagerFacade
                                 {
                                     if (twin.DeviceId != null)
                                     {
-                                        var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
                                         var iotHubDeviceInfo = new DevAddrCacheInfo
                                         {
                                             DevAddr = someDevAddr,
                                             DevEUI = DevEui.Parse(twin.DeviceId),
-                                            PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
+                                            PrimaryKey = await this.registryManager.GetDevicePrimaryKeyAsync(twin.DeviceId),
                                             GatewayId = twin.GetGatewayID(),
                                             NwkSKey = twin.GetNwkSKey(),
                                             LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
@@ -225,13 +224,7 @@ namespace LoraKeysManagerFacade
 
         private async Task<string> LoadPrimaryKeyAsync(DevEui devEUI)
         {
-            var device = await this.registryManager.GetDeviceAsync(devEUI.ToString());
-            if (device == null)
-            {
-                return null;
-            }
-
-            return device.Authentication.SymmetricKey?.PrimaryKey;
+            return await this.registryManager.GetDevicePrimaryKeyAsync(devEUI.ToString());
         }
 
         private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(DevEui devEUI, string gatewayId)
@@ -247,18 +240,16 @@ namespace LoraKeysManagerFacade
                     joinInfo = this.cacheStore.GetObject<JoinInfo>(cacheKeyJoinInfo);
                     if (joinInfo == null)
                     {
-                        joinInfo = new JoinInfo();
-
-                        var device = await this.registryManager.GetDeviceAsync(devEUI.ToString());
-                        if (device != null)
+                        joinInfo = new JoinInfo
                         {
-                            joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-                            var twin = await this.registryManager.GetLoRaDeviceTwinAsync(devEUI.ToString());
-                            var deviceGatewayId = twin.GetGatewayID();
-                            if (!string.IsNullOrEmpty(deviceGatewayId))
-                            {
-                                joinInfo.DesiredGateway = deviceGatewayId;
-                            }
+                            PrimaryKey = await this.registryManager.GetDevicePrimaryKeyAsync(devEUI.ToString())
+                        };
+
+                        var twin = await this.registryManager.GetLoRaDeviceTwinAsync(devEUI.ToString());
+                        var deviceGatewayId = twin.GetGatewayID();
+                        if (!string.IsNullOrEmpty(deviceGatewayId))
+                        {
+                            joinInfo.DesiredGateway = deviceGatewayId;
                         }
 
                         _ = this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));

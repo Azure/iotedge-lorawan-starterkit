@@ -16,7 +16,9 @@ namespace LoRaWan.Tests.Integration
     using System.Text.Json;
 
     [Collection(RedisFixture.CollectionName)]
+#pragma warning disable xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     public class RedisChannelPublisherTests : IClassFixture<RedisFixture>
+#pragma warning restore xUnit1033 // False positive: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     {
         private readonly IChannelPublisher channelPublisher;
         private readonly ITestOutputHelper testOutputHelper;
