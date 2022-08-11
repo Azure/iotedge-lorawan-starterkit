@@ -26,7 +26,7 @@
         "iotHubName": {
             "type": "string"
         },
-        "appInsightsInstrumentationKey": {
+        "applicationInsightsConnectionString": {
             "type": "string"
         },
         "roleNameGuid": {
@@ -81,8 +81,8 @@
                             "value": "[variables('aspNetCoreUrls')]"
                         },
                         {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[parameters('appInsightsInstrumentationKey')]"
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[parameters('applicationInsightsConnectionString')]"
                         }
                     ],
                     "webSocketsEnabled": true

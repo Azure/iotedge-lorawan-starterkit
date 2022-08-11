@@ -102,8 +102,8 @@
               "LOG_TO_TCP_ADDRESS": {
                 "value": "$NET_SRV_LOG_TO_TCP_ADDRESS"
               },
-              "APPINSIGHTS_INSTRUMENTATIONKEY": {
-                "value": "$APPINSIGHTS_INSTRUMENTATIONKEY"
+              "APPLICATIONINSIGHTS_CONNECTION_STRING": {
+                "value": "$APPLICATIONINSIGHTS_CONNECTION_STRING"
               }
             },
             "status": "running",

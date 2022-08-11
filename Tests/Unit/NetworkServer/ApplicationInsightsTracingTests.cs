@@ -26,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             this.configuration = new TelemetryConfiguration
             {
                 TelemetryChannel = this.stubTelemetryChannel,
-                InstrumentationKey = Guid.NewGuid().ToString(),
+                ConnectionString = $"InstrumentationKey={Guid.NewGuid()};IngestionEndpoint=https://westeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/",
                 TelemetryInitializers = { new OperationCorrelationTelemetryInitializer() }
             };
         }

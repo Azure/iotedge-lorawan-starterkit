@@ -222,8 +222,8 @@
                             "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/deviceConfiguration.json')]"
                         },
                         {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).ConnectionString]"
                         },
                         {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
@@ -414,8 +414,8 @@
                     "discoveryZipUrl": {
                         "value": "[variables('discoveryServiceZipBinary')]"
                     },
-                    "appInsightsInstrumentationKey": {
-                        "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
+                    "applicationInsightsConnectionString": {
+                        "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).ConnectionString]"
                     }
                 }
             }

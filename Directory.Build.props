@@ -24,7 +24,7 @@
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.6.48</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
-      <ApplicationInsightsVersion>2.20.0</ApplicationInsightsVersion>
+      <ApplicationInsightsVersion>2.21.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>6.0.0</PrometheusNetVersion>
       <AzureIdentityVersion>1.6.1</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
