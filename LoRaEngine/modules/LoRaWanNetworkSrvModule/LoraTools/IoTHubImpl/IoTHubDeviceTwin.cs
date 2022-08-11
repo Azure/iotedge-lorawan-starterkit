@@ -10,13 +10,12 @@ namespace LoRaTools.IoTHubImpl
     {
         internal Twin TwinInstance { get; }
 
-        public TwinProperties Properties => this.TwinInstance.Properties;
+        public ITwinPropertiesContainer Properties { get; }
 
         public IoTHubDeviceTwin(Twin twin)
         {
-            ArgumentNullException.ThrowIfNull(twin, nameof(twin));
-
             this.TwinInstance = twin;
+            this.Properties = new IoTHubTwinPropertiesContainer(twin);
         }
 
         public string ETag => this.TwinInstance.ETag;

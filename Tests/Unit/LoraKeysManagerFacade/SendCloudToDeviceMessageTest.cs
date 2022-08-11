@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq.Expressions;
     using System.Net;
     using System.Text;
     using System.Threading;
@@ -13,6 +14,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using global::LoraKeysManagerFacade;
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
+    using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using Xunit;
 
     public class SendCloudToDeviceMessageTest
@@ -225,8 +228,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var devEui = new DevEui(123456789);
 
             var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
+            var mockTwinProperties = SetupMockTwinProperties();
+
             mockDeviceTwin.SetupGet(c => c.Properties)
-                           .Returns(new TwinProperties());
+                           .Returns(mockTwinProperties.Object);
 
             var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -317,12 +322,12 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
+            var mockTwinProperties = SetupMockTwinProperties(
+                desired: $"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\"}}",
+                reported: $"{{\"PreferredGatewayID\": \"gateway1\" }}");
+
             mockDeviceTwin.SetupGet(c => c.Properties)
-                .Returns(new TwinProperties()
-                {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\"}}"),
-                    Reported = new TwinCollection($"{{\"PreferredGatewayID\": \"gateway1\" }}"),
-                });
+                .Returns(mockTwinProperties.Object);
 
             var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -386,12 +391,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
+            var mockTwinProperties = SetupMockTwinProperties(desired: $"{{\"DevAddr\": \"{new DevAddr(100)}\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}");
+
             mockDeviceTwin.SetupGet(c => c.Properties)
-                .Returns(new TwinProperties()
-                {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"{new DevAddr(100)}\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
-                    Reported = new TwinCollection(),
-                });
+                .Returns(mockTwinProperties.Object);
 
             var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -450,12 +453,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var devAddr = new DevAddr(03010101);
             var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
+            var mockTwinProperties = SetupMockTwinProperties(desired: $"{{\"DevAddr\": \"{devAddr}\", \"ClassType\": \"C\"}}");
+
             mockDeviceTwin.SetupGet(c => c.Properties)
-                .Returns(new TwinProperties()
-                {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"{devAddr}\", \"ClassType\": \"C\"}}"),
-                    Reported = new TwinCollection(),
-                });
+                .Returns(mockTwinProperties.Object);
 
             var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -491,11 +492,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
+            var mockTwinProperties = SetupMockTwinProperties(desired: $"{{\"DevAddr\": \"03010101\"}}");
+
             mockDeviceTwin.SetupGet(c => c.Properties)
-                .Returns(new TwinProperties()
-                {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
-                });
+                .Returns(mockTwinProperties.Object);
 
             var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -546,11 +546,10 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
 
             var mockDeviceTwin = new Mock<ILoRaDeviceTwin>();
 
+            var mockTwinProperties = SetupMockTwinProperties(desired: $"{{\"DevAddr\": \"03010101\"}}");
+
             mockDeviceTwin.SetupGet(c => c.Properties)
-                .Returns(new TwinProperties()
-                {
-                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
-                });
+                .Returns(mockTwinProperties.Object);
 
             var query = new Mock<IRegistryPageResult<ILoRaDeviceTwin>>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
@@ -580,6 +579,49 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.serviceClient.VerifyAll();
             this.registryManager.VerifyAll();
             query.VerifyAll();
+        }
+
+        private static Mock<ITwinPropertiesContainer> SetupMockTwinProperties(string desired = "{}", string reported = "{}")
+        {
+            ArgumentNullException.ThrowIfNull(desired, nameof(desired));
+            ArgumentNullException.ThrowIfNull(reported, nameof(reported));
+
+            var mockDesiredProperties = SetupMockTwinProperties(desired);
+            var mockReportedProperties = SetupMockTwinProperties(reported);
+
+            var mockTwinProperties = new Mock<ITwinPropertiesContainer>();
+
+            mockTwinProperties.SetupGet(c => c.Desired)
+                .Returns(mockDesiredProperties.Object);
+
+            mockTwinProperties.SetupGet(c => c.Reported)
+                .Returns(mockReportedProperties.Object);
+
+            return mockTwinProperties;
+        }
+
+        private static Mock<ITwinProperties> SetupMockTwinProperties(string properties)
+        {
+            var mockProperties = new Mock<ITwinProperties>();
+
+            var propertiesObject = JObject.Parse(properties);
+
+            mockProperties.Setup(c => c[It.IsAny<string>()])
+                            .Returns((string propertyName) => propertiesObject[propertyName]);
+
+            mockProperties.Setup(c => c.ContainsKey(It.IsAny<string>()))
+                .Returns((string c) => propertiesObject.ContainsKey(c));
+
+            _ = mockProperties.Setup(c => c.TryGetValue(It.IsAny<string>(), out It.Ref<object>.IsAny))
+                .Returns((string parameterName, out object outval) =>
+                {
+                    var tryGetValueResult = propertiesObject.TryGetValue(parameterName, out var token);
+                    outval = token;
+
+                    return tryGetValueResult;
+                });
+
+            return mockProperties;
         }
     }
 }

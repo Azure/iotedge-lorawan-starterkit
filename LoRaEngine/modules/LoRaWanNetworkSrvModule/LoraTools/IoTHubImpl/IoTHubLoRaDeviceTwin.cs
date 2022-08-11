@@ -13,15 +13,15 @@ namespace LoRaTools.IoTHubImpl
         }
 
         public string GetGatewayID()
-            => TwinInstance.Properties.Desired.TryRead<string>(TwinPropertiesConstants.GatewayID, null, out var someGatewayId)
+            => this.Properties.Desired.TryRead<string>(TwinPropertiesConstants.GatewayID, null, out var someGatewayId)
              ? someGatewayId
              : string.Empty;
 
         public string GetNwkSKey()
         {
-            return TwinInstance.Properties.Desired.TryRead(TwinPropertiesConstants.NwkSKey, null, out string nwkSKey)
+            return this.Properties.Desired.TryRead(TwinPropertiesConstants.NwkSKey, null, out string nwkSKey)
                 ? nwkSKey
-                : TwinInstance.Properties.Reported.TryRead(TwinPropertiesConstants.NwkSKey, null, out nwkSKey)
+                : this.Properties.Reported.TryRead(TwinPropertiesConstants.NwkSKey, null, out nwkSKey)
                 ? nwkSKey
                 : null;
         }

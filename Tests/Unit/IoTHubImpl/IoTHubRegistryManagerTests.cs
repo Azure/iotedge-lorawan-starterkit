@@ -154,6 +154,32 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
         }
 
         [Fact]
+        public async Task GetStationTwinAsync()
+        {
+            var stationEui = new StationEui(01234);
+
+            // Arrange
+            using (var manager = CreateManager())
+            {
+                var twin = new Twin(stationEui.ToString());
+
+                this.mockRegistryManager.Setup(c => c.GetTwinAsync(
+                        It.Is<string>(x => x == stationEui.ToString()),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(twin);
+
+                // Act
+                var result = await manager.GetStationTwinAsync(stationEui);
+
+                // Assert
+                Assert.Equal(twin, result.ToIoTHubDeviceTwin());
+            }
+
+            this.mockRepository.VerifyAll();
+        }
+
+
+        [Fact]
         public async Task UpdateTwinAsync2()
         {
             // Arrange

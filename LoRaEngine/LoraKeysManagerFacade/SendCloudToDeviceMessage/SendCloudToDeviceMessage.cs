@@ -127,8 +127,8 @@ namespace LoraKeysManagerFacade
 
                 if (twin != null)
                 {
-                    var desiredReader = new TwinCollectionReader(twin.Properties.Desired, this.log);
-                    var reportedReader = new TwinCollectionReader(twin.Properties.Reported, this.log);
+                    var desiredReader = new TwinPropertiesReader(twin.Properties.Desired, this.log);
+                    var reportedReader = new TwinPropertiesReader(twin.Properties.Reported, this.log);
 
                     // the device must have a DevAddr
                     if (!desiredReader.TryRead(TwinPropertiesConstants.DevAddr, out DevAddr _) && !reportedReader.TryRead(TwinPropertiesConstants.DevAddr, out DevAddr _))

@@ -3,12 +3,10 @@
 
 namespace LoRaTools
 {
-    public interface IDeviceTwin
+    public interface ITwinPropertiesContainer
     {
-        string DeviceId { get; }
+        public ITwinProperties Desired { get; }
 
-        string ETag { get; }
-
-        ITwinPropertiesContainer Properties { get; }
+        public ITwinProperties Reported { get; }
     }
 }
