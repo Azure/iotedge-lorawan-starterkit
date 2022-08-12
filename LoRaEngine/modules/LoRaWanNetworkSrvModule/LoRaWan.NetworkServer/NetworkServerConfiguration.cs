@@ -145,6 +145,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int ProcessingDelayInMilliseconds { get; set; } = Constants.DefaultProcessingDelayInMilliseconds;
 
+        public bool IsLocalDevelopment { get; set; }
+
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
@@ -154,7 +156,7 @@ namespace LoRaWan.NetworkServer
             var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());
             config.ProcessingDelayInMilliseconds = envVars.GetEnvVar("PROCESSING_DELAY_IN_MS", config.ProcessingDelayInMilliseconds);
             config.RunningAsIoTEdgeModule = !envVars.GetEnvVar("CLOUD_DEPLOYMENT", false);
-
+            config.IsLocalDevelopment = envVars.GetEnvVar("LOCAL_DEVELOPMENT", false);
             var iotHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", envVars.GetEnvVar("IOTHUBHOSTNAME", string.Empty));
             config.IoTHubHostName = !string.IsNullOrEmpty(iotHubHostName) ? iotHubHostName : throw new InvalidOperationException("Either 'IOTEDGE_IOTHUBHOSTNAME' or 'IOTHUBHOSTNAME' environment variable should be populated");
 

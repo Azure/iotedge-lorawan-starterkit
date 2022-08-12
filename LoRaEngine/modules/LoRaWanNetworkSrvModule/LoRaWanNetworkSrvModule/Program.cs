@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using LoRaWan.NetworkServer;
 using LoRaWan.NetworkServer.BasicsStation;
@@ -33,7 +32,7 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-if (Debugger.IsAttached)
+if (configuration.IsLocalDevelopment)
 {
     // when running in local debug mode we explicitely disable IoT Edge
     configuration.RunningAsIoTEdgeModule = false;
