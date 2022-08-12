@@ -6,7 +6,7 @@ highlight some of them.
 - [Keep data on-premise](#keep-data-on-premise)
 - [Redundancy with multiple concentrators and gateways](#multiple-concentrator-with-multiple-lns)
 - [Deployment on Windows Server](#deployment-on-windows-server)
-- [Deployment of IoT Edge in the cloud](#deployment-of-iot-edge-in-the-cloud)
+- [Deployment of IoT Edge in the cloud](#deployment-in-the-cloud-outside-of-iot-edge)
 
 Other scenarios are supported, and combinations of the below scenarios are possible.
 
@@ -138,7 +138,7 @@ workloads on Windows machines.
 
 ![Redundancy](../images/scenarios/scenario-eflow.png)
 
-## Deployment of IoT Edge in the cloud
+## Deployment in the cloud outside of IoT Edge
 
 It is also possible to run the LNS directly in the cloud. You can run the LNS
 for example on AKS in the cloud without using IoT Edge. For detailed information
@@ -148,6 +148,8 @@ This configuration enables you to reuse the same Network Servers for globally
 distributed concentrators.
 
 ![Redundancy](../images/scenarios/scenario-edge-in-cloud.png)
+
+> In previous versions, we detailed options to perform deployment of IoT Edge in the cloud. Although this is technically still possible, **we strongly discourage it** as it has worse performance than the current alternative.
 
 ## Appendix
 
