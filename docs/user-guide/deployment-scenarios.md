@@ -149,7 +149,7 @@ distributed concentrators.
 
 ![Redundancy](../images/scenarios/scenario-edge-in-cloud.png)
 
-> In previous versious, we detailled options to perform deployment of IoT Edge in the cloud. Although this is technically still possible, **we strongly discourage it** as it has worse performance than the current alternative.
+> In previous versions, we detailed options to perform deployment of IoT Edge in the cloud. Although this is technically still possible, **we strongly discourage it** as it has worse performance than the current alternative.
 
 ## Appendix
 
