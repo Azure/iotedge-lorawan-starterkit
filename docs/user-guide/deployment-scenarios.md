@@ -6,7 +6,7 @@ highlight some of them.
 - [Keep data on-premise](#keep-data-on-premise)
 - [Redundancy with multiple concentrators and gateways](#multiple-concentrator-with-multiple-lns)
 - [Deployment on Windows Server](#deployment-on-windows-server)
-- [Deployment of IoT Edge in the cloud](#deployment-of-iot-edge-in-the-cloud)
+- [Deployment of IoT Edge in the cloud](#deployment-in-the-cloud-outside-of-iot-edge)
 
 Other scenarios are supported, and combinations of the below scenarios are possible.
 
