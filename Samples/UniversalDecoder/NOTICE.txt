@@ -2838,7 +2838,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-pino 8.4.0 - MIT
+pino 8.4.1 - MIT
 https://getpino.io/
 
 Copyright (c) 2016-2019 Matteo Collina, David Mark Clements and the Pino contributors
