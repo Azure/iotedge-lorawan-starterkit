@@ -2,6 +2,14 @@
 title: Release Notes
 ---
 
+## v2.2.0
+
+### New features
+
+### Breaking Changes
+
+- [#1794](https://github.com/Azure/iotedge-lorawan-starterkit/pull/1794): Application Insights is now requiring a connection string instead of instrumentation key. Make sure that, when updating to this version, the `APPLICATIONINSIGHTS_CONNECTION_STRING` is set instead of obsolete `APPINSIGHTS_INSTRUMENTATIONKEY`. More information on how to [migrate from Application Insights instrumentation keys to connection strings](https://docs.microsoft.com/en-us/azure/azure-monitor/app/migrate-from-instrumentation-keys-to-connection-strings) on the official Azure documentation.
+
 ## v2.1.0
 
 ### New Features

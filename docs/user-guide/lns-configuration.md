@@ -32,7 +32,7 @@ as environment variables for manual configuration of the
 | CLIENT_CERTIFICATE_MODE     | Specifies the client certificate mode with which the server should be run              | No (defaults to `NoCertificate`)    |
 | LNS_VERSION                 | Version of the LNS                                                                     | No                                  |
 | IOTHUB_CONNECTION_POOL_SIZE | AMQP Connection Pool Size for communication to IoT Edge Hub / IoT Hub (depending on `ENABLE_GATEWAY`). Increasing this value to higher number will improve scalability; for more information see [Scalability](./scalability.md) | No (defaults to 1) |
-| APPINSIGHTS_INSTRUMENTATIONKEY | Instrumentation key for forwarding metrics to Application Insights                  | No                                  |
+| APPLICATIONINSIGHTS_CONNECTION_STRING | Connection string for forwarding metrics to Application Insights                  | No                                  |
 
 The following settings can be configured via desired properties of the Network
 Server module twin in IoT Hub:

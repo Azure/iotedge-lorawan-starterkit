@@ -55,7 +55,7 @@ You can configure the following behavior of the LNS discovery service.
 | Environment variable | Description | Deployment type |
 | ---                  | ---         | ---             |
 | `Logging__LogLevel__Default` | Configures the default log level. For more fine-grained configuration of the console log level, refer to [Logging in .NET Core and ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0#set-log-level-by-command-line-environment-variables-and-other-configuration) | All |
-| `APPINSIGHTS_INSTRUMENTATIONKEY` | Sends telemetry data to Application Insights | All |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Useful for sending telemetry data to Application Insights | All |
 | `Logging__ApplicationInsights__LogLevel__<Default|..>` | Configures the Application Insights log levels | All |
 | `ASPNETCORE_URLS` | Configures on which URLs the service is listening. Multiple URLs should be separated by a `;` | All |
 | `IotHubHostName` | Host name of the Iot Hub. Only used if you connect to IoT Hub using managed identities. | App Service |
