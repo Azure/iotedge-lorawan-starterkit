@@ -2838,7 +2838,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-pino 8.4.1 - MIT
+pino 8.4.2 - MIT
 https://getpino.io/
 
 Copyright (c) 2016-2019 Matteo Collina, David Mark Clements and the Pino contributors
@@ -2971,7 +2971,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-pino-pretty 9.0.0 - MIT
+pino-pretty 9.0.1 - MIT
 https://github.com/pinojs/pino-pretty#readme
 
 Copyright (c) 2019 the Pino team
