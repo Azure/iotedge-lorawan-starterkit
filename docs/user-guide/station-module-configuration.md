@@ -25,3 +25,4 @@ The following table is providing a list of configuration options, to be provided
 | FIXED_STATION_EUI         | Provides the ability to start the Basics Station with a fixed EUI | No (if not set, the Basics Station built-in logic will be used for generating a EUI) |
 | STATION_PATH              | A string identifying the path of the folder where the compiled `station.std` binary for Basics Station is located | No (if not set, defaults to `/basicstation` folder)          |
 | LOG_LEVEL                 | A string setting the desired log level for the Basics Station binary. Allowed values: XDEBUG,DEBUG,VERBOSE,INFO,NOTICE,WARNING,ERROR,CRITICAL | No (if not set, defaults to INFO) |
+| LOCAL_DEVELOPMENT         | A boolean indicating whether the Network Server is running locally in Visual Studio for debugging purposes | No (if not set, defaults to False) |
