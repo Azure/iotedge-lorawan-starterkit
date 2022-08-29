@@ -155,7 +155,9 @@ namespace LoRaWan.NetworkServer
             // Create case insensitive dictionary from environment variables
             var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());
             config.ProcessingDelayInMilliseconds = envVars.GetEnvVar("PROCESSING_DELAY_IN_MS", config.ProcessingDelayInMilliseconds);
-            config.RunningAsIoTEdgeModule = !envVars.GetEnvVar("CLOUD_DEPLOYMENT", false);
+
+            // We disable IoT Edge runtime either when we run in the cloud or during local development.
+            config.RunningAsIoTEdgeModule = !(envVars.GetEnvVar("CLOUD_DEPLOYMENT", false) || envVars.GetEnvVar("LOCAL_DEVELOPMENT", false));
             config.IsLocalDevelopment = envVars.GetEnvVar("LOCAL_DEVELOPMENT", false);
             var iotHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", envVars.GetEnvVar("IOTHUBHOSTNAME", string.Empty));
             config.IoTHubHostName = !string.IsNullOrEmpty(iotHubHostName) ? iotHubHostName : throw new InvalidOperationException("Either 'IOTEDGE_IOTHUBHOSTNAME' or 'IOTHUBHOSTNAME' environment variable should be populated");
