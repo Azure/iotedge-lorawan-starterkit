@@ -317,6 +317,7 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
     'IOTEDGE_DEVICEID': The name of your PC
     'FACADE_AUTH_CODE': (only needed for deployed Azure Function) the code for authenticating and authorizing requests
     'LOG_LEVEL': 1 or Debug (optional, to activate most verbose logging level)
+    'LOCAL_DEVELOPMENT': true
     ```
 
 1. <!-- markdown-link-check-enable --> Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade) containing:
