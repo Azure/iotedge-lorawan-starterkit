@@ -11,8 +11,8 @@
     </PropertyGroup>
     <PropertyGroup>
       <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>
-      <MicrosoftAzureDevicesVersion>1.37.1</MicrosoftAzureDevicesVersion>
-      <MicrosoftAzureDevicesClientVersion>1.41.0</MicrosoftAzureDevicesClientVersion>
+      <MicrosoftAzureDevicesVersion>1.38.1</MicrosoftAzureDevicesVersion>
+      <MicrosoftAzureDevicesClientVersion>1.41.1</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.1</MicrosoftExtensionsCachingMemoryVersion>
       <MicrosoftAzureFunctionsExtensionsVersion>1.1.0</MicrosoftAzureFunctionsExtensionsVersion>
       <MicrosoftExtensionsDependencyInjectionVersion>6.0.0</MicrosoftExtensionsDependencyInjectionVersion>
@@ -24,16 +24,16 @@
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.6.48</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
-      <ApplicationInsightsVersion>2.20.0</ApplicationInsightsVersion>
+      <ApplicationInsightsVersion>2.21.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>6.0.0</PrometheusNetVersion>
-      <AzureIdentityVersion>1.6.0</AzureIdentityVersion>
+      <AzureIdentityVersion>1.6.1</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
-      <MicrosoftNETTestSdkVersion>17.2.0</MicrosoftNETTestSdkVersion>
-      <MoqVersion>4.18.1</MoqVersion>
-      <XUnitVersion>2.4.1</XUnitVersion>
+      <MicrosoftNETTestSdkVersion>17.3.0</MicrosoftNETTestSdkVersion>
+      <MoqVersion>4.18.2</MoqVersion>
+      <XUnitVersion>2.4.2</XUnitVersion>
       <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.1</MicrosoftExtensionsConfigurationVersion>
       <MicrosoftExtensionsConfigurationBinderVersion>6.0.0</MicrosoftExtensionsConfigurationBinderVersion>
@@ -46,8 +46,8 @@
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>34.0.2</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
-      <MicrosoftAspNetCoreMvcTestingVersion>6.0.7</MicrosoftAspNetCoreMvcTestingVersion>
-      <AzureMessagingEventHubsVersion>5.7.1</AzureMessagingEventHubsVersion>
+      <MicrosoftAspNetCoreMvcTestingVersion>6.0.8</MicrosoftAspNetCoreMvcTestingVersion>
+      <AzureMessagingEventHubsVersion>5.7.2</AzureMessagingEventHubsVersion>
     </PropertyGroup>
 
     <ItemGroup>

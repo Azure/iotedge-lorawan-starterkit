@@ -92,7 +92,7 @@ jobs:
 
   power_on_azure_vm:
     name: Power ON EFLOW
-    if: always()
+    if: always() && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -109,7 +109,7 @@ jobs:
 
   reset_redis_cache:
     name: Reset the Redis Cache
-    if: always()
+    if: always() && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Flush the database
@@ -353,7 +353,7 @@ jobs:
           IOT_HUB_RESOURCE_ID: ${{ secrets.IOT_HUB_RESOURCE_ID }}
           LOG_ANALYTICS_WORKSPACE_ID: ${{ secrets.LOG_ANALYTICS_WORKSPACE_ID }}
           LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
-          APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
+          APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}
           CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
           SERVER_PFX_PASSWORD: ${{ secrets.SERVER_PFX_PASSWORD }}
           NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
@@ -385,7 +385,7 @@ jobs:
       IOT_HUB_RESOURCE_ID: ${{ secrets.IOT_HUB_RESOURCE_ID }}
       LOG_ANALYTICS_WORKSPACE_ID: ${{ secrets.LOG_ANALYTICS_WORKSPACE_ID }}
       LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
-      APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}
     steps:
       - uses: actions/checkout@v3
         name: Checkout current branch
@@ -436,7 +436,7 @@ jobs:
           IOT_HUB_RESOURCE_ID: ${{ secrets.IOT_HUB_RESOURCE_ID }}
           LOG_ANALYTICS_WORKSPACE_ID: ${{ secrets.LOG_ANALYTICS_WORKSPACE_ID }}
           LOG_ANALYTICS_SHARED_KEY: ${{ secrets.LOG_ANALYTICS_SHARED_KEY }}
-          APPINSIGHTS_INSTRUMENTATIONKEY: ${{ secrets.APPINSIGHTS_INSTRUMENTATIONKEY }}
+          APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}
         with:
           deployment_file_name: '${{ secrets.DEPLOYMENT_FILE_NAME }}'
           architecture: '${{ secrets.ARCHITECTURE }}'
