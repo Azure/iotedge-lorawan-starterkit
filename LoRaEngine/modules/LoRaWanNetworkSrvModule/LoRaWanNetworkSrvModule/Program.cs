@@ -32,10 +32,5 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-if (configuration.IsLocalDevelopment)
-{
-    // when running in local debug mode we explicitely disable IoT Edge
-    configuration.RunningAsIoTEdgeModule = false;
-}
 
 await BasicsStationNetworkServer.RunServerAsync(configuration, cancellationToken);
