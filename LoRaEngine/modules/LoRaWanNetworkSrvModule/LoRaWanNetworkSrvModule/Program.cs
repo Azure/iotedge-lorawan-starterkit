@@ -32,5 +32,4 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-
 await BasicsStationNetworkServer.RunServerAsync(configuration, cancellationToken);
