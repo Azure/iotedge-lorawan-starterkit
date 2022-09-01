@@ -32,4 +32,5 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+configuration.RunningAsIoTEdgeModule = false;
 await BasicsStationNetworkServer.RunServerAsync(configuration, cancellationToken);

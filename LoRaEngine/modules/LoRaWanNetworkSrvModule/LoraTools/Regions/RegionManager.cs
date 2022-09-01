@@ -34,6 +34,9 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.AS923:
                     region = AS923;
                     return true;
+                case LoRaRegionType.AU915RP1:
+                    region = AU915RP1;
+                    return true;
 
                 case LoRaRegionType.NotSet:
                 default:
@@ -62,6 +65,18 @@ namespace LoRaTools.Regions
                 us915 ??= new RegionUS915();
 
                 return us915;
+            }
+        }
+
+        private static Region au915RP1;
+
+        public static Region AU915RP1
+        {
+            get
+            {
+                au915RP1 ??= new RegionAU915RP1();
+
+                return au915RP1;
             }
         }
 
