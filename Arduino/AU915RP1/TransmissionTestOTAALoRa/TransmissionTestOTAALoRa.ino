@@ -1,7 +1,7 @@
 
 #include <LoRaWan.h>
 //set to true to send confirmed data up messages
-bool confirmed=false;
+bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId ="47AAC86800430028";
 char * appKey="8AFE71A145B253E49C3031AD068277A1";
@@ -18,8 +18,8 @@ iot hub OTAA desired properties for deviceid: 47AAC86800430028
   */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr=DR0;
-_physical_type_t physicalType =US915HYBRID ;
+_data_rate_t dr=DR2;
+_physical_type_t physicalType =AU915 ;
 
 //internal variables
 char data[10];
@@ -37,17 +37,22 @@ void setup(void)
     lora.setKey(NULL, NULL, appKey);
 
     lora.setDeciveMode(LWOTAA);
-    lora.setDataRate(dr, physicalType);
 
+
+ // Disable Channels not used from the active channel list
+  for (int i = 8 ; i< 72; i++){
+    lora.setChannelOFF(i);
+  } 
 
 
   lora.setAdaptiveDataRate(false);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
+    
 
-
-    lora.setPower(14);
+    lora.setPower(5);
+    lora.setDataRate(dr, physicalType);
 
     while(!lora.setOTAAJoin(JOIN,20000));
 }
@@ -93,5 +98,3 @@ void loop(void)
     }
   }
 }
-
-

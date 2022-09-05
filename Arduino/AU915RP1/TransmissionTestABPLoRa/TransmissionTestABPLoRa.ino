@@ -21,7 +21,7 @@ iot hub ABP desired properties for deviceid: 46AAC86800430028
   */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr=DR3;
+_data_rate_t dr=DR2;
 _physical_type_t physicalType =AU915 ;
 
 //internal variables
@@ -43,7 +43,7 @@ void setup(void)
     lora.setDeciveMode(LWABP);
     lora.setDataRate(dr, physicalType);
 
-    lora.setAdaptiveDataRate(true);
+    lora.setAdaptiveDataRate(false);
     lora.setDutyCycle(false);
     lora.setJoinDutyCycle(false);
 
