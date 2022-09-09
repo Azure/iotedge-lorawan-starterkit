@@ -22,6 +22,7 @@ namespace LoRaWan.Tests.E2E
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Xunit;
@@ -30,6 +31,7 @@ namespace LoRaWan.Tests.E2E
     {
         private const string FirstNetworkName = "network1";
         private const string SecondNetworkName = "network2";
+        private const string LnsModuleName = "LoRaWanNetworkSrvModule";
 
         internal sealed record Lns(string DeviceId, string HostAddress, string NetworkId);
         internal sealed record Station(StationEui StationEui, string NetworkId);
@@ -56,15 +58,15 @@ namespace LoRaWan.Tests.E2E
             StationInfo.GroupJoin(LnsInfo, station => station.NetworkId, lns => lns.NetworkId, (s, ls) => (s.StationEui, LnsInfo: ls))
                        .ToImmutableDictionary(x => x.StationEui, x => x.LnsInfo.ToImmutableArray());
 
-        private readonly IDeviceRegistryManager registryManager;
+        private readonly RegistryManager registryManager;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public LnsDiscoveryFixture()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            this.registryManager = IoTHubRegistryManager.CreateWithProvider(() =>
-                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString), new MockHttpClientFactory(), null);
+            this.registryManager = 
+                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString);
         }
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
@@ -82,13 +84,23 @@ namespace LoRaWan.Tests.E2E
         {
             foreach (var lns in LnsInfo)
             {
-                await this.registryManager.DeployEdgeDeviceAsync(lns.DeviceId, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, lns.NetworkId, lns.HostAddress);
+                await this.registryManager.AddDeviceAsync(new Device(lns.DeviceId));
+                await this.registryManager.AddModuleAsync(new Module(lns.DeviceId, LnsModuleName));
+                var twin = new Twin(new TwinProperties { Desired = new TwinCollection(JsonSerializer.Serialize(new { hostAddress = lns.HostAddress })) })
+                {
+                    Tags = GetNetworkTags(lns.NetworkId)
+                };
+                await this.registryManager.UpdateTwinAsync(lns.DeviceId, LnsModuleName, twin, "*", CancellationToken.None);
             }
+
 
             foreach (var station in StationInfo)
             {
-                await this.registryManager.DeployConcentratorAsync(station.StationEui.ToString(), "EU");
+                var deviceId = station.StationEui.ToString();
+                await this.registryManager.AddDeviceAsync(new Device(deviceId));
+                await this.registryManager.UpdateTwinAsync(deviceId, new Twin { Tags = GetNetworkTags(station.NetworkId) }, "*", CancellationToken.None);
             }
+            static TwinCollection GetNetworkTags(string networkId) => new TwinCollection(JsonSerializer.Serialize(new { network = networkId }));
 
             var waitTime = TimeSpan.FromSeconds(60);
             Console.WriteLine($"Waiting for {waitTime.TotalSeconds} seconds.");
