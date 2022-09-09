@@ -17,7 +17,6 @@ namespace LoRaWan.Tests.E2E
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
-    using LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
@@ -60,19 +59,15 @@ namespace LoRaWan.Tests.E2E
 
         private readonly RegistryManager registryManager;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public LnsDiscoveryFixture()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             this.registryManager = 
                 RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString);
         }
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
         public void Dispose()
         {
-
+            registryManager.Dispose();
         }
 
         public Task DisposeAsync() =>
