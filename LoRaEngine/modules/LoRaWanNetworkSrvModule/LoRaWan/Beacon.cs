@@ -4,10 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     internal class Beacon
     {
@@ -25,66 +21,66 @@ namespace LoRaWan
             BitConverter.GetBytes(epochTime).CopyTo(message, 2);
 
             // crc section
-            var crc = GenCrc16(message[0..6]);
+            //var crc = GenCrc16(message[0..6]);
 
             return message;
         }
 
 
-        /// <summary>
-        /// Gens the CRC16.
-        /// CRC-1021 = X(16)+x(12)+x(5)+1
-        /// </summary>
-        /// <param name="c">The c.</param>
-        /// <param name="nByte">The n byte.</param>
-        /// <returns>System.Byte[][].</returns>
-        public static ushort GenCrc16(byte[] c)
-        {
-            uint poly = 69665;
-            this.initialValue = (ushort)initialValue;
-            ushort temp, a;
-            for (int i = 0; i < table.Length; ++i)
-            {
-                temp = 0;
-                a = (ushort)(i << 8);
-                for (int j = 0; j < 8; ++j)
-                {
-                    if (((temp ^ a) & 0x8000) != 0)
-                    {
-                        temp = (ushort)((temp << 1) ^ poly);
-                    }
-                    else
-                    {
-                        temp <<= 1;
-                    }
-                    a <<= 1;
-                }
-                table[i] = temp;
-            }
-        }
+        ///// <summary>
+        ///// Gens the CRC16.
+        ///// CRC-1021 = X(16)+x(12)+x(5)+1
+        ///// </summary>
+        ///// <param name="c">The c.</param>
+        ///// <param name="nByte">The n byte.</param>
+        ///// <returns>System.Byte[][].</returns>
+        //public static ushort GenCrc16(byte[] c)
+        //{
+        //    uint poly = 69665;
+        //    this.initialValue = (ushort)initialValue;
+        //    ushort temp, a;
+        //    for (int i = 0; i < table.Length; ++i)
+        //    {
+        //        temp = 0;
+        //        a = (ushort)(i << 8);
+        //        for (int j = 0; j < 8; ++j)
+        //        {
+        //            if (((temp ^ a) & 0x8000) != 0)
+        //            {
+        //                temp = (ushort)((temp << 1) ^ poly);
+        //            }
+        //            else
+        //            {
+        //                temp <<= 1;
+        //            }
+        //            a <<= 1;
+        //        }
+        //        table[i] = temp;
+        //    }
+        //}
 
-        public Crc16(Crc16Mode mode)
-        {
-            uint polynomial = 69665;
-            ushort value;
-            ushort temp;
-            for (ushort i = 0; i < table.Length; ++i)
-            {
-                value = 0;
-                temp = i;
-                for (byte j = 0; j < 8; ++j)
-                {
-                    if (((value ^ temp) & 0x0001) != 0)
-                    {
-                        value = (ushort)((value >> 1) ^ polynomial);
-                    }
-                    else
-                    {
-                        value >>= 1;
-                    }
-                    temp >>= 1;
-                }
-                table[i] = value;
-            }
-        }
+        //public Crc16(Crc16Mode mode)
+        //{
+        //    uint polynomial = 69665;
+        //    ushort value;
+        //    ushort temp;
+        //    for (ushort i = 0; i < table.Length; ++i)
+        //    {
+        //        value = 0;
+        //        temp = i;
+        //        for (byte j = 0; j < 8; ++j)
+        //        {
+        //            if (((value ^ temp) & 0x0001) != 0)
+        //            {
+        //                value = (ushort)((value >> 1) ^ polynomial);
+        //            }
+        //            else
+        //            {
+        //                value >>= 1;
+        //            }
+        //            temp >>= 1;
+        //        }
+        //        table[i] = value;
+        //    }
+    }
 }

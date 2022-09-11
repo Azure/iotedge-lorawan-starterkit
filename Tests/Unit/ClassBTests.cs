@@ -3,18 +3,23 @@
 
 namespace LoRaWan.Tests.Unit
 {
-    using System;
+    using System.Collections;
+    using global::LoRaTools;
     using Xunit;
 
     public class ClassBTests
     {
+
+        
+
+
         [Fact]
         public void CheckWorks()
         {
-            byte[] payload = { 86, 0, 64 };
-            byte[] remainder = new byte[2];
-            var crc16 = Beacon.GenCrc16(bytes);
-            Console.WriteLine(crc16);
+            var payload = new BitArray(new bool[] { false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false });
+            var result = CRC16.Compute(payload);
+            var expectedResult = new BitArray(new bool[] { false, false, true, false, false, true, true, true, true, false, false, true, true, true, true, false });
+            Assert.Equal(expectedResult, result);
         }
     }
 }

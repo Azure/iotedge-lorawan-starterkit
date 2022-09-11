@@ -4,50 +4,41 @@
 namespace LoRaTools
 {
     using System;
+    using System.Collections;
 
-    internal class CRC16
+    public static class CRC16
     {
-        private readonly ushort[] table = new ushort[256];
-
-        public ushort ComputeChecksum(params byte[] bytes)
+        private static BitArray shift_and_xor(BitArray array, bool input)
         {
-            ushort crc = 0;
-            for (var i = 0; i < bytes.Length; ++i)
+            var shifted_array = new BitArray(array);
+            // Shift entire array by 1 position to the left, 
+            // filling the new empty spot with the previded input
+            shifted_array = shifted_array.RightShift(1);
+            shifted_array[15] = input;
+            // Modify elements 3 and 10
+            // They should be xor-ed with the input
+            shifted_array[3] ^= input;
+            shifted_array[10] ^= input;
+
+            return shifted_array;
+        }
+
+        public static BitArray Compute(BitArray payload)
+        {
+            if (payload is null)
             {
-                byte index = (byte)(crc ^ bytes[i]);
-                crc = (ushort)((crc >> 8) ^ table[index]);
+                throw new ArgumentException("Provided array should be of length 16");
             }
-            return crc;
-        }
 
-        public byte[] ComputeChecksumBytes(params byte[] bytes)
-        {
-            ushort crc = ComputeChecksum(bytes);
-            return BitConverter.GetBytes(crc);
-        }
-
-        public Crc16(Crc16Mode mode)
-        {
-            ushort polynomial = (ushort)mode;
-            ushort value;
-            ushort temp;
-            for (ushort i = 0; i < table.Length; ++i)
+            var remainder = new BitArray(16);
+            for (var i = 0; i < payload.Length; i++)
             {
-                value = 0;
-                temp = i;
-                for (byte j = 0; j < 8; ++j)
-                {
-                    if (((value ^ temp) & 0x0001) != 0)
-                    {
-                        value = (ushort)((value >> 1) ^ polynomial);
-                    }
-                    else
-                    {
-                        value >>= 1;
-                    }
-                    temp >>= 1;
-                }
-                table[i] = value;
+                var r = remainder[0];
+                var i_xor_r = payload[i] ^ r;
+                remainder = shift_and_xor(remainder, i_xor_r);
             }
+
+            return remainder;
         }
+    }
 }
