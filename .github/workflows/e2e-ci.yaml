@@ -449,7 +449,7 @@ jobs:
     environment:
       name: CI_AZURE_ENVIRONMENT
       url: ${{ needs.env_var.outputs.CheckSuiteUrl }}
-    if: always() && (github.event_name == 'schedule' || github.event.inputs.RunLoadTests == 'true')
+    if: always() && (github.event_name == 'schedule' || github.event.inputs.RunLoadTests == 'true') && needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_eflow_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success' && needs.env_var.outputs.StopFullCi != 'true'
     needs:
       - deploy_arm_gw_iot_edge
       - deploy_eflow_gw_iot_edge
