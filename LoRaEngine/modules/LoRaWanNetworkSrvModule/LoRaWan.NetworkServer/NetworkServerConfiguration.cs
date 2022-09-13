@@ -136,9 +136,16 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string RedisConnectionString { get; private set; }
 
+        /// <summary>
         /// Specifies the pool size for upstream AMQP connection
         /// </summary>
         public uint IotHubConnectionPoolSize { get; internal set; } = 1;
+
+        /// <summary>
+        /// Specificies wether we are running in local development mode.
+        /// </summary>
+        public bool IsLocalDevelopment { get; set; }
+
 
         /// <summary>
         /// Specifies the Processing Delay in Milliseconds
@@ -153,9 +160,9 @@ namespace LoRaWan.NetworkServer
             // Create case insensitive dictionary from environment variables
             var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());
             config.ProcessingDelayInMilliseconds = envVars.GetEnvVar("PROCESSING_DELAY_IN_MS", config.ProcessingDelayInMilliseconds);
-
+            config.IsLocalDevelopment = envVars.GetEnvVar("LOCAL_DEVELOPMENT", false);
             // We disable IoT Edge runtime either when we run in the cloud or during local development.
-            config.RunningAsIoTEdgeModule = !(envVars.GetEnvVar("CLOUD_DEPLOYMENT", false) || envVars.GetEnvVar("LOCAL_DEVELOPMENT", false));
+            config.RunningAsIoTEdgeModule = !(envVars.GetEnvVar("CLOUD_DEPLOYMENT", false) || config.IsLocalDevelopment);
             var iotHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", envVars.GetEnvVar("IOTHUBHOSTNAME", string.Empty));
             config.IoTHubHostName = !string.IsNullOrEmpty(iotHubHostName) ? iotHubHostName : throw new InvalidOperationException("Either 'IOTEDGE_IOTHUBHOSTNAME' or 'IOTHUBHOSTNAME' environment variable should be populated");
 
@@ -204,7 +211,7 @@ namespace LoRaWan.NetworkServer
                                               : throw new NotSupportedException($"'IOTHUB_CONNECTION_POOL_SIZE' needs to be between 1 and {AmqpConnectionPoolSettings.AbsoluteMaxPoolSize}.");
 
             config.RedisConnectionString = envVars.GetEnvVar("REDIS_CONNECTION_STRING", string.Empty);
-            if (!config.RunningAsIoTEdgeModule && string.IsNullOrEmpty(config.RedisConnectionString))
+            if (!config.RunningAsIoTEdgeModule && !config.IsLocalDevelopment && string.IsNullOrEmpty(config.RedisConnectionString))
                 throw new InvalidOperationException("'REDIS_CONNECTION_STRING' can't be empty if running network server as part of a cloud only deployment.");
 
             return config;
