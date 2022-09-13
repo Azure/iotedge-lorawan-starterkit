@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
 
-    internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
+    internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor, IDisposable
     {
         private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
             LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
@@ -36,6 +36,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly ITracing tracing;
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
+        private Timer timer1;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -122,6 +123,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             }
         }
 
+        public static void timer_Elapsed(object state)
+        {
+#pragma warning disable CA2012 // Use ValueTasks correctly
+            _ = ((IWebSocketWriterHandle<string>)state).SendAsync(JsonSerializer.Serialize(
+                new
+                {
+                    msgtype = "timesync",
+                    gpstime = (ulong)DateTime.UtcNow.Subtract(
+                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                        ).TotalMilliseconds * 10,
+                    xtime = 0
+                }), CancellationToken.None);
+#pragma warning restore CA2012 // Use ValueTasks correctly
+        }
+
         private async Task HandleDataMessageAsync(StationEui stationEui,
                                                   IWebSocketWriterHandle<string> socket,
                                                   string json,
@@ -137,6 +153,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     await this.basicsStationConfigurationService.SetReportedPackageVersionAsync(stationEui, package, cancellationToken);
                     var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
                     await socket.SendAsync(routerConfigResponse, cancellationToken);
+                    // start method
+                    timer1 = new Timer(timer_Elapsed, socket, 2, 2000);
                     break;
                 case LnsMessageType.JoinRequest:
                     LogReceivedMessage(this.logger, "jreq", json, null);
@@ -196,9 +214,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     break;
                 case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
+                case LnsMessageType.TimeSync:
+                    var timeSyncData = JsonSerializer.Deserialize<TimeSyncMessage>(json);
+                    LogReceivedMessage(this.logger, "TimeSync", json, null);
+                    timeSyncData.gpsTime = (ulong)DateTime.UtcNow.Subtract(
+                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                        ).TotalMilliseconds;// to micro;
+                    await socket.SendAsync(JsonSerializer.Serialize(timeSyncData), cancellationToken);
+                    break;
                 case var messageType and (LnsMessageType.ProprietaryDataFrame
                                           or LnsMessageType.MulticastSchedule
-                                          or LnsMessageType.TimeSync
                                           or LnsMessageType.RunCommand
                                           or LnsMessageType.RemoteShell):
                     this.logger.LogWarning("'{MessageType}' ({MessageTypeBasicStationString}) is not handled in current LoRaWan Network Server implementation.", messageType, messageType.ToBasicStationString());
@@ -229,6 +254,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, nameof(WebSocketCloseStatus.NormalClosure), cancellationToken);
                 this.logger.LogDebug("WebSocket connection closed");
             }
+        }
+
+        public void Dispose()
+        {
+            this.timer1?.Dispose();
         }
     }
 }
