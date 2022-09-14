@@ -241,8 +241,5 @@ namespace LoRaTools.IoTHubImpl
 
             return abpDevice != null && otaaDevice != null;
         }
-
-        public Task AddModuleAsync(string deviceId, string moduleId)
-            => this.instance.AddModuleAsync(new Module(deviceId, moduleId));
     }
 }

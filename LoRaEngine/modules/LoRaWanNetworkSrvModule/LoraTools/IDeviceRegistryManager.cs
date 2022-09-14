@@ -15,7 +15,6 @@ namespace LoRaTools
         Task<string> GetDevicePrimaryKeyAsync(string deviceId);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceId, string moduleId, IDeviceTwin deviceTwin, string eTag, CancellationToken cancellationToken);
         Task<bool> AddDeviceAsync(IDeviceTwin twin);
-        Task AddModuleAsync(string deviceId, string moduleId);
         IRegistryPageResult<IDeviceTwin> GetEdgeDevices();
         IRegistryPageResult<ILoRaDeviceTwin> GetAllLoRaDevices();
         IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime);
