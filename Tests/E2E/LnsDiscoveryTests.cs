@@ -17,22 +17,24 @@ namespace LoRaWan.Tests.E2E
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
-    using LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Xunit;
 
-    internal sealed class LnsDiscoveryFixture : IAsyncLifetime, IDisposable
+    public sealed class LnsDiscoveryFixture : IAsyncLifetime
     {
+        private const string LnsModuleName = "LoRaWanNetworkSrvModule";
         private const string FirstNetworkName = "network1";
         private const string SecondNetworkName = "network2";
 
-        internal sealed record Lns(string DeviceId, string HostAddress, string NetworkId);
-        internal sealed record Station(StationEui StationEui, string NetworkId);
+        public sealed record Lns(string DeviceId, string HostAddress, string NetworkId);
+        public sealed record Station(StationEui StationEui, string NetworkId);
 
         private static readonly Lns[] LnsInfo = new[]
         {
@@ -56,43 +58,64 @@ namespace LoRaWan.Tests.E2E
             StationInfo.GroupJoin(LnsInfo, station => station.NetworkId, lns => lns.NetworkId, (s, ls) => (s.StationEui, LnsInfo: ls))
                        .ToImmutableDictionary(x => x.StationEui, x => x.LnsInfo.ToImmutableArray());
 
-        private readonly IDeviceRegistryManager registryManager;
+        private readonly RegistryManager registryManager;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public LnsDiscoveryFixture()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            this.registryManager = IoTHubRegistryManager.CreateWithProvider(() =>
-                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString), new MockHttpClientFactory(), null);
-        }
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
-        public void Dispose()
-        {
-
+            this.registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString);
         }
 
-        public Task DisposeAsync() =>
+        public Task CleanupDevicesAsync() =>
             Task.WhenAll(from deviceId in LnsInfo.Select(l => l.DeviceId.ToString())
                                                  .Concat(StationInfo.Select(s => s.StationEui.ToString()))
                          select this.registryManager.RemoveDeviceAsync(deviceId));
 
+        public Task DisposeAsync() => CleanupDevicesAsync();
+
         public async Task InitializeAsync()
         {
+            try
+            {
+                // Try to cleanup existing devices from previous runs
+                await CleanupDevicesAsync();
+            }
+            catch (DeviceNotFoundException)
+            {
+                TestLogger.Log("No device to cleanup was found");
+            }
+
+            await WaitBetweenRegistryOperations();
+
             foreach (var lns in LnsInfo)
             {
-                await this.registryManager.DeployEdgeDeviceAsync(lns.DeviceId, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, lns.NetworkId, lns.HostAddress);
+                await this.registryManager.AddDeviceAsync(new Device(lns.DeviceId) { Capabilities = new DeviceCapabilities { IotEdge = true } });
+
+                var moduleTwin = new Twin()
+                {
+                    Properties = new TwinProperties { Desired = new TwinCollection(JsonSerializer.Serialize(new { hostAddress = lns.HostAddress })) },
+                    Tags = GetNetworkTags(lns.NetworkId)
+                };
+                await this.registryManager.AddModuleAsync(new Module(lns.DeviceId, LnsModuleName));
+                await this.registryManager.UpdateTwinAsync(lns.DeviceId, LnsModuleName, moduleTwin, "*", CancellationToken.None);
             }
 
             foreach (var station in StationInfo)
             {
-                await this.registryManager.DeployConcentratorAsync(station.StationEui.ToString(), "EU");
+                var deviceId = station.StationEui.ToString();
+                await this.registryManager.AddDeviceAsync(new Device(deviceId));
+                var twin = new Twin(deviceId) { Tags = GetNetworkTags(station.NetworkId) };
+                await this.registryManager.UpdateTwinAsync(deviceId, twin, "*", CancellationToken.None);
             }
 
-            var waitTime = TimeSpan.FromSeconds(60);
-            Console.WriteLine($"Waiting for {waitTime.TotalSeconds} seconds.");
-            await Task.Delay(waitTime);
+            await WaitBetweenRegistryOperations();
+
+            static async Task WaitBetweenRegistryOperations() {
+                var waitTime = TimeSpan.FromSeconds(60);
+                TestLogger.Log($"Waiting for {waitTime.TotalSeconds} seconds.");
+                await Task.Delay(waitTime);
+            };
+
+            static TwinCollection GetNetworkTags(string networkId) => new TwinCollection(JsonSerializer.Serialize(new { network = networkId }));
         }
     }
 
@@ -113,9 +136,7 @@ namespace LoRaWan.Tests.E2E
     }
 
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-#pragma warning disable xUnit1033 // We don't need to use the fixture, but only start/stop features. Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     public sealed class LnsDiscoveryTests : IClassFixture<LnsDiscoveryFixture>, IDisposable
-#pragma warning restore xUnit1033 // We don't need to use the fixture, but only start/stop features. Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
     {
         private static readonly IJsonReader<(Uri LnsUri, string Muxs, StationEui StationEui)> RouterInfoResponseReader =
             JsonReader.Object(JsonReader.Property("uri", from u in JsonReader.String()
@@ -131,7 +152,7 @@ namespace LoRaWan.Tests.E2E
         private readonly StationEui secondStation = LnsDiscoveryFixture.StationInfo[1].StationEui;
         private readonly StationEui thirdStation = LnsDiscoveryFixture.StationInfo[2].StationEui;
 
-        public LnsDiscoveryTests()
+        public LnsDiscoveryTests(LnsDiscoveryFixture _)
         {
             this.subject = new LnsDiscoveryApplication();
             this.webSocketClient = this.subject.Server.CreateWebSocketClient();

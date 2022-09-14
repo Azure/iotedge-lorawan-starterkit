@@ -14,7 +14,8 @@ builder.Configuration.AddJsonFile("appsettings.local.json", optional: true);
 builder.Services.AddSingleton<DiscoveryService>()
                 .AddSingleton<ILnsDiscovery, TagBasedLnsDiscovery>()
                 .AddMemoryCache()
-                .AddApplicationInsightsTelemetry();
+                .AddApplicationInsightsTelemetry()
+                .AddHttpClient();
 
 var app = builder.Build();
 

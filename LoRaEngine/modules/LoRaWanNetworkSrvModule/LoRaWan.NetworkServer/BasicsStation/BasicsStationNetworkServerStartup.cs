@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             if (NetworkServerConfiguration.ClientCertificateMode is not ClientCertificateMode.NoCertificate)
                 _ = services.AddSingleton<IClientCertificateValidatorService, ClientCertificateValidatorService>();
 
-            _ = NetworkServerConfiguration.RunningAsIoTEdgeModule
+            _ = NetworkServerConfiguration.RunningAsIoTEdgeModule || NetworkServerConfiguration.IsLocalDevelopment
                 ? services.AddSingleton<ModuleConnectionHost>()
                 : services.AddHostedService<CloudControlHost>()
                           .AddSingleton<ILnsRemoteCallHandler, LnsRemoteCallHandler>()

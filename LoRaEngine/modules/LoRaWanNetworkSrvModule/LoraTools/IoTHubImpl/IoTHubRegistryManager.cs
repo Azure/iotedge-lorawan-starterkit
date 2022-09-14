@@ -109,10 +109,10 @@ namespace LoRaTools.IoTHubImpl
         }
 
         public async Task<ILoRaDeviceTwin> GetLoRaDeviceTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
-             => new IoTHubLoRaDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None));
+             => await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None) is { } twin ? new IoTHubLoRaDeviceTwin(twin) : null;
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
-             => new IoTHubDeviceTwin(await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None));
+             => await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None) is { } twin ? new IoTHubDeviceTwin(twin) : null;
 
         public async Task DeployEdgeDeviceAsync(
                 string deviceId,
