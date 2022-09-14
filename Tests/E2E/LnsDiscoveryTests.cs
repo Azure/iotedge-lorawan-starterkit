@@ -22,12 +22,15 @@ namespace LoRaWan.Tests.E2E
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
     internal sealed class LnsDiscoveryFixture : IAsyncLifetime, IDisposable
     {
+        private const string LnsModuleName = "LoRaWanNetworkSrvModule";
         private const string FirstNetworkName = "network1";
         private const string SecondNetworkName = "network2";
 
@@ -59,12 +62,12 @@ namespace LoRaWan.Tests.E2E
         private readonly IDeviceRegistryManager registryManager;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public LnsDiscoveryFixture()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             this.registryManager = IoTHubRegistryManager.CreateWithProvider(() =>
-                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString), new MockHttpClientFactory(), null);
+                RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString),
+                new MockHttpClientFactory(),
+                NullLogger.Instance);
         }
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
@@ -82,17 +85,31 @@ namespace LoRaWan.Tests.E2E
         {
             foreach (var lns in LnsInfo)
             {
-                await this.registryManager.DeployEdgeDeviceAsync(lns.DeviceId, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, lns.NetworkId, lns.HostAddress);
+                var deviceTwin = new IoTHubDeviceTwin(new Twin(lns.DeviceId) { Capabilities = new DeviceCapabilities { IotEdge = true } });
+
+                await this.registryManager.AddDeviceAsync(deviceTwin);
+
+                var moduleTwin = new IoTHubDeviceTwin(new Twin()
+                {
+                    Properties = new TwinProperties { Desired = new TwinCollection(JsonSerializer.Serialize(new { hostAddress = lns.HostAddress })) },
+                    Tags = GetNetworkTags(lns.NetworkId)
+                });
+                await this.registryManager.AddModuleAsync(lns.DeviceId, LnsModuleName);
+                await this.registryManager.UpdateTwinAsync(lns.DeviceId, LnsModuleName, moduleTwin, "*", CancellationToken.None);
             }
 
             foreach (var station in StationInfo)
             {
-                await this.registryManager.DeployConcentratorAsync(station.StationEui.ToString(), "EU");
+                var deviceId = station.StationEui.ToString();
+                var twin = new IoTHubDeviceTwin(new Twin(deviceId) { Tags = GetNetworkTags(station.NetworkId) });
+                await this.registryManager.AddDeviceAsync(twin);
             }
 
             var waitTime = TimeSpan.FromSeconds(60);
             Console.WriteLine($"Waiting for {waitTime.TotalSeconds} seconds.");
             await Task.Delay(waitTime);
+
+            static TwinCollection GetNetworkTags(string networkId) => new TwinCollection(JsonSerializer.Serialize(new { network = networkId }));
         }
     }
 
