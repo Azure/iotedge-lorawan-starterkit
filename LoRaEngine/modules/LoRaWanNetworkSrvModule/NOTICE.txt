@@ -2926,7 +2926,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-Microsoft.Extensions.Http.Polly 6.0.8 - MIT
+Microsoft.Extensions.Http.Polly 6.0.9 - MIT
 
 
 (c) Microsoft Corporation
@@ -3490,7 +3490,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-StackExchange.Redis 2.6.48 - MIT
+StackExchange.Redis 2.6.66 - MIT
 
 
 Copyright (c) .NET Foundation
