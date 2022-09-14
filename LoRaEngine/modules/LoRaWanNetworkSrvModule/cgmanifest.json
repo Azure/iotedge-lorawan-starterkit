@@ -1,13 +1,15 @@
 {
-    "Registrations": [
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "registrations": [
         {
-        "Component": {
-            "Type": "git",
-            "git": {
-            "RepositoryUrl": "https://github.com/jieter/python-lora",
-            "CommitHash": "00bc45c6d6ba366a0bc09ba287b58f7bc9bc27e0"
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/jieter/python-lora",
+                    "commitHash": "00bc45c6d6ba366a0bc09ba287b58f7bc9bc27e0"
+                }
             }
         }
-        }
-    ]
+    ],
+    "version": 1
 }
