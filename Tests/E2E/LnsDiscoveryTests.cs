@@ -65,25 +65,39 @@ namespace LoRaWan.Tests.E2E
             this.registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.GetConfiguration().IoTHubConnectionString);
         }
 
-        public Task CleanupDevicesAsync() =>
-            Task.WhenAll(from deviceId in LnsInfo.Select(l => l.DeviceId.ToString())
-                                                 .Concat(StationInfo.Select(s => s.StationEui.ToString()))
-                         select this.registryManager.RemoveDeviceAsync(deviceId));
+        public async Task CleanupDevicesAsync()
+        {
+            foreach (var deviceId in LnsInfo.Select(l => l.DeviceId.ToString()).Concat(StationInfo.Select(s => s.StationEui.ToString())))
+            {
+                await ThrottlingHandlingDeleteAsync(deviceId);
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+
+            async Task ThrottlingHandlingDeleteAsync(string deviceId)
+            {
+                try
+                {
+                    await this.registryManager.RemoveDeviceAsync(deviceId);
+                }
+                catch (ThrottlingException)
+                {
+                    TestLogger.Log("Throttling detected. Waiting before retrying.");
+                    await Task.Delay(TimeSpan.FromSeconds(15));
+                    await ThrottlingHandlingDeleteAsync(deviceId);
+                }
+                catch (DeviceNotFoundException)
+                {
+                    TestLogger.Log("No device to cleanup was found");
+                }
+            }
+        }
 
         public Task DisposeAsync() => CleanupDevicesAsync();
 
         public async Task InitializeAsync()
         {
-            try
-            {
-                // Try to cleanup existing devices from previous runs
-                await CleanupDevicesAsync();
-            }
-            catch (DeviceNotFoundException)
-            {
-                TestLogger.Log("No device to cleanup was found");
-            }
-
+            // Try to cleanup existing devices from previous runs
+            await CleanupDevicesAsync();
             await WaitBetweenRegistryOperations();
 
             foreach (var lns in LnsInfo)
@@ -109,7 +123,8 @@ namespace LoRaWan.Tests.E2E
 
             await WaitBetweenRegistryOperations();
 
-            static async Task WaitBetweenRegistryOperations() {
+            static async Task WaitBetweenRegistryOperations()
+            {
                 var waitTime = TimeSpan.FromSeconds(60);
                 TestLogger.Log($"Waiting for {waitTime.TotalSeconds} seconds.");
                 await Task.Delay(waitTime);
