@@ -94,7 +94,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
               "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
               "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
               "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
-              "chan_multiSF_3": { "enable": true, "radio": 1, "if": -400000 },
+              "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
               "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
               "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
               "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
