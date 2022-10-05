@@ -20,7 +20,7 @@
         "fs-extra": "^10.1.0",
         "glob": "^8.0.3",
         "pino": "^8.6.1",
-        "pino-pretty": "^9.1.0"
+        "pino-pretty": "^9.1.1"
     },
     "devDependencies": {
         "jest": "^29.1.2",
