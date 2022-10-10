@@ -10,7 +10,7 @@
       <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
     <PropertyGroup>
-      <DockerDotNetX509Version>3.125.11</DockerDotNetX509Version>
+      <DockerDotNetX509Version>3.125.12</DockerDotNetX509Version>
       <MicrosoftAzureDevicesVersion>1.38.1</MicrosoftAzureDevicesVersion>
       <MicrosoftAzureDevicesClientVersion>1.41.2</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.1</MicrosoftExtensionsCachingMemoryVersion>
@@ -31,7 +31,7 @@
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
-      <MicrosoftNETTestSdkVersion>17.3.1</MicrosoftNETTestSdkVersion>
+      <MicrosoftNETTestSdkVersion>17.3.2</MicrosoftNETTestSdkVersion>
       <MoqVersion>4.18.2</MoqVersion>
       <XUnitVersion>2.4.2</XUnitVersion>
       <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
