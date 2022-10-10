@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServer
 {
-    using System;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Common;
     using Xunit;

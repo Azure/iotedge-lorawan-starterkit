@@ -10,7 +10,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;

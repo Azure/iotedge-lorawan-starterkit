@@ -12,7 +12,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Newtonsoft.Json;
