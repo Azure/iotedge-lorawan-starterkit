@@ -2,7 +2,7 @@
 
 **Feature**: [#1553](https://github.com/Azure/iotedge-lorawan-starterkit/issues/1553)  
 **Authors**: Daniele Antonio Maggio  
-**Status**: Proposed  
+**Status**: Accepted (implemented starting with v2.2.0)  
 
 __________
 
