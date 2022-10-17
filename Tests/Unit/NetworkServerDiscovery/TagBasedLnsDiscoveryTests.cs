@@ -15,7 +15,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerDiscovery
     using global::LoRaTools.IoTHubImpl;
     using LoRaWan.NetworkServerDiscovery;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging.Abstractions;
