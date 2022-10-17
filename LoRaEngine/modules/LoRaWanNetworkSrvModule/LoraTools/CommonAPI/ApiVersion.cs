@@ -112,6 +112,13 @@ namespace LoRaTools.CommonAPI
         public static ApiVersion Version_2022_03_04 { get; }
 
         /// <summary>
+        /// Gets2022_09_01 version
+        /// Enable outside of Edge support
+        /// Not backward compatible.
+        /// </summary>
+        public static ApiVersion Version_2022_09_01 { get; }
+
+        /// <summary>
         /// Gets the version that is assumed in case none is specified.
         /// </summary>
         public static ApiVersion DefaultVersion => Version_0_2_Or_Earlier;
@@ -136,6 +143,7 @@ namespace LoRaTools.CommonAPI
                 yield return Version_2020_08_11;
                 yield return Version_2020_10_09;
                 yield return Version_2022_03_04;
+                yield return Version_2022_09_01;
             }
         }
 
@@ -205,6 +213,9 @@ namespace LoRaTools.CommonAPI
 
             Version_2022_03_04 = new ApiVersion("2022-03-04");
             Version_2022_03_04.MinCompatibleVersion = Version_2022_03_04;
+
+            Version_2022_09_01 = new ApiVersion("2022-09-01");
+            Version_2022_09_01.MinCompatibleVersion = Version_2022_09_01;
         }
 
         /// <summary>
