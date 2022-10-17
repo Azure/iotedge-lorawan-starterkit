@@ -8,7 +8,6 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Net.Http;
     using LoraKeysManagerFacade.FunctionBundler;
-    using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.IoTHubImpl;
     using Microsoft.Azure.Devices;

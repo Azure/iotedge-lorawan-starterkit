@@ -12,7 +12,6 @@ namespace LoRaWan.NetworkServer
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools;
     using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
