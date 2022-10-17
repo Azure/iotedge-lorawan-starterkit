@@ -18,12 +18,10 @@ namespace LoraKeysManagerFacade
     public class CreateEdgeDevice
     {
         private readonly IDeviceRegistryManager registryManager;
-        private readonly IHttpClientFactory httpClientFactory;
 
-        public CreateEdgeDevice(IDeviceRegistryManager registryManager, IHttpClientFactory httpClientFactory)
+        public CreateEdgeDevice(IDeviceRegistryManager registryManager)
         {
             this.registryManager = registryManager;
-            this.httpClientFactory = httpClientFactory;
         }
 
         [FunctionName(nameof(CreateEdgeDevice))]
