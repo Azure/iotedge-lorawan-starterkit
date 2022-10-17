@@ -10,12 +10,9 @@ namespace LoRaWan.Tests.Unit.IoTHubImpl
     using System.Net.Http;
     using System.Net.Mime;
     using System.Runtime.CompilerServices;
-    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Azure;
-    using Bogus.DataSets;
     using global::LoRaTools;
     using global::LoRaTools.IoTHubImpl;
     using LoRaWan.Tests.Common;
