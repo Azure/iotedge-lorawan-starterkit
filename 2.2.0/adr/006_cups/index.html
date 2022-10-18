@@ -1,0 +1,2258 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.4, mkdocs-material-8.1.3">
+    
+    
+      
+        <title>006. CUPS Protocol Implementation - Credential management - IoTEdge LoRaWAN StarterKit - documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.edf004c2.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/timeago.css">
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#006-cups-protocol-implementation-credential-management" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IoTEdge LoRaWAN StarterKit - documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              006. CUPS Protocol Implementation - Credential management
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../quickstart/" class="md-tabs__link">
+      Quick Start
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../user-guide/devguide/" class="md-tabs__link">
+        User Guide
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../user-guide/architecture/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../samples/arduino/" class="md-tabs__link">
+        Samples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tools/device-provisioning/" class="md-tabs__link">
+        Tools
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../001_region_cn470_implementation/" class="md-tabs__link md-tabs__link--active">
+        Decision Log
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../release-notes/" class="md-tabs__link">
+        About
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    IoTEdge LoRaWAN StarterKit - documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/devguide/" class="md-nav__link">
+        Developer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/partner/" class="md-nav__link">
+        Device Manufacturer Guidance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/upgrade/" class="md-nav__link">
+        Upgrade to a new version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/documentation/" class="md-nav__link">
+        Working with the documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/observability/" class="md-nav__link">
+        Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/lns-discovery/" class="md-nav__link">
+        LNS discovery
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_7" type="checkbox" id="__nav_3_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_7">
+          Basic Station configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Basic Station configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_7">
+          <span class="md-nav__icon md-icon"></span>
+          Basic Station configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/pkt-fwd-to-station/" class="md-nav__link">
+        Migrate from Packet Forwarder to LoRa Basics Station
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-device-provisioning/" class="md-nav__link">
+        Concentrator provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-authentication-modes/" class="md-nav__link">
+        Authentication modes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-module-configuration/" class="md-nav__link">
+        LBS IoT Edge Module configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/station-firmware-upgrade/" class="md-nav__link">
+        Firmware upgrade with CUPS
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_8">
+          LNS module configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="LNS module configuration" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_8">
+          <span class="md-nav__icon md-icon"></span>
+          LNS module configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/lns-configuration/" class="md-nav__link">
+        Network Server Configuration
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_9" type="checkbox" id="__nav_3_9" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_9">
+          Region specifics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Region specifics" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_9">
+          <span class="md-nav__icon md-icon"></span>
+          Region specifics
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/as923/" class="md-nav__link">
+        Region AS923
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_10" type="checkbox" id="__nav_3_10" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_10">
+          Testing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Testing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_10">
+          <span class="md-nav__icon md-icon"></span>
+          Testing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/testing/e2e_tests/" class="md-nav__link">
+        E2E Tests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/testing/integration_tests/" class="md-nav__link">
+        Integration Tests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/testing/load_tests/" class="md-nav__link">
+        Load Tests
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/architecture/" class="md-nav__link">
+        Architecture and Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/message-flows/" class="md-nav__link">
+        Message Flows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/deployment-scenarios/" class="md-nav__link">
+        Deployment Scenarios
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/scalability/" class="md-nav__link">
+        Scalability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/ci-setup/" class="md-nav__link">
+        Continuous Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/adaptive-data-rate/" class="md-nav__link">
+        Adaptive Data Rate
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Samples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/arduino/" class="md-nav__link">
+        Arduino Demo Code
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
+          Decoders
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decoders" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Decoders
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/decoder/" class="md-nav__link">
+        Decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/decoders/universal/" class="md-nav__link">
+        Universal Decoder
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Tools
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tools" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/device-provisioning/" class="md-nav__link">
+        LoRa Device Provisioning
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/arduino-samples/" class="md-nav__link">
+        Arduino Samples
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
+        Basic Station Certificates Generation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+        CUPS - Firmware update file preparation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          Decision Log
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Decision Log" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Decision Log
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001_region_cn470_implementation/" class="md-nav__link">
+        001. Region CN470 implementation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../002_lbs_configuration/" class="md-nav__link">
+        002. LoRa Basic Station configuration endpoint implementation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003_documentation/" class="md-nav__link">
+        003. Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../004_region_as923_implementation/" class="md-nav__link">
+        004. Region AS923 implementation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005_observability/" class="md-nav__link">
+        005. Observability
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          006. CUPS Protocol Implementation - Credential management
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        006. CUPS Protocol Implementation - Credential management
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-scope" class="md-nav__link">
+    In-scope
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    Out-of-scope
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-mechanisms-with-lora-basicstm-station" class="md-nav__link">
+    Authentication mechanisms with LoRa Basics™ Station
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication mechanisms with LoRa Basics™ Station">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    Context
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisions" class="md-nav__link">
+    Decision(s)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-to-cups-endpoint" class="md-nav__link">
+    Authentication to CUPS endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-to-lns-endpoint" class="md-nav__link">
+    Authentication to LNS endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-to-store-certificates" class="md-nav__link">
+    Where to store certificates
+  </a>
+  
+    <nav class="md-nav" aria-label="Where to store certificates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-azure-storage-account" class="md-nav__link">
+    a. Azure Storage Account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-azure-key-vault-secret" class="md-nav__link">
+    b. Azure Key Vault secret
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-external-https-repository" class="md-nav__link">
+    c. External HTTPS repository
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cups-protocol-implementation" class="md-nav__link">
+    CUPS Protocol Implementation
+  </a>
+  
+    <nav class="md-nav" aria-label="CUPS Protocol Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flow-diagram-for-credential-management-scenarios" class="md-nav__link">
+    Flow diagram for credential management scenarios
+  </a>
+  
+    <nav class="md-nav" aria-label="Flow diagram for credential management scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flow" class="md-nav__link">
+    Flow
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iot-hub-related-changes" class="md-nav__link">
+    IoT Hub related changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#facade-azure-function-related-changes" class="md-nav__link">
+    Facade Azure Function related changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lorawan-network-server-changes" class="md-nav__link">
+    LoRaWan Network Server changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lora-device-provisioning-cli-changes" class="md-nav__link">
+    LoRa Device Provisioning CLI changes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix" class="md-nav__link">
+    Appendix
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generating-the-certificates" class="md-nav__link">
+    Generating the certificates
+  </a>
+  
+    <nav class="md-nav" aria-label="Generating the certificates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-with-an-external-pki" class="md-nav__link">
+    a) With an external PKI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-without-an-external-pki" class="md-nav__link">
+    b) Without an external PKI
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../007_message_deduplication/" class="md-nav__link">
+        007. Deduplication of messages
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../008_cups_firmware_upgrade/" class="md-nav__link">
+        008. CUPS Protocol Implementation - Firmware Upgrade
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../009_discovery/" class="md-nav__link">
+        009. LoRaWAN Network Server (LNS) discovery
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../010_lns_affinity/" class="md-nav__link">
+        010. LNS sticky affinity over multiple sessions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../011_device_request_queue/" class="md-nav__link">
+        011. Device Request Queue
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_8">
+          About
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="About" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          About
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release-notes/" class="md-nav__link">
+        Release Notes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/" class="md-nav__link">
+        Known Issues
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../support/" class="md-nav__link">
+        Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-scope" class="md-nav__link">
+    In-scope
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    Out-of-scope
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-mechanisms-with-lora-basicstm-station" class="md-nav__link">
+    Authentication mechanisms with LoRa Basics™ Station
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication mechanisms with LoRa Basics™ Station">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    Context
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisions" class="md-nav__link">
+    Decision(s)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-to-cups-endpoint" class="md-nav__link">
+    Authentication to CUPS endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-to-lns-endpoint" class="md-nav__link">
+    Authentication to LNS endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-to-store-certificates" class="md-nav__link">
+    Where to store certificates
+  </a>
+  
+    <nav class="md-nav" aria-label="Where to store certificates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-azure-storage-account" class="md-nav__link">
+    a. Azure Storage Account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-azure-key-vault-secret" class="md-nav__link">
+    b. Azure Key Vault secret
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-external-https-repository" class="md-nav__link">
+    c. External HTTPS repository
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cups-protocol-implementation" class="md-nav__link">
+    CUPS Protocol Implementation
+  </a>
+  
+    <nav class="md-nav" aria-label="CUPS Protocol Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flow-diagram-for-credential-management-scenarios" class="md-nav__link">
+    Flow diagram for credential management scenarios
+  </a>
+  
+    <nav class="md-nav" aria-label="Flow diagram for credential management scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flow" class="md-nav__link">
+    Flow
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iot-hub-related-changes" class="md-nav__link">
+    IoT Hub related changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#facade-azure-function-related-changes" class="md-nav__link">
+    Facade Azure Function related changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lorawan-network-server-changes" class="md-nav__link">
+    LoRaWan Network Server changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lora-device-provisioning-cli-changes" class="md-nav__link">
+    LoRa Device Provisioning CLI changes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix" class="md-nav__link">
+    Appendix
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generating-the-certificates" class="md-nav__link">
+    Generating the certificates
+  </a>
+  
+    <nav class="md-nav" aria-label="Generating the certificates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-with-an-external-pki" class="md-nav__link">
+    a) With an external PKI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-without-an-external-pki" class="md-nav__link">
+    b) Without an external PKI
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/adr/006_cups.md" title="Edit this page" class="md-content__button md-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+</a>
+
+
+<h1 id="006-cups-protocol-implementation-credential-management">006. CUPS Protocol Implementation - Credential management</h1>
+<p><strong>Feature</strong>: <a href="https://github.com/Azure/iotedge-lorawan-starterkit/issues/391">#391</a><br />
+<strong>Author</strong>: Daniele Antonio Maggio<br />
+<strong>Status</strong>: Accepted</p>
+<h2 id="overview">Overview</h2>
+<p>LoRa Basics™ Station defines a CUPS protocol for providing updated LNS/CUPS credentials and generic update data binary to any Client connecting to a CUPS Server.</p>
+<p>More information on the protocol can be found <a href="https://doc.sm.tc/station/cupsproto.html">here</a>.</p>
+<h2 id="in-scope">In-scope</h2>
+<p>This document focuses on:</p>
+<ul>
+<li>Defining a flow diagram for common credential management scenarios:<ul>
+<li>First connection</li>
+<li>Certificate rotation process</li>
+</ul>
+</li>
+<li>Defining the changes needed in IoT Hub for handling Basics Station specific information</li>
+<li>Defining the changes needed in 'Facade' Azure Function for handling updated credential retrieval</li>
+<li>Defining the changes needed in LoRaWan Network Server for handling above mentioned flows</li>
+<li>Defining the changes needed in LoRa Device Provisioning CLI for handling creation/update of concentrators with certificate support</li>
+</ul>
+<h2 id="out-of-scope">Out-of-scope</h2>
+<p>Out of scope for this document is:</p>
+<ul>
+<li>Defining a flow diagram for firmware update process</li>
+<li>Defining any change needed in IoT Hub / Azure Function / Network Server for handling firmware updates</li>
+</ul>
+<h2 id="authentication-mechanisms-with-lora-basicstm-station">Authentication mechanisms with LoRa Basics™ Station</h2>
+<h3 id="context">Context</h3>
+<p>To better understand how the CUPS Protocol should be implemented, it is needed to understand how Basics Station is handling authentication.</p>
+<p>LoRa Basics™ Station supports four different authentication modes:</p>
+<ul>
+<li>No Authentication</li>
+<li>TLS Server Authentication</li>
+<li>TLS Server and Client Authentication</li>
+<li>TLS Server Authentication and Client Token</li>
+</ul>
+<p>An authentication mode can be set by configuring some files in the device where Basics Station is going to be executed. More documentation <a href="https://doc.sm.tc/station/credentials.html">here</a></p>
+<p>Basics Station can either use two different sets of credentials for achieving client authentication to the CUPS endpoint and to the LNS endpoint or re-use the same set of credentials for both.</p>
+<p>The aim of this document section is to take and record a decision for:</p>
+<ul>
+<li>Which authentication mode needs to be used for connecting to CUPS endpoint</li>
+<li>Which authentication mode needs to be used for connecting to LNS endpoint</li>
+<li>Where are the certificates stored and how to retrieve those?</li>
+</ul>
+<h3 id="decisions">Decision(s)</h3>
+<p>Out of the four authentication modes we should aim for "TLS Server and Client Authentication" for both CUPS and LNS endpoints.</p>
+<p>Driving this decision is the willing of increasing the overall security of the system.</p>
+<p>In order to keep the starter kit simple, the same set of server and client credentials are to be used for both CUPS and LNS protocol endpoints.</p>
+<p>For the same simplicity reason, credential bundles are going to be stored in an Azure Storage Account.</p>
+<h3 id="authentication-to-cups-endpoint">Authentication to CUPS endpoint</h3>
+<p>The CUPS endpoint should support mutual TLS authentication between client (basic station) and server (network server IoT Edge module).</p>
+<p>If not manually disabled via flags, for increased security, the server has to "require" client authentication and verify the provided credentials.</p>
+<p>Therefore, in order for Basic Station to connect to the CUPS HTTPS endpoint the following files should be provided to the station:</p>
+<ul>
+<li>cups.uri</li>
+<li>cups.crt (including the certificate in PEM format)</li>
+<li>cups.key (including the EC Private Key for the child certificate)</li>
+<li>cups.trust (including the chain of trust certificate for the server-side certificate)</li>
+</ul>
+<p>You may find an example on how to generate all the needed certificates in <a href="https://github.com/lorabasics/basicstation/blob/master/examples/cups/prep.sh">this script</a> from the Basic Station official GitHub repository.</p>
+<h3 id="authentication-to-lns-endpoint">Authentication to LNS endpoint</h3>
+<p>As for CUPS, the LNS endpoint should support mutual TLS authentication between client (basic station) and server (network server IoT Edge module).</p>
+<p>For increased security the server should "require" client authentication and verify the provided credentials.</p>
+<p>Therefore, in order for Basic Station to connect to the LNS WSS endpoint the following files should be provided to the station:</p>
+<ul>
+<li>tc.uri (i.e.: "wss://LoRaWanNetworkSrvModule:5001")</li>
+<li>tc.crt (including the certificate in PEM format)</li>
+<li>tc.key (including the EC Private Key for the child certificate)</li>
+<li>tc.trust (including the chain of trust certificate for the server-side certificate)</li>
+</ul>
+<p>As stated in the decision section above, same certificate files as CUPS certificates above are expected to be used for the Starter Kit.</p>
+<p>There is no need to copy/paste manually these files in the Basic Station; the CUPS Protocol Implementation later described in this document will retrieve the needed credentials from a centralized repository and update the Basic Station configuration when it starts. This option is also providing an option to rotate certificates when these are near the expiration.</p>
+<h3 id="where-to-store-certificates">Where to store certificates</h3>
+<p>There are multiple options of where to store the <code>cups.{trust,cert,key}</code> and <code>tc.{trust,cert,key}</code> bundle files.</p>
+<p>As stated above, for the same simplicity reason, credential bundles are going to be stored in an Azure Storage Account.</p>
+<h4 id="a-azure-storage-account">a. Azure Storage Account</h4>
+<p>This is the easiest option for a new user of the Starter Kit, even though it's not the safest one.</p>
+<p>When deploying the Starter Kit, an Azure Storage Account is provisioned for Azure Functions.</p>
+<p>LoRa Device Provisioning tool should be capable of uploading the CLI provided bundle files and properly update the twin for the concentrator device being created in IoT Hub.</p>
+<p>When using this option, the 'Facade' Azure Function will retrieve certificate files from such storage account.</p>
+<h4 id="b-azure-key-vault-secret">b. Azure Key Vault secret</h4>
+<p>This option requires more manual intervention, as the LoRa Device Provisioning tool is not adapted for uploading the credential bundle files to an Azure Key Vault instance.</p>
+<p>Following the documentation on <a href="https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal">how to set a secret in Azure Key Vault</a>, you can just create two secrets and retrieve their URLs.</p>
+<p>When setting a Key Vault secret in the concentrator twin "cups" section, the 'Facade' Azure Function will retrieve it using a Managed Identity.</p>
+<h4 id="c-external-https-repository">c. External HTTPS repository</h4>
+<p>This option requires most manual intervention.</p>
+<p>LoRa Device Provisioning tool is not uploading the credential bundle files to the repository.</p>
+<p>'Facade' Azure Function can handle a HTTPS endpoint from where the bundles will be downloaded, even though there is no security check or additional AuthN/AuthZ option provided here.</p>
+<h2 id="cups-protocol-implementation">CUPS Protocol Implementation</h2>
+<h3 id="flow-diagram-for-credential-management-scenarios">Flow diagram for credential management scenarios</h3>
+<h4 id="prerequisites">Prerequisites</h4>
+<ul>
+<li>LoRa Basics™ Station is configured with a cups.uri, a cups.trust and mandatory cups.cert/key</li>
+<li>The concentrator device twin should include changes as described in following section</li>
+</ul>
+<h4 id="flow">Flow</h4>
+<div class="mermaid">  sequenceDiagram
+    autonumber
+    Concentrator-&gt;&gt;CUPS Server: POST /update-info
+    CUPS Server-&gt;&gt;IoT Hub: Retrieve 'Concentrator' twin
+    CUPS Server-&gt;&gt;CUPS Server: Verifies 'Concentrator' client certificate
+    Note right of CUPS Server: Logic for client certificate validation to be defined. First version including a 'cupsClientThumbprint' to verify against. The client certificate thumbprint should be reported as a property.
+    alt client certificate not valid
+        CUPS Server-&gt;&gt;Concentrator: Return forbidden
+    else client certificate valid
+        alt no cups config available
+            CUPS Server-&gt;&gt;CUPS Server: Throw as this is an indication of misconfiguration
+        else cups config available
+            alt different cupsUri
+                alt different cupsCredCrc
+                    CUPS Server-&gt;&gt;Facade Function: Retrieve CUPS Credential Blob
+                    Facade Function-&gt;&gt;CUPS Server: CUPS Credential Blob
+                    CUPS Server-&gt;&gt;Concentrator: Updated cupsUri and cupsCred
+                else equal cupsCredCrc
+                    CUPS Server-&gt;&gt;Concentrator: Updated cupsUri
+                end
+            else equal cupsUri
+                alt different cupsCredCrc
+                    CUPS Server-&gt;&gt;Facade Function: Retrieve CUPS Credential Blob
+                    Note right of CUPS Server: Different CRC is an indication of a credential rotation, therefore retrieval is needed.
+                    Facade Function-&gt;&gt;CUPS Server: CUPS Credential Blob
+                    CUPS Server-&gt;&gt;Concentrator: Updated cupsCred
+                else equal cupsCredCrc
+                    CUPS Server-&gt;&gt;CUPS Server: Checks tcUri and tcCredCrc as per above flow and properly return an update
+                end
+            end
+        end
+    end</div>
+<h3 id="iot-hub-related-changes">IoT Hub related changes</h3>
+<p>Only change is related to the concentrator device twin.</p>
+<p>The following "desired" properties should be properly set:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;cups&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;cupsUri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://IP_or_DNS:PORT&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;tcUri&quot;</span><span class="p">:</span> <span class="s2">&quot;wss://IP_or_DNS:PORT&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;cupsCredCrc&quot;</span><span class="p">:</span> <span class="err">INT</span><span class="p">,</span>
+    <span class="nt">&quot;tcCredCrc&quot;</span><span class="p">:</span> <span class="err">INT</span><span class="p">,</span>
+    <span class="nt">&quot;cupsCredentialUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;https://...&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;tcCredentialUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;https://...&quot;</span>
+<span class="p">},</span>
+<span class="err">//</span> <span class="err">Followi</span><span class="kc">n</span><span class="err">g</span> <span class="kc">f</span><span class="err">ield</span> <span class="kc">t</span><span class="err">o</span> <span class="err">be</span> <span class="err">used</span> <span class="kc">f</span><span class="err">or</span> <span class="kc">f</span><span class="err">irs</span><span class="kc">t</span> <span class="err">versio</span><span class="kc">n</span> <span class="err">clie</span><span class="kc">nt</span> <span class="err">cer</span><span class="kc">t</span><span class="err">i</span><span class="kc">f</span><span class="err">ica</span><span class="kc">te</span> <span class="err">valida</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span>
+<span class="nt">&quot;clientThumbprint&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;Client certificate thumbprint&quot;</span> <span class="p">]</span>
+</code></pre></div>
+<ul>
+<li><strong>'cupsCredCrc'</strong>: should be computed as CRC32 checksum calculated over the concatenated credentials files <code>cups.{trust,cert,key}</code></li>
+<li><strong>'tcCredCrc'</strong>: should be computed as CRC32 checksum calculated over the concatenated credentials files <code>tc.{trust,cert,key}</code></li>
+<li><strong>'cupsCredentialUrl'</strong>: should point to the blob/secret containing the concatenated credentials <code>cups.{trust,cert,key}</code></li>
+<li><strong>'tcCredentialUrl'</strong>: should point to the blob/secret containing the concatenated credentials <code>tc.{trust,cert,key}</code></li>
+<li><strong>'clientThumbprint'</strong>: should include the thumbprint of the client certificate used for authenticating against the CUPS server. It is an array for allowing an old thumbprint to be accepted until the rotation mechanism completes</li>
+</ul>
+<h3 id="facade-azure-function-related-changes">Facade Azure Function related changes</h3>
+<p>The Azure Function should implement a new endpoint 'FetchConcentratorCredentials' which executes the following flow:</p>
+<div class="mermaid">sequenceDiagram
+LoRaWanNetworkSrvModule-&gt;&gt;Function: GET /fetchConcentratorCredentials
+Note right of LoRaWanNetworkSrvModule: Request includes 'stationEui' and 'credentialsType' (cups/tc) as query params
+Function-&gt;&gt;IoT Hub: Retrieve Concentrator device Twin
+Function-&gt;&gt;Function: Parse *CredentialUrl string to understand credentials location
+alt *CredentialUrl is a KeyVault Secret
+    Function-&gt;&gt;Azure KeyVault: Get KeyVault secret using Azure Function Managed Identity
+else *CredentialUrl is from Azure Blob Storage and no SAS is in Url
+    Function-&gt;&gt;Azure Blob Storage: Get Blob using MSI
+else *CredentialUrl is plain Url
+    Function-&gt;&gt;HTTPS Endpoint: Get Blob with HTTP GET Request
+end
+Function-&gt;&gt;LoRaWanNetworkSrvModule: Return credential blob
+Note right of LoRaWanNetworkSrvModule: Response should be a base64 encoded credential sent as plaintext
+</div>
+<p>In addition to this, the Azure Function must be able to properly authenticate to target sink via Managed Identity (when using Azure Blob Storage or KeyVault).</p>
+<p>For the very first version of the implementation, only Azure Storage Account should be implemented and only connection string authentication is going to be supported.</p>
+<p>Considering that the default sink for the starter kit should be an Azure Storage Account, the template for the starter kit should be changed in such a way that a new Blob Container is created for uploading credential blob files.</p>
+<p>If using KeyVault secrets instead of Blob Storage, instructions on how to create a role assignment should be provided.  </p>
+<h3 id="lorawan-network-server-changes">LoRaWan Network Server changes</h3>
+<ul>
+<li>LoRaDeviceAPIServiceBase and its implementation (LoRaDeviceAPIService) should include a method for calling the 'FetchConcentratorCredentials' endpoint</li>
+<li>IBasicsStationConfigurationService and its implementation (BasicsStationConfigurationService) should include a method for retrieving and parsing "cups" desired property in concentrator device twin</li>
+<li>BasicsStationNetworkServerStartup should include a new endpoint for handling CUPS '/update-info' POST requests</li>
+<li>BasicsStationNetworkServer should implement a basic client certificate validation when configuring kestrel</li>
+<li>A new CupsProtocolMessageProcessor class is implemented for achieving purposes of above drawn sequence diagram.</li>
+</ul>
+<h3 id="lora-device-provisioning-cli-changes">LoRa Device Provisioning CLI changes</h3>
+<p>The CLI should be changed in order to:</p>
+<ul>
+<li>Specify if the device being created is making use of CUPS or not</li>
+<li>In case a device being created is making use of CUPS, the tool should:<ul>
+<li>accept as input a cupsCredentials file (being the concatenation of <code>cups.{trust,cert,key}</code>)</li>
+<li>accept as input a tcCredentials file (being the concatenation of <code>tc.{trust,cert,key}</code>)</li>
+<li>accept as input a clientThumbprint string (for client certificate validation)</li>
+<li>compute the CRC32 of above mentioned files</li>
+<li>create a device for the concentrator</li>
+<li>upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage</li>
+<li>update the Twin for the concentrator device accordingly</li>
+</ul>
+</li>
+<li>In case a device being created is not making use of CUPS, tool should provide a <code>--no-cups</code> option, allowing to just specify a <code>clientThumbprint</code> (for client certificate validation on LNS endpoint)</li>
+<li>In case a device is already created and a credential rotation is required, the tool should:<ul>
+<li>provide a "update" mechanism that:<ul>
+<li>accept as input a cupsCredentials file (being the concatenation of <code>cups.{trust,cert,key}</code>)</li>
+<li>accept as input a tcCredentials file (being the concatenation of <code>tc.{trust,cert,key}</code>)</li>
+<li>accept as input a clientThumbprint string (for client certificate validation). New thumbprint is appended to the existing one.</li>
+<li>compute the CRC32 of above mentioned files</li>
+<li>create a device for the concentrator</li>
+<li>upload, via Azure Blob Storage C# SDK, the credential files to the Blob Storage</li>
+<li>update the Twin for the concentrator device accordingly</li>
+</ul>
+</li>
+<li>provide a "revoke" mechanism that:<ul>
+<li>accept as input an old clientThumbprint to be removed from the twin</li>
+<li>check that reported thumbprint property is not equal to the thumbprint that we want to remove (this means that the basic station has not rotated certificate yet)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="appendix">Appendix</h2>
+<h3 id="generating-the-certificates">Generating the certificates</h3>
+<p>For generating both server and client certificates there are two options.</p>
+<h4 id="a-with-an-external-pki">a) With an external PKI</h4>
+<p>In this starter kit, we are assuming that the same server certificate is used for both CUPS and LNS endpoints.</p>
+<p>Using instructions at <a href="../../user-guide/station-authentication-modes/">'Basics Station authentication modes'</a> page, copy the certificate so that the LoRaWan Network Server can retrieve it at its startup and use it within Kestrel.</p>
+<p>For concentrator configuration, it is important to retrieve the chain of trust which is used for signing the CUPS/LNS server certificate.</p>
+<p>This trust file needs to be:</p>
+<ul>
+<li>placed as <code>cups.trust</code> in the Concentrator BasicStation configuration folder</li>
+<li>stored in KeyVault/Blob Storage, using the provisioning tool, to be later retrieved from CUPS Server and transferred to BasicStation running on concentrator device (as <code>tc.trust</code>)</li>
+</ul>
+<p>Regarding client authentication instead, to generate a concentrator specific certificate, you have two options:</p>
+<ul>
+<li>If your device is powerful enough to run OpenSSL:<ul>
+<li>Generate a key and a certificate sign request</li>
+<li>Sign the request by using the PKI</li>
+<li>'Install' the cups.cert/key and tc.cert/key on the concentrator</li>
+<li>Populate cupsCredCrc and tcCredCrc of the concentrator twin:<ul>
+<li>either by manually calculating the CRC32 checksum of the concatenation of <code>cups.{trust,cert,key}</code> and <code>tc.{trust,cert,key}</code> (same file is expected for both cups and tc in the starter kit)</li>
+<li>by using the device provisioning tool</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>If the device is not powerful enough and it's only providing you the ability to upload the .crt/.key bundle, you will have to execute the steps from previous option while generating the key and the certificate sign request on a different device</li>
+</ul>
+<h4 id="b-without-an-external-pki">b) Without an external PKI</h4>
+<p>In this starter kit, we are providing some bash scripts to generate a self-signed root certificate and certificates for server/client authentication.</p>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-01-07T11:54:11+01:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-01-07</span>
+      
+        <br>
+        Created:
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2021-11-23T13:22:43+01:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2021-11-23</span>
+      
+    
+  </small>
+</div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../005_observability/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 005. Observability" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              005. Observability
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../007_message_deduplication/" class="md-footer__link md-footer__link--next" aria-label="Next: 007. Deduplication of messages" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              007. Deduplication of messages
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/Azure/iotedge-lorawan-starterkit" target="_blank" rel="noopener" title="iotedge-lorawan-starterkit on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      
+        <script src="../../js/timeago.min.js"></script>
+      
+        <script src="../../js/timeago_mkdocs_material.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
