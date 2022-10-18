@@ -8,40 +8,44 @@
       
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.6">
     
     
       
-        <title>Cayenne Decoder - IoTEdge LoRaWAN StarterKit - documentation</title>
+        <title>Network Server Configuration - IoTEdge LoRaWAN StarterKit - documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.e6a45f82.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
         
       
+      
+
     
     
     
       
+        
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
     
-      <link rel="stylesheet" href="../../../css/timeago.css">
+      <link rel="stylesheet" href="../../css/timeago.css">
     
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
+    
     
     
   </head>
@@ -58,7 +62,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -66,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cayenne-decoder" class="md-skip">
+        <a href="#network-server-configuration" class="md-skip">
           Skip to content
         </a>
       
@@ -76,9 +80,7 @@
     </div>
     
       <div data-md-component="outdated" hidden>
-        <aside class="md-banner md-banner--warning">
-          
-        </aside>
+        
       </div>
     
     
@@ -86,14 +88,14 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-header__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -105,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Cayenne Decoder
+              Network Server Configuration
             
           </span>
         </div>
@@ -128,7 +130,7 @@
           <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
           
             <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
             </label>
           
         
@@ -137,7 +139,7 @@
     
     
       <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
@@ -145,13 +147,13 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
       
@@ -173,10 +175,10 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/Azure/iotedge-lorawan-starterkit" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -204,7 +206,7 @@
 
 
   <li class="md-tabs__item">
-    <a href="../../.." class="md-tabs__link">
+    <a href="../.." class="md-tabs__link">
       Home
     </a>
   </li>
@@ -216,7 +218,7 @@
 
 
   <li class="md-tabs__item">
-    <a href="../../../quickstart/" class="md-tabs__link">
+    <a href="../../quickstart/" class="md-tabs__link">
       Quick Start
     </a>
   </li>
@@ -225,13 +227,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../../../user-guide/devguide/" class="md-tabs__link">
+      <a href="../devguide/" class="md-tabs__link md-tabs__link--active">
         User Guide
       </a>
     </li>
@@ -247,7 +251,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../user-guide/architecture/" class="md-tabs__link">
+      <a href="../architecture/" class="md-tabs__link">
         Reference
       </a>
     </li>
@@ -257,15 +261,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../../arduino/" class="md-tabs__link md-tabs__link--active">
+      <a href="../../samples/arduino/" class="md-tabs__link">
         Samples
       </a>
     </li>
@@ -281,7 +283,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../tools/device-provisioning/" class="md-tabs__link">
+      <a href="../../tools/device-provisioning/" class="md-tabs__link">
         Tools
       </a>
     </li>
@@ -297,7 +299,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../adr/001_region_cn470_implementation/" class="md-tabs__link">
+      <a href="../../adr/001_region_cn470_implementation/" class="md-tabs__link">
         Decision Log
       </a>
     </li>
@@ -313,7 +315,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../release-notes/" class="md-tabs__link">
+      <a href="../../release-notes/" class="md-tabs__link">
         About
       </a>
     </li>
@@ -331,6 +333,8 @@
           
             
               
+                
+              
               <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -341,20 +345,20 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
+    <a href="../.." title="IoTEdge LoRaWAN StarterKit - documentation" class="md-nav__button md-logo" aria-label="IoTEdge LoRaWAN StarterKit - documentation" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
 
     </a>
     IoTEdge LoRaWAN StarterKit - documentation
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/Azure/iotedge-lorawan-starterkit/" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/Azure/iotedge-lorawan-starterkit" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -372,7 +376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         Home
       </a>
     </li>
@@ -387,7 +391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../quickstart/" class="md-nav__link">
+      <a href="../../quickstart/" class="md-nav__link">
         Quick Start
       </a>
     </li>
@@ -400,12 +404,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       
       
@@ -428,7 +434,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/devguide/" class="md-nav__link">
+      <a href="../devguide/" class="md-nav__link">
         Developer Guidance
       </a>
     </li>
@@ -442,7 +448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/partner/" class="md-nav__link">
+      <a href="../partner/" class="md-nav__link">
         Device Manufacturer Guidance
       </a>
     </li>
@@ -456,7 +462,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/upgrade/" class="md-nav__link">
+      <a href="../upgrade/" class="md-nav__link">
         Upgrade to a new version
       </a>
     </li>
@@ -470,7 +476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/documentation/" class="md-nav__link">
+      <a href="../documentation/" class="md-nav__link">
         Working with the documentation
       </a>
     </li>
@@ -484,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/observability/" class="md-nav__link">
+      <a href="../observability/" class="md-nav__link">
         Observability
       </a>
     </li>
@@ -498,7 +504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/lns-discovery/" class="md-nav__link">
+      <a href="../lns-discovery/" class="md-nav__link">
         LNS discovery
       </a>
     </li>
@@ -540,7 +546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/pkt-fwd-to-station/" class="md-nav__link">
+      <a href="../pkt-fwd-to-station/" class="md-nav__link">
         Migrate from Packet Forwarder to LoRa Basics Station
       </a>
     </li>
@@ -554,7 +560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-device-provisioning/" class="md-nav__link">
+      <a href="../station-device-provisioning/" class="md-nav__link">
         Concentrator provisioning
       </a>
     </li>
@@ -568,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-authentication-modes/" class="md-nav__link">
+      <a href="../station-authentication-modes/" class="md-nav__link">
         Authentication modes
       </a>
     </li>
@@ -582,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-module-configuration/" class="md-nav__link">
+      <a href="../station-module-configuration/" class="md-nav__link">
         LBS IoT Edge Module configuration
       </a>
     </li>
@@ -596,7 +602,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/station-firmware-upgrade/" class="md-nav__link">
+      <a href="../station-firmware-upgrade/" class="md-nav__link">
         Firmware upgrade with CUPS
       </a>
     </li>
@@ -615,14 +621,16 @@
               
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_8" type="checkbox" id="__nav_3_8" checked>
       
       
       
@@ -643,11 +651,59 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../../user-guide/lns-module-configuration/" class="md-nav__link">
-        Network Server IoT Edge Module configuration
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Network Server Configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Network Server Configuration
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#network-server-iot-edge-module-configuration" class="md-nav__link">
+    Network Server IoT Edge Module configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloud-based-network-server-configuration" class="md-nav__link">
+    Cloud-based Network Server configuration
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -694,7 +750,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/as923/" class="md-nav__link">
+      <a href="../as923/" class="md-nav__link">
         Region AS923
       </a>
     </li>
@@ -743,7 +799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/testing/e2e_tests/" class="md-nav__link">
+      <a href="../testing/e2e_tests/" class="md-nav__link">
         E2E Tests
       </a>
     </li>
@@ -757,7 +813,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/testing/integration_tests/" class="md-nav__link">
+      <a href="../testing/integration_tests/" class="md-nav__link">
         Integration Tests
       </a>
     </li>
@@ -771,7 +827,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/testing/load_tests/" class="md-nav__link">
+      <a href="../testing/load_tests/" class="md-nav__link">
         Load Tests
       </a>
     </li>
@@ -826,7 +882,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/architecture/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         Architecture and Concepts
       </a>
     </li>
@@ -840,7 +896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/message-flows/" class="md-nav__link">
+      <a href="../message-flows/" class="md-nav__link">
         Message Flows
       </a>
     </li>
@@ -854,7 +910,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/deployment-scenarios/" class="md-nav__link">
+      <a href="../deployment-scenarios/" class="md-nav__link">
         Deployment Scenarios
       </a>
     </li>
@@ -868,7 +924,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/scalability/" class="md-nav__link">
+      <a href="../scalability/" class="md-nav__link">
         Scalability
       </a>
     </li>
@@ -882,7 +938,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/caching/" class="md-nav__link">
+      <a href="../caching/" class="md-nav__link">
         Caching
       </a>
     </li>
@@ -896,7 +952,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/ci-setup/" class="md-nav__link">
+      <a href="../ci-setup/" class="md-nav__link">
         Continuous Integration Setup
       </a>
     </li>
@@ -910,7 +966,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/adaptive-data-rate/" class="md-nav__link">
+      <a href="../adaptive-data-rate/" class="md-nav__link">
         Adaptive Data Rate
       </a>
     </li>
@@ -930,14 +986,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
@@ -960,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../arduino/" class="md-nav__link">
+      <a href="../../samples/arduino/" class="md-nav__link">
         Arduino Demo Code
       </a>
     </li>
@@ -972,16 +1026,14 @@
               
   
   
-    
-  
   
     
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
       
       
       
@@ -1004,7 +1056,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decoder/" class="md-nav__link">
+      <a href="../../samples/decoders/decoder/" class="md-nav__link">
         Decoder
       </a>
     </li>
@@ -1018,71 +1070,9 @@
   
   
     <li class="md-nav__item">
-      <a href="../universal/" class="md-nav__link">
+      <a href="../../samples/decoders/universal/" class="md-nav__link">
         Universal Decoder
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Cayenne Decoder
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Cayenne Decoder
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-use-the-sample-decoder" class="md-nav__link">
-    How to use the sample decoder
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#supported-cayenne-devices" class="md-nav__link">
-    Supported Cayenne devices
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1135,7 +1125,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/device-provisioning/" class="md-nav__link">
+      <a href="../../tools/device-provisioning/" class="md-nav__link">
         LoRa Device Provisioning
       </a>
     </li>
@@ -1149,7 +1139,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/arduino-samples/" class="md-nav__link">
+      <a href="../../tools/arduino-samples/" class="md-nav__link">
         Arduino Samples
       </a>
     </li>
@@ -1163,7 +1153,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/certificate-generation/" class="md-nav__link">
+      <a href="../../tools/certificate-generation/" class="md-nav__link">
         Basic Station Certificates Generation
       </a>
     </li>
@@ -1177,7 +1167,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/cups-firmware-file-preparation/" class="md-nav__link">
+      <a href="../../tools/cups-firmware-file-preparation/" class="md-nav__link">
         CUPS - Firmware update file preparation
       </a>
     </li>
@@ -1225,7 +1215,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/001_region_cn470_implementation/" class="md-nav__link">
+      <a href="../../adr/001_region_cn470_implementation/" class="md-nav__link">
         001. Region CN470 implementation
       </a>
     </li>
@@ -1239,7 +1229,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/002_lbs_configuration/" class="md-nav__link">
+      <a href="../../adr/002_lbs_configuration/" class="md-nav__link">
         002. LoRa Basic Station configuration endpoint implementation
       </a>
     </li>
@@ -1253,7 +1243,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/003_documentation/" class="md-nav__link">
+      <a href="../../adr/003_documentation/" class="md-nav__link">
         003. Documentation
       </a>
     </li>
@@ -1267,7 +1257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/004_region_as923_implementation/" class="md-nav__link">
+      <a href="../../adr/004_region_as923_implementation/" class="md-nav__link">
         004. Region AS923 implementation
       </a>
     </li>
@@ -1281,7 +1271,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/005_observability/" class="md-nav__link">
+      <a href="../../adr/005_observability/" class="md-nav__link">
         005. Observability
       </a>
     </li>
@@ -1295,7 +1285,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/006_cups/" class="md-nav__link">
+      <a href="../../adr/006_cups/" class="md-nav__link">
         006. CUPS Protocol Implementation - Credential management
       </a>
     </li>
@@ -1309,7 +1299,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/007_message_deduplication/" class="md-nav__link">
+      <a href="../../adr/007_message_deduplication/" class="md-nav__link">
         007. Deduplication of messages
       </a>
     </li>
@@ -1323,7 +1313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/008_cups_firmware_upgrade/" class="md-nav__link">
+      <a href="../../adr/008_cups_firmware_upgrade/" class="md-nav__link">
         008. CUPS Protocol Implementation - Firmware Upgrade
       </a>
     </li>
@@ -1337,7 +1327,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/009_discovery/" class="md-nav__link">
+      <a href="../../adr/009_discovery/" class="md-nav__link">
         009. LoRaWAN Network Server (LNS) discovery
       </a>
     </li>
@@ -1351,7 +1341,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/010_lns_affinity/" class="md-nav__link">
+      <a href="../../adr/010_lns_affinity/" class="md-nav__link">
         010. LNS sticky affinity over multiple sessions
       </a>
     </li>
@@ -1365,7 +1355,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/011_device_request_queue/" class="md-nav__link">
+      <a href="../../adr/011_device_request_queue/" class="md-nav__link">
         011. Device Request Queue
       </a>
     </li>
@@ -1413,7 +1403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release-notes/" class="md-nav__link">
+      <a href="../../release-notes/" class="md-nav__link">
         Release Notes
       </a>
     </li>
@@ -1427,7 +1417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../issues/" class="md-nav__link">
+      <a href="../../issues/" class="md-nav__link">
         Known Issues
       </a>
     </li>
@@ -1441,7 +1431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../support/" class="md-nav__link">
+      <a href="../../support/" class="md-nav__link">
         Support
       </a>
     </li>
@@ -1455,7 +1445,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         Contributing
       </a>
     </li>
@@ -1469,7 +1459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../license/" class="md-nav__link">
+      <a href="../../license/" class="md-nav__link">
         License
       </a>
     </li>
@@ -1491,7 +1481,9 @@
             
             
               
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -1510,15 +1502,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-to-use-the-sample-decoder" class="md-nav__link">
-    How to use the sample decoder
+  <a href="#network-server-iot-edge-module-configuration" class="md-nav__link">
+    Network Server IoT Edge Module configuration
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#supported-cayenne-devices" class="md-nav__link">
-    Supported Cayenne devices
+  <a href="#cloud-based-network-server-configuration" class="md-nav__link">
+    Cloud-based Network Server configuration
   </a>
   
 </li>
@@ -1531,52 +1523,245 @@
               </div>
             
           
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
-              
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
                 
-<a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/samples/decoders/cayenne.md" title="Edit this page" class="md-content__button md-icon">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
-</a>
+                  
+
+  <a href="https://github.com/Azure/iotedge-lorawan-starterkit/edit/docs/main/docs/user-guide/lns-configuration.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
 
 
-<h1 id="cayenne-decoder">Cayenne Decoder</h1>
-<p>This sample allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. It is based on the sample decoder.</p>
-<h2 id="how-to-use-the-sample-decoder">How to use the sample decoder</h2>
-<p>This decode takes a Lora payload and decode it based on the <a href="https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md">Cayenne encoding specification</a>.</p>
-<p>The payload is decoded and transformed into a json object.</p>
-<p>The payload <code>AWcA5gJoMANzJigEZQD9</code> will then be transformed as:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;value&quot;</span><span class="p">:{</span><span class="nt">&quot;IlluminanceSensor&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mi">253</span><span class="p">}],</span><span class="nt">&quot;TemperatureSensor&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mf">23.0</span><span class="p">}],</span><span class="nt">&quot;HumiditySensor&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mf">24.0</span><span class="p">}],</span><span class="nt">&quot;Barometer&quot;</span><span class="p">:[{</span><span class="nt">&quot;Channel&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="mf">976.8</span><span class="p">}]}}</span><span class="w"></span>
-</code></pre></div>
-<p>You can build the docker image or use the module.json file to build an iot edge module. You can then use the following command to start the module:</p>
-<div class="highlight"><pre><span></span><code>docker run --rm -it -p <span class="m">8881</span>:80 your.azurecr.io/cayennedecoder:tag
-</code></pre></div>
-<p>You can then submit the payload from the example here above by hitting the following URL: <a href="http://yourhost:8881/api/CayenneDecoder?fport=1&amp;payload=AWcA5gJoMANzJigEZQD9">http://yourhost:8881/api/CayenneDecoder?fport=1&amp;payload=AWcA5gJoMANzJigEZQD9</a></p>
-<h2 id="supported-cayenne-devices">Supported Cayenne devices</h2>
-<p>All Cayenne devices are supported.</p>
+<h1 id="network-server-configuration">Network Server Configuration</h1>
+<h2 id="network-server-iot-edge-module-configuration">Network Server IoT Edge Module configuration</h2>
+<p>The following table is providing a list of configuration options, to be provided
+as environment variables for manual configuration of the
+<code>LoRaWanNetworkSrvModule</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Environment variable name</th>
+<th>Description</th>
+<th>Mandatory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ENABLE_GATEWAY</td>
+<td>Indicates whether the edgeHub gateway should be enabled or not</td>
+<td>No (defaults to <code>true</code>)</td>
+</tr>
+<tr>
+<td>HTTPS_PROXY</td>
+<td>HTTPS proxy url</td>
+<td>No</td>
+</tr>
+<tr>
+<td>RX2_DATR</td>
+<td>RX2 data rate; useful to override the default regional RX2 Data Rate at a global level</td>
+<td>No (defaults to null, regional default value is used)</td>
+</tr>
+<tr>
+<td>RX2_FREQ</td>
+<td>RX2 frequency; useful to override the default regional RX2 Frequency at a global level</td>
+<td>No (defaults to null, regional default value is used)</td>
+</tr>
+<tr>
+<td>FACADE_SERVER_URL</td>
+<td>Azure Facade function url, e.g. "https://deployedfunction.azurewebsites.net/api"</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>FACADE_AUTH_CODE</td>
+<td>Azure Facade function auth code</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>LOG_LEVEL</td>
+<td>Logging level</td>
+<td>No (defaults to level 4 (Error)</td>
+</tr>
+<tr>
+<td>LOG_TO_CONSOLE</td>
+<td>Indicates whether logging to console is enabled or not</td>
+<td>No (default to <code>true</code>)</td>
+</tr>
+<tr>
+<td>LOG_TO_TCP</td>
+<td>Indicates whether logging to TCP is enabled or not (used mainly for integration tests)</td>
+<td>No (defaults to <code>false</code>)</td>
+</tr>
+<tr>
+<td>LOG_TO_HUB</td>
+<td>Indicates whether logging to IoT Hub is enabled or not</td>
+<td>No (defaults to <code>false</code>)</td>
+</tr>
+<tr>
+<td>LOG_TO_TCP_ADDRESS</td>
+<td>IP address for TCP logs</td>
+<td>Yes, only if TCP logging is enabled</td>
+</tr>
+<tr>
+<td>LOG_TO_TCP_PORT</td>
+<td>TCP port to send logs to</td>
+<td>Yes, only if TCP logging is enabled</td>
+</tr>
+<tr>
+<td>NETID</td>
+<td>Gateway network ID</td>
+<td>No (defaults to network id 1)</td>
+</tr>
+<tr>
+<td>AllowedDevAddresses</td>
+<td>List of allowed dev addresses from which message processing is enabled.</td>
+<td>No (by default allows all messages coming from the defined <code>NETID</code> to be processed)</td>
+</tr>
+<tr>
+<td>LNS_SERVER_PFX_PATH</td>
+<td>Path of the .pfx certificate to be used for LNS Server endpoint</td>
+<td>No</td>
+</tr>
+<tr>
+<td>LNS_SERVER_PFX_PASSWORD</td>
+<td>Password of the .pfx certificate to be used for LNS Server endpoint</td>
+<td>No</td>
+</tr>
+<tr>
+<td>CLIENT_CERTIFICATE_MODE</td>
+<td>Specifies the client certificate mode with which the server should be run</td>
+<td>No (defaults to <code>NoCertificate</code>)</td>
+</tr>
+<tr>
+<td>LNS_VERSION</td>
+<td>Version of the LNS</td>
+<td>No</td>
+</tr>
+<tr>
+<td>IOTHUB_CONNECTION_POOL_SIZE</td>
+<td>AMQP Connection Pool Size for communication to IoT Edge Hub / IoT Hub (depending on <code>ENABLE_GATEWAY</code>). Increasing this value to higher number will improve scalability; for more information see <a href="../scalability/">Scalability</a></td>
+<td>No (defaults to 1)</td>
+</tr>
+<tr>
+<td>APPLICATIONINSIGHTS_CONNECTION_STRING</td>
+<td>Connection string for forwarding metrics to Application Insights</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>The following settings can be configured via desired properties of the Network
+Server module twin in IoT Hub:</p>
+<table>
+<thead>
+<tr>
+<th>Property name</th>
+<th>Description</th>
+<th>Mandatory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FacadeServerUrl</td>
+<td>Azure Facade function url</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>FacadeServerAuthCode</td>
+<td>Azure Facade function auth code</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>ProcessingDelayInMilliseconds</td>
+<td>Processing delay (in milliseconds) to be used for the LNS not owning the connection for a device in a multi-gateway scenario; for more information see <a href="../scalability/">Scalability</a></td>
+<td>No (defaults to 400 ms)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cloud-based-network-server-configuration">Cloud-based Network Server configuration</h2>
+<p>You can run the Network Server directly in the cloud without requiring IoT Edge,
+e.g. on an AKS cluster. In general, the same environment variables as for the
+<a href="#network-server-iot-edge-module-configuration">module configuration</a> apply
+(e.g. for the facade connection). In addition make sure to set the following
+environment variables:</p>
+<table>
+<thead>
+<tr>
+<th>Environment variable name</th>
+<th>Description</th>
+<th>Mandatory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLOUD_DEPLOYMENT</td>
+<td>Switch to indicate that the LNS is deployed as a standalone cloud-based instance</td>
+<td>Yes (must be set to true)</td>
+</tr>
+<tr>
+<td>ENABLE_GATEWAY</td>
+<td>Gateway mode is only applicable to IoT Edge-based deployments. Must be set to <code>false</code> or unset.</td>
+<td>No</td>
+</tr>
+<tr>
+<td>IOTHUBHOSTNAME</td>
+<td>Host name of the IoT Hub to which the LNS should connect to.</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>HOSTNAME</td>
+<td>Identifier of the LNS.</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>REDIS_CONNECTION_STRING</td>
+<td>Connection string used to connect to the deployed Redis instance.</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>FACADE_SERVER_URL</td>
+<td>Azure Facade function url, e.g. "https://deployedfunction.azurewebsites.net/api"</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>FACADE_AUTH_CODE</td>
+<td>Azure Facade function auth code</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2021-11-11T14:07:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2021-11-11</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-08-22T14:12:06+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-08-22</span>
       
         <br>
         Created:
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2021-11-10T16:27:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2021-11-10</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-03-04T08:52:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-03-04</span>
       
     
   </small>
 </div>
 
-              
-            </article>
-          </div>
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
         </div>
         
-          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
             Back to top
           </a>
         
@@ -1584,36 +1769,39 @@
       
         <footer class="md-footer">
   
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
+    
+      
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../universal/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Universal Decoder" rel="prev">
+        <a href="../station-firmware-upgrade/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Firmware upgrade with CUPS" rel="prev">
           <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Previous
               </span>
-              Universal Decoder
+              Firmware upgrade with CUPS
             </div>
           </div>
         </a>
       
       
         
-        <a href="../../../tools/device-provisioning/" class="md-footer__link md-footer__link--next" aria-label="Next: LoRa Device Provisioning" rel="next">
+        <a href="../as923/" class="md-footer__link md-footer__link--next" aria-label="Next: Region AS923" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              LoRa Device Provisioning
+              Region AS923
             </div>
           </div>
           <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
           </div>
         </a>
       
@@ -1636,7 +1824,7 @@
     
     
     <a href="https://github.com/Azure/iotedge-lorawan-starterkit" target="_blank" rel="noopener" title="iotedge-lorawan-starterkit on GitHub" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
     </a>
   
 </div>
@@ -1649,14 +1837,15 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="../../assets/javascripts/bundle.078830c0.min.js"></script>
       
-        <script src="../../../js/timeago.min.js"></script>
+        <script src="../../js/timeago.min.js"></script>
       
-        <script src="../../../js/timeago_mkdocs_material.js"></script>
+        <script src="../../js/timeago_mkdocs_material.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
       
