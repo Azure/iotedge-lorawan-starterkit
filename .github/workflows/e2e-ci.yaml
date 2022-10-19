@@ -98,19 +98,19 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS_NEW_KV }}
 
-    - name: Run Azure PowerShell script
-      uses: azure/powershell@v1
-      with:
-        inlineScript: |
-          $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
-          write-host "loop"
-          foreach ($info in $object.PSObject.Properties) {
-              $newName = $info.Name.replace('_','-')
-              Set-AzureKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name '$newName' -SecretValue '$info.Value'
-              Write-host "$newName"
-              
-          }
-        azPSVersion: "latest"
+      - name: Run Azure PowerShell script
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
+            write-host "loop"
+            foreach ($info in $object.PSObject.Properties) {
+                $newName = $info.Name.replace('_','-')
+                Set-AzureKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name '$newName' -SecretValue '$info.Value'
+                Write-host "$newName"
+                
+            }
+          azPSVersion: "latest"
 
 
 
