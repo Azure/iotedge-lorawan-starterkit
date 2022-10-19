@@ -94,9 +94,14 @@ jobs:
     name: Migrate secrets
     steps:
       - name: Flush the database
-        shell: bash
-        run: |
-          echo ${{ toJSON(secrets) }}
+        shell: powershell
+        run: | 
+          $object = ${{ toJSON(secrets) }} | ConvertFrom-Json
+          foreach ($info in $object.PSObject.Properties) {
+              $info.Name
+              $info.Value
+              '--' # <-- Seeing this double hash proves we're iterating fully.
+          }
     # - name: Azure Login
     #   uses: azure/login@v1
     #   with:
