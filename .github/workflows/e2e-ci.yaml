@@ -110,7 +110,7 @@ jobs:
                 $newName = $info.Name.replace('_','-')
                 echo $newName
                 $secureKey = ConvertTo-SecureString -String $info.Value -AsPlainText -Force
-                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name '$newName' -SecretValue $secureKey
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name $newName -SecretValue $secureKey
                 Write-host "$newName"
 
             }
