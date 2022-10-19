@@ -121,9 +121,9 @@ jobs:
           AZURE_VM_NAME: eflow
           AZURE_RG_NAME: lorae2etests
           POWER_SWITCH: true
-          AZURE_SP_CLIENTID: $AZURE-SP-CLIENTID
-          AZURE_SP_SECRET: $AZURE-SP-SECRET
-          AZURE_TENANTID: $AZURE-TENANTID
+          AZURE_SP_CLIENTID: $AZURE_SP_CLIENTID
+          AZURE_SP_SECRET: $AZURE_SP_SECRET
+          AZURE_TENANTID: $AZURE_TENANTID
 
   reset_redis_cache:
     name: Reset the Redis Cache
@@ -151,7 +151,7 @@ jobs:
           wget https://github.com/IBM-Cloud/redli/releases/download/v0.5.2/redli_0.5.2_linux_amd64.tar.gz
           tar xzf redli_0.5.2_linux_amd64.tar.gz
           chmod +x redli
-          ./redli --tls -h $REDIS-HOSTNAME.redis.cache.windows.net -p 6380 -a $REDIS-PASSWORD FLUSHALL
+          ./redli --tls -h $REDIS_HOSTNAME.redis.cache.windows.net -p 6380 -a $REDIS_PASSWORD FLUSHALL
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
@@ -196,9 +196,9 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: $FUNCTION-FACADE-APP-NAME
+        app-name: $FUNCTION_FACADE_APP_NAME
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
-        publish-profile: $AZURE-FUNCTIONAPP-PUBLISH-PROFILE
+        publish-profile: $AZURE_FUNCTIONAPP_PUBLISH_PROFILE
 
   build_push_docker_images:
     needs:
@@ -254,14 +254,14 @@ jobs:
 
     - name: Build Docker LoRaWanNetworkServer images
       run: |
-        echo $CI-ACR-CREDENTIALS | docker login "$CI-ACR-NAME.azurecr.io" --username  "$CI-ACR-NAME" --password-stdin
+        echo $CI_ACR_CREDENTIALS | docker login "$CI_ACR_NAME.azurecr.io" --username  "$CI_ACR_NAME" --password-stdin
         docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
       working-directory: LoRaEngine
 
     # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
     - name: Build Docker LoRaWanBasicsStation images
       run: |
-        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=$CI-ACR-NAME.azurecr.io
+        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
       working-directory: LoRaEngine
 
     outputs:
@@ -298,10 +298,10 @@ jobs:
       shell: bash
       name: Generate server and client certificates
       env:
-        SERVER_PFX_PASSWORD: $SERVER-PFX-PASSWORD
-        SSH_PRIVATE_KEY_PATH: $SSH-PRIVATE-KEY-PATH
-        RPI_USERNAME: $RPI-USERNAME
-        RPI_HOST: $RPI-HOST
+        SERVER_PFX_PASSWORD: $SERVER_PFX_PASSWORD
+        SSH_PRIVATE_KEY_PATH: $SSH_PRIVATE_KEY_PATH
+        RPI_USERNAME: $RPI_USERNAME
+        RPI_HOST: $RPI_HOST
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
         CUPS_STATION_EUI: $DEFAULTCUPSSTATIONEUI
         CUPS_CREDENTIALS_BLOB_URL: $CUPSCREDENTIALSBLOBURL
@@ -379,19 +379,19 @@ jobs:
         id: "deploycloudlns"
         shell: bash
         run: |
-          az login --service-principal -u $AZURE-SP-CLIENTID -p $AZURE-SP-SECRET --tenant $AZURE-TENANTID
-          az container create --resource-group $AZURE-RG --ip-address Private --location westeurope --name cloudlns \
-                    --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=$IOTHUB-HOSTNAME ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
-                    --image $CI-ACR-NAME.azurecr.io/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
+          az login --service-principal -u $AZURE_SP_CLIENTID -p $AZURE_SP_SECRET --tenant $AZURE_TENANTID 
+          az container create --resource-group $AZURE_RG --ip-address Private --location westeurope --name cloudlns \
+                    --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=$IOTHUB_HOSTNAME ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
+                    --image $CI_ACR_NAME.azurecr.io/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
-                    --registry-username $CI-ACR-NAME \
-                    --registry-password $CI-ACR-CREDENTIALS' \
+                    --registry-username $CI_ACR_NAME \
+                    --registry-password $CI_ACR_CREDENTIALS' \
                     --restart-policy Never \
-                    --secure-environment-variables FACADE_AUTH_CODE=$FUNCTION-FACADE-AUTH-CODE FACADE_SERVER_URL=$FUNCTION-FACADE-SERVER-URL REDIS_CONNECTION_STRING=$REDIS-HOSTNAME.redis.cache.windows.net:6380,password=$REDIS-PASSWORD,ssl=True,abortConnect=False \
-                    --subnet $AZURE-SUBNET-NAME \
-                    --vnet $AZURE-VNET-NAME --output none
-          echo "::set-output name=cloudlnsprivateip::$(az container show --name cloudlns --resource-group $AZURE-RG --query ipAddress.ip -o tsv)"
+                    --secure-environment-variables FACADE_AUTH_CODE=$FUNCTION_FACADE_AUTH_CODE FACADE_SERVER_URL=$FUNCTION_FACADE_SERVER_URL REDIS_CONNECTION_STRING=$REDIS_HOSTNAME.redis.cache.windows.net:6380,password=$REDIS_PASSWORD,ssl=True,abortConnect=False \
+                    --subnet $AZURE_SUBNET_NAME \
+                    --vnet $AZURE_VNET_NAME --output none
+          echo "::set-output name=cloudlnsprivateip::$(az container show --name cloudlns --resource-group $AZURE_RG --query ipAddress.ip -o tsv)"
     outputs:
       cloudlnsprivateip: ${{ steps.deploycloudlns.outputs.cloudlnsprivateip }}
 
@@ -430,23 +430,23 @@ jobs:
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
-          LBS_FIXED_STATION_EUI: $LBS-FIXED-STATION-EUI
-          IOTHUB_CONNECTION_STRING: $IOTHUB-OWNER-CONNECTION-STRING
-          DEVICE_ID: $DEVICE-ID
-          IOT_EDGE_DEPLOYMENT_ID: $IOT-EDGE-DEPLOYMENT-ID
-          FACADE_SERVER_URL: $FUNCTION-FACADE-SERVER-URL
-          FACADE_AUTH_CODE: $FUNCTION-FACADE-AUTH-CODE
-          IOT_HUB_RESOURCE_ID: $IOT-HUB-RESOURCE-ID
-          LOG_ANALYTICS_WORKSPACE_ID: $LOG-ANALYTICS-WORKSPACE-ID
-          LOG_ANALYTICS_SHARED_KEY: $LOG-ANALYTICS-SHARED-KEY
-          APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS-CONNECTION-STRING
+          LBS_FIXED_STATION_EUI: $LBS_FIXED_STATION_EUI
+          IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
+          DEVICE_ID: $DEVICE_ID
+          IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
+          FACADE_SERVER_URL: $FUNCTION_FACADE_SERVER_URL
+          FACADE_AUTH_CODE: $FUNCTION_FACADE_AUTH_CODE
+          IOT_HUB_RESOURCE_ID: $IOT_HUB_RESOURCE_ID
+          LOG_ANALYTICS_WORKSPACE_ID: $LOG_ANALYTICS_WORKSPACE_ID
+          LOG_ANALYTICS_SHARED_KEY: $LOG_ANALYTICS_SHARED_KEY
+          APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS_CONNECTION_STRING
           CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
-          SERVER_PFX_PASSWORD: $SERVER-PFX-PASSWORD
+          SERVER_PFX_PASSWORD: $SERVER_PFX_PASSWORD
           NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
         with:
-          deployment_file_name: '$DEPLOYMENT-FILE-NAME'
+          deployment_file_name: '$DEPLOYMENT_FILE_NAME'
           architecture: '$ARCHITECTURE'
-          iot_edge_deployment_id: '$IOT-EDGE-DEPLOYMENT-ID'
+          iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
 
 # Deploy IoT Edge solution to EFLOW gateway
   deploy_eflow_gw_iot_edge:
@@ -484,13 +484,13 @@ jobs:
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
-          IOTHUB_CONNECTION_STRING: $IOTHUB-OWNER-CONNECTION-STRING
-          DEVICE_ID: $DEVICE-ID
-          IOT_EDGE_DEPLOYMENT_ID: $IOT-EDGE-DEPLOYMENT-ID
+          IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
+          DEVICE_ID: $DEVICE_ID
+          IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
         with:
-          deployment_file_name: '$DEPLOYMENT-FILE-NAME'
+          deployment_file_name: '$DEPLOYMENT_FILE_NAME'
           architecture: '$ARCHITECTURE'
-          iot_edge_deployment_id: '$IOT-EDGE-DEPLOYMENT-ID'
+          iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
 
   # Deploy IoT Edge solution to standalone Concentrator
   deploy_eflow_concentrator_iot_edge:
@@ -526,18 +526,18 @@ jobs:
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
-          IOTHUB_CONNECTION_STRING: $IOTHUB-OWNER-CONNECTION-STRIN
-          DEVICE_ID: $DEVICE-ID
-          IOT_EDGE_DEPLOYMENT_ID: $IOT-EDGE-DEPLOYMENT-ID
-          LBS_FIXED_STATION_EUI: $LBS-FIXED-STATION-EUI
-          IOT_HUB_RESOURCE_ID: $IOT-HUB-RESOURCE-ID
-          LOG_ANALYTICS_WORKSPACE_ID: $LOG-ANALYTICS-WORKSPACE-ID
-          LOG_ANALYTICS_SHARED_KEY: $LOG-ANALYTICS-SHARED-KEY
-          APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS-CONNECTION-STRING
+          IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
+          DEVICE_ID: $DEVICE_ID
+          IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
+          LBS_FIXED_STATION_EUI: $LBS_FIXED_STATION_EUI
+          IOT_HUB_RESOURCE_ID: $IOT_HUB_RESOURCE_ID
+          LOG_ANALYTICS_WORKSPACE_ID: $LOGANALYTICS_WORKSPACE_ID
+          LOG_ANALYTICS_SHARED_KEY: $LOG_ANALYTICS_SHARED_KEY
+          APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS_CONNECTION_STRING
         with:
-          deployment_file_name: '$DEPLOYMENT-FILE-NAME'
+          deployment_file_name: '$DEPLOYMENT_FILE_NAME'
           architecture: '$ARCHITECTURE'
-          iot_edge_deployment_id: '$IOT-EDGE-DEPLOYMENT-ID'
+          iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
           waitForLnsDeployment: false
 
   load_test_job:
@@ -808,9 +808,9 @@ jobs:
           AZURE_VM_NAME: eflow
           AZURE_RG_NAME: lorae2etests
           POWER_SWITCH: false
-          AZURE_SP_CLIENTID: $AZURE-SP-CLIENTID
-          AZURE_SP_SECRET: $AZURE-SP-SECRET
-          AZURE_TENANTID: $AZURE-TENANTID
+          AZURE_SP_CLIENTID: $AZURE_SP_CLIENTID
+          AZURE_SP_SECRET: $AZURE_SP_SECRET
+          AZURE_TENANTID: $AZURE_TENANTID
 
   delete_cloud_lns:
     name: Delete cloud LNS
@@ -836,6 +836,6 @@ jobs:
       - name: "Delete azure container instance for cloudlns"
         shell: bash
         run: |
-          az login --service-principal -u $AZURE-SP-CLIENTID -p $AZURE-SP-SECRET --tenant $AZURE-TENANTID
-          az container logs -g $AZURE-RG --name cloudlns
-          az container delete --yes --resource-group $AZURE-RG --name cloudlns --output none
+          az login --service-principal -u $AZURE_SP_CLIENTID -p $AZURE_SP_SECRET --tenant $AZURE_TENANTID
+          az container logs -g $AZURE_RG --name cloudlns
+          az container delete --yes --resource-group $AZURE_RG --name cloudlns --output none
