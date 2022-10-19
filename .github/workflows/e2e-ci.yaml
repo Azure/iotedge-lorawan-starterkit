@@ -93,29 +93,25 @@ jobs:
     runs-on: ubuntu-latest
     name: Migrate secrets
     steps:
-        # - name: Azure Login
-        #   uses: azure/login@v1
-        #   with:
-        #     creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Flush the database
-        shell: pwsh
-        run: |
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NEW_KV }}
+
+    - name: Run Azure PowerShell script
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
           $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
           write-host "loop"
           foreach ($info in $object.PSObject.Properties) {
               $newName = $info.Name.replace('_','-')
+              Set-AzureKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name '$newName' -SecretValue '$info.Value'
               Write-host "$newName"
-              // $info.Value
-              '--' # <-- Seeing this double hash proves we're iterating fully.
+              
           }
+        azPSVersion: "latest"
 
-
-    # - name: Azure CLI script
-    #   uses: azure/CLI@v1
-    #   with:
-    #     azcliversion: 2.30.0
-    #     inlineScript: |
-    #       az keyvault set --name --vault-name --value
 
 
 #   power_on_azure_vm:
