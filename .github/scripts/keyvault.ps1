@@ -8,7 +8,7 @@ $map = [ConcurrentDictionary[string, object]]::new()
 
 $array | ForEach-Object -Parallel {
   $key = $_
-  $val = az keyvault secret show --name $key --vault-name "nabki-keyvault" --query value -o tsv 
+  $val = az keyvault secret show --name $key --vault-name "lorae2etestkeyvault" --query value -o tsv 
   $collector = $using:map
   $res = $collector.TryAdd($key, $val)
 } -ThrottleLimit 10
