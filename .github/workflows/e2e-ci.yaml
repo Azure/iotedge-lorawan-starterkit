@@ -128,6 +128,8 @@ jobs:
   reset_redis_cache:
     name: Reset the Redis Cache
     if: needs.env_var.outputs.StopFullCi != 'true'
+    environment: 
+      name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Az CLI login
