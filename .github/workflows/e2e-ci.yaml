@@ -140,7 +140,7 @@ jobs:
           tar xzf redli_0.5.2_linux_amd64.tar.gz
           chmod +x redli
           ./redli --tls -h ${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net -p 6380 -a ${{ secrets.REDIS_PASSWORD }} FLUSHALL
-      - run:
+
   # Build and deploy Facade Azure Function
   deploy_facade_function:
     environment:
