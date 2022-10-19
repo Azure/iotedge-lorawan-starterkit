@@ -1,7 +1,5 @@
-
-
-param uniqueSolutionPrefix string
 param location string = resourceGroup().location
+param uniqueSolutionPrefix string
 param discoveryZipUrl string
 
 module iotHub 'modules/iothub.bicep' = {
