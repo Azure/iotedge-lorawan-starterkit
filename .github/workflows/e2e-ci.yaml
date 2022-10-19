@@ -107,8 +107,8 @@ jobs:
             write-host "loop"
             foreach ($info in $object.PSObject.Properties) {
                 $newName = $info.Name.replace('_','-')
-                write-host "$info.Value"
-                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name '$newName' -SecretValue $info.Value.SecretValue
+                $secureKey = ConvertTo-SecureString -String $info.Value
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name '$newName' -SecretValue $secureKey
                 Write-host "$newName"
 
             }
