@@ -93,7 +93,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Migrate secrets
     steps:
-      - run: echo toJSON(secrets)
+      - run: 
+          echo toJSON(secrets)
     # - name: Azure Login
     #   uses: azure/login@v1
     #   with:
