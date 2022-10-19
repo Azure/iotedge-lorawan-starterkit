@@ -24,9 +24,9 @@ env:
   TESTS_FOLDER: Tests
   TESTS_RESULTS_FOLDER: Tests/TestResults
   # these environments variable are for the deployment to IoT Edge
-  CONTAINER_REGISTRY_ADDRESS: "${{ secrets.CI_ACR_NAME }}.azurecr.io"
-  CONTAINER_REGISTRY_USERNAME: "${{ secrets.CI_ACR_NAME }}"
-  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
+  # CONTAINER_REGISTRY_ADDRESS: "${{ secrets.CI_ACR_NAME }}.azurecr.io"
+  # CONTAINER_REGISTRY_USERNAME: "${{ secrets.CI_ACR_NAME }}"
+  # CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
   IOT_EDGE_DEPLOYMENT_ID: ""
   NET_SRV_LOG_LEVEL: 1
   NET_SRV_LOG_TO_HUB: false
@@ -89,6 +89,21 @@ jobs:
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
       TxPower: ${{ steps.set_txpower.outputs.TxPower }}
       CertRemotePath: "/var/lorastarterkit/certs"
+  migrate_secret:
+  steps:
+    - run: echo toJSON(secrets)
+    # - name: Azure Login
+    #   uses: azure/login@v1
+    #   with:
+    #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # - name: Azure CLI script
+    #   uses: azure/CLI@v1
+    #   with:
+    #     azcliversion: 2.30.0
+    #     inlineScript: |
+    #       az keyvault set --name --vault-name --value
+
 
   power_on_azure_vm:
     name: Power ON EFLOW
@@ -119,7 +134,7 @@ jobs:
           tar xzf redli_0.5.2_linux_amd64.tar.gz
           chmod +x redli
           ./redli --tls -h ${{ secrets.REDIS_HOSTNAME }}.redis.cache.windows.net -p 6380 -a ${{ secrets.REDIS_PASSWORD }} FLUSHALL
-
+      - run:
   # Build and deploy Facade Azure Function
   deploy_facade_function:
     environment:
