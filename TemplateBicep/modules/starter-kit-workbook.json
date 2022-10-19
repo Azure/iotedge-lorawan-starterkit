@@ -1,0 +1,1098 @@
+{
+    "version": "Notebook/1.0",
+    "items": [
+      {
+        "type": 9,
+        "content": {
+          "version": "KqlParameterItem/1.0",
+          "parameters": [
+            {
+              "id": "31596d7b-c0a9-448f-b3cc-a3a906cb9d48",
+              "version": "KqlParameterItem/1.0",
+              "name": "resourceType",
+              "type": 7,
+              "isRequired": true,
+              "isGlobal": true,
+              "value": "Microsoft.Devices/IotHubs",
+              "isHiddenWhenLocked": true,
+              "typeSettings": {
+                "additionalResourceOptions": [],
+                "showDefault": false
+              },
+              "jsonData": "[[\"Microsoft.Devices/IotHubs\"]",
+              "defaultValue": "value::1"
+            },
+            {
+              "id": "bebd5be4-3d61-45ed-9f07-b9ae091e1ccb",
+              "version": "KqlParameterItem/1.0",
+              "name": "resource",
+              "type": 5,
+              "isRequired": true,
+              "isHiddenWhenLocked": true,
+              "typeSettings": {
+                "resourceTypeFilter": {
+                  "microsoft.devices/iothubs": true
+                },
+                "additionalResourceOptions": ["value::1"],
+                "showDefault": false
+              },
+              "defaultValue": "value::1"
+            },
+            {
+              "id": "d062cb40-2eed-4917-ab42-8f271db98312",
+              "version": "KqlParameterItem/1.0",
+              "name": "InsightsMetricsExists",
+              "type": 1,
+              "query": "let hasNonEmptyTable = (T:string) \n{ \n   toscalar( union isfuzzy=true ( table(T) | count as Count ), (print Count=0) | summarize sum(Count) ) > 0\n};\nlet TableName = 'InsightsMetrics';\nprint IsPresent=iif(hasNonEmptyTable(TableName), \"yes\", \"no\")",
+              "crossComponentResources": ["{resource}"],
+              "isHiddenWhenLocked": true,
+              "timeContext": {
+                "durationMs": 259200000
+              },
+              "queryType": 0,
+              "resourceType": "{resourceType}"
+            },
+            {
+              "id": "36a641eb-587a-40c0-b491-b7b2f85eb0c0",
+              "version": "KqlParameterItem/1.0",
+              "name": "mainAction",
+              "type": 1,
+              "isGlobal": true,
+              "value": "devicelist",
+              "isHiddenWhenLocked": true
+            },
+            {
+              "id": "4ea30d03-74c2-4b08-bf00-f3c0a4c57f13",
+              "version": "KqlParameterItem/1.0",
+              "name": "alertResources",
+              "type": 5,
+              "isRequired": true,
+              "multiSelect": true,
+              "quote": "'",
+              "delimiter": ",",
+              "typeSettings": {
+                "resourceTypeFilter": {
+                  "microsoft.devices/iothubs": true,
+                  "microsoft.insights/components": true
+                },
+                "additionalResourceOptions": ["value::all"],
+                "showDefault": false
+              },
+              "defaultValue": "value::all"
+            },
+            {
+              "id": "6f896f81-18dc-4307-98f3-77927af019af",
+              "version": "KqlParameterItem/1.0",
+              "name": "appInsightsResourceId",
+              "type": 5,
+              "isRequired": true,
+              "multiSelect": true,
+              "quote": "'",
+              "delimiter": ",",
+              "typeSettings": {
+                "resourceTypeFilter": {
+                  "microsoft.insights/components": true
+                },
+                "additionalResourceOptions": ["value::all"]
+              },
+              "defaultValue": "value::all"
+            },
+            {
+              "id": "dcd93c30-5162-4e48-bb6a-f347e466e552",
+              "version": "KqlParameterItem/1.0",
+              "name": "Subscription",
+              "type": 6,
+              "isRequired": true,
+              "multiSelect": true,
+              "quote": "'",
+              "delimiter": ",",
+              "typeSettings": {
+                "additionalResourceOptions": ["value::all"],
+                "showDefault": false
+              },
+              "jsonData": "[\"{{subscriptionResourceId}}\"]')]",
+              "defaultValue": "value::all"
+            }
+          ],
+          "style": "pills",
+          "queryType": 0,
+          "resourceType": "microsoft.insights/components"
+        },
+        "conditionalVisibility": {
+          "parameterName": "neverset",
+          "comparison": "isNotEqualTo"
+        },
+        "name": "parameters - 5"
+      },
+      {
+        "type": 9,
+        "content": {
+          "version": "KqlParameterItem/1.0",
+          "crossComponentResources": ["{appInsightsResourceId}"],
+          "parameters": [
+            {
+              "id": "1b4b2d2e-4f2e-4881-903d-f307d6958a1c",
+              "version": "KqlParameterItem/1.0",
+              "name": "timeRange",
+              "label": "Time range",
+              "type": 4,
+              "isRequired": true,
+              "isGlobal": true,
+              "value": {
+                "durationMs": 14400000
+              },
+              "typeSettings": {
+                "selectableValues": [
+                  {
+                    "durationMs": 1800000
+                  },
+                  {
+                    "durationMs": 3600000
+                  },
+                  {
+                    "durationMs": 14400000
+                  },
+                  {
+                    "durationMs": 43200000
+                  },
+                  {
+                    "durationMs": 86400000
+                  },
+                  {
+                    "durationMs": 172800000
+                  },
+                  {
+                    "durationMs": 259200000
+                  },
+                  {
+                    "durationMs": 604800000
+                  },
+                  {
+                    "durationMs": 1209600000
+                  },
+                  {
+                    "durationMs": 2592000000
+                  }
+                ],
+                "allowCustom": true
+              }
+            }
+          ],
+          "style": "pills",
+          "queryType": 0,
+          "resourceType": "{resourceType}"
+        },
+        "customWidth": "30",
+        "conditionalVisibility": {
+          "parameterName": "InsightsMetricsExists",
+          "comparison": "isEqualTo",
+          "value": "yes"
+        },
+        "name": "Time Range"
+      },
+      {
+        "type": 12,
+        "content": {
+          "version": "NotebookGroup/1.0",
+          "groupType": "editable",
+          "title": "Overview - Failure Indicators",
+          "items": [
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let connectivityLost = customMetrics\r\n| where name == \"StationConnectivityLost\"\r\n| project name, valueSum\r\n| summarize Count = sum(valueSum) by name\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"StationConnectivityLost\"\r\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (connectivityLost) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "noDataMessage": "No connections lost",
+                "noDataMessageStyle": 3,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1
+                  },
+                  "leftContent": {
+                    "columnMatch": "Count",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "hotCold"
+                    },
+                    "numberFormat": {
+                      "unit": 17,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 0,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "red"
+                    }
+                  },
+                  "showBorder": false
+                }
+              },
+              "customWidth": "15",
+              "name": "Station Connectivity Lost"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let receiveWindowMisses = customMetrics\r\n| where name == \"ReceiveWindowMisses\"\r\n| order by timestamp desc\r\n| project name, valueSum\r\n| summarize Sum = sum(valueSum) by name\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"ReceiveWindowMisses\"\r\n| make-series Trend = sum(valueSum) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (receiveWindowMisses) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "noDataMessage": "No receive windows missed",
+                "noDataMessageStyle": 3,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1"
+                  },
+                  "leftContent": {
+                    "columnMatch": "Sum",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "hotCold"
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "red"
+                    }
+                  },
+                  "showBorder": false,
+                  "size": "auto"
+                }
+              },
+              "customWidth": "15",
+              "name": "Receive Windows"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let unhandledExceptions = customMetrics\r\n| where name == \"UnhandledExceptions\"\r\n| project name, valueSum, exceptionKeyword = \"Exception\"\r\n| summarize Count = sum(valueSum) by name, exceptionKeyword\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"UnhandledExceptions\"\r\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (unhandledExceptions) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "noDataMessage": "No unhandled exceptions detected",
+                "noDataMessageStyle": 3,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1,
+                    "formatOptions": {
+                      "linkColumn": "exceptionKeyword",
+                      "linkTarget": "Search"
+                    }
+                  },
+                  "leftContent": {
+                    "columnMatch": "Count",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "hotCold"
+                    },
+                    "numberFormat": {
+                      "unit": 17,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 2,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "red"
+                    }
+                  },
+                  "showBorder": false
+                }
+              },
+              "customWidth": "15",
+              "name": "Unhandled Exceptions"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let c2dmessagesTooLong = customMetrics\r\n| where name == \"C2DMessageTooLong\"\r\n| project name, valueSum\r\n| summarize Count = sum(valueSum) by name\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"C2DMessageTooLong\"\r\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (c2dmessagesTooLong) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "noDataMessage": "No C2D messages that were too long detected",
+                "noDataMessageStyle": 3,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1"
+                  },
+                  "leftContent": {
+                    "columnMatch": "Sum",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "hotCold"
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "red"
+                    }
+                  },
+                  "showBorder": false,
+                  "size": "auto"
+                }
+              },
+              "customWidth": "15",
+              "name": "C2DMessageTooLong"
+            }
+          ]
+        },
+        "name": "Overview - Failure Indicators"
+      },
+      {
+        "type": 12,
+        "content": {
+          "version": "NotebookGroup/1.0",
+          "groupType": "editable",
+          "title": "Overview - Performance Indicators",
+          "items": [
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let activeConnections = customMetrics\r\n| where name == \"ActiveStationConnections\"\r\n| order by timestamp desc\r\n| project value, name\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"ActiveStationConnections\"\r\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (activeConnections) on name\r\n| project-away name, timestamp\r\n\r\n\r\n",
+                "size": 4,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1
+                  },
+                  "leftContent": {
+                    "columnMatch": "value",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "auto"
+                    },
+                    "numberFormat": {
+                      "unit": 17,
+                      "options": {
+                        "style": "decimal",
+                        "useGrouping": false,
+                        "maximumFractionDigits": 0,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  "showBorder": false,
+                  "size": "auto"
+                }
+              },
+              "customWidth": "15",
+              "name": "Active Station Connections"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let deliveryLatency = customMetrics\r\n| where name == \"D2CMessageDeliveryLatency\"\r\n| order by timestamp desc\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"D2CMessageDeliveryLatency\"\r\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (deliveryLatency) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1
+                  },
+                  "leftContent": {
+                    "columnMatch": "value",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "auto"
+                    },
+                    "numberFormat": {
+                      "unit": 23,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 2,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  "showBorder": false,
+                  "size": "auto"
+                }
+              },
+              "customWidth": "15",
+              "name": "Delivery Latencies"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let joinRequests = customMetrics\r\n| where name == \"JoinRequests\"\r\n| order by timestamp desc\r\n| project name, valueSum\r\n| summarize JoinRequestSum = sum(valueSum) by name\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"JoinRequests\"\r\n| make-series Trend = sum(valueSum) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (joinRequests) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1
+                  },
+                  "leftContent": {
+                    "columnMatch": "JoinRequestSum",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "auto"
+                    },
+                    "numberFormat": {
+                      "unit": 17,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 2,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 9,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  "showBorder": false,
+                  "size": "auto"
+                }
+              },
+              "customWidth": "15",
+              "name": "Join requests"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let messageSizes = customMetrics\r\n| where name == \"D2CMessageSize\"\r\n| order by timestamp desc\r\n| summarize D2CMessageSize = avg(value) by name;\r\ncustomMetrics\r\n| where name == \"D2CMessageSize\"\r\n| make-series Hist = sum(valueSum) default = 0 on value from 5.0 to 250.0 step 5.0 by name\r\n| join (messageSizes) on name",
+                "size": 4,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1
+                  },
+                  "leftContent": {
+                    "columnMatch": "D2CMessageSize",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "auto"
+                    },
+                    "numberFormat": {
+                      "unit": 2,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 2,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Hist",
+                    "formatter": 10,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  "showBorder": false,
+                  "size": "auto"
+                }
+              },
+              "customWidth": "15",
+              "name": "D2C message size"
+            },
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let sum = customMetrics\r\n| where name == \"D2CMessagesReceived\"\r\n| order by timestamp desc\r\n| project name, valueSum\r\n| summarize Sum = sum(valueSum) by name\r\n| take 1;\r\ncustomMetrics\r\n| where name == \"D2CMessagesReceived\"\r\n| make-series Trend = sum(valueSum) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\r\n| join (sum) on name\r\n| project-away name, timestamp",
+                "size": 4,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "visualization": "tiles",
+                "tileSettings": {
+                  "titleContent": {
+                    "columnMatch": "name1",
+                    "formatter": 1
+                  },
+                  "leftContent": {
+                    "columnMatch": "Sum",
+                    "formatter": 12,
+                    "formatOptions": {
+                      "palette": "auto"
+                    },
+                    "numberFormat": {
+                      "unit": 17,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 2,
+                        "maximumSignificantDigits": 3
+                      }
+                    }
+                  },
+                  "secondaryContent": {
+                    "columnMatch": "Trend",
+                    "formatter": 10,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  "showBorder": false
+                }
+              },
+              "customWidth": "15",
+              "name": "D2CMessagesReceived"
+            }
+          ]
+        },
+        "name": "Overview - Performance Indicators"
+      },
+      {
+        "type": 12,
+        "content": {
+          "version": "NotebookGroup/1.0",
+          "groupType": "editable",
+          "title": "Dependencies",
+          "items": [
+            {
+              "type": 3,
+              "content": {
+                "version": "KqlItem/1.0",
+                "query": "let rawData = dependencies\r\n| project duration, name, type, timestamp, EndpointWithoutDeviceId = extract(\"(.*)/[0-9a-zA-Z]{16}$\", 1, name)\r\n| project duration, type, timestamp, Endpoint = iff(isempty(EndpointWithoutDeviceId), name, EndpointWithoutDeviceId);\r\nlet history = rawData\r\n| make-series avg(duration) default=0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Endpoint\r\n| project-away timestamp;\r\nrawData\r\n| summarize Mean = avg(duration), (p95) = percentiles(duration, 95), Requests = count() by type, Endpoint\r\n| join (history) on Endpoint\r\n| order by Requests desc",
+                "size": 3,
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange",
+                "queryType": 0,
+                "resourceType": "microsoft.insights/components",
+                "crossComponentResources": ["{appInsightsResourceId}"],
+                "gridSettings": {
+                  "formatters": [
+                    {
+                      "columnMatch": "Mean",
+                      "formatter": 0,
+                      "numberFormat": {
+                        "unit": 23,
+                        "options": {
+                          "style": "decimal",
+                          "minimumSignificantDigits": 3,
+                          "maximumSignificantDigits": 3
+                        }
+                      }
+                    },
+                    {
+                      "columnMatch": "p95",
+                      "formatter": 0,
+                      "numberFormat": {
+                        "unit": 23,
+                        "options": {
+                          "style": "decimal",
+                          "minimumSignificantDigits": 3,
+                          "maximumSignificantDigits": 3
+                        }
+                      }
+                    },
+                    {
+                      "columnMatch": "Requests",
+                      "formatter": 0,
+                      "numberFormat": {
+                        "unit": 17,
+                        "options": {
+                          "style": "decimal"
+                        }
+                      }
+                    },
+                    {
+                      "columnMatch": "Endpoint1",
+                      "formatter": 5
+                    },
+                    {
+                      "columnMatch": "avg_duration",
+                      "formatter": 10,
+                      "formatOptions": {
+                        "palette": "blue"
+                      },
+                      "numberFormat": {
+                        "unit": 23,
+                        "options": {
+                          "style": "decimal"
+                        }
+                      }
+                    },
+                    {
+                      "columnMatch": "Median",
+                      "formatter": 0,
+                      "numberFormat": {
+                        "unit": 23,
+                        "options": {
+                          "style": "decimal",
+                          "minimumSignificantDigits": 3,
+                          "maximumSignificantDigits": 3
+                        }
+                      }
+                    },
+                    {
+                      "columnMatch": "p80",
+                      "formatter": 0,
+                      "numberFormat": {
+                        "unit": 23,
+                        "options": {
+                          "style": "decimal",
+                          "minimumSignificantDigits": 3,
+                          "maximumSignificantDigits": 3
+                        }
+                      }
+                    }
+                  ],
+                  "labelSettings": [
+                    {
+                      "columnId": "type",
+                      "label": "Type"
+                    },
+                    {
+                      "columnId": "avg_duration",
+                      "label": "Average Duration (history)"
+                    }
+                  ]
+                }
+              },
+              "name": "Dependency durations"
+            }
+          ]
+        },
+        "name": "Dependencies"
+      },
+      {
+        "type": 12,
+        "content": {
+          "version": "NotebookGroup/1.0",
+          "groupType": "editable",
+          "title": "Fleet Overview",
+          "items": [
+            {
+              "type": 11,
+              "content": {
+                "version": "LinkItem/1.0",
+                "style": "tabs",
+                "links": [
+                  {
+                    "id": "9ba0a0e8-584b-421a-85e6-96c89eda5a17",
+                    "cellValue": "mainAction",
+                    "linkTarget": "parameter",
+                    "linkLabel": "Devices",
+                    "subTarget": "devicelist",
+                    "style": "link"
+                  },
+                  {
+                    "id": "3b8d77da-20d0-499a-b62d-25f5c6a88a55",
+                    "cellValue": "mainAction",
+                    "linkTarget": "parameter",
+                    "linkLabel": "Alerts",
+                    "subTarget": "alerts",
+                    "style": "link"
+                  }
+                ]
+              },
+              "customWidth": "25",
+              "conditionalVisibility": {
+                "parameterName": "InsightsMetricsExists",
+                "comparison": "isEqualTo",
+                "value": "yes"
+              },
+              "name": "links - 8 - Copy"
+            },
+            {
+              "type": 12,
+              "content": {
+                "version": "NotebookGroup/1.0",
+                "groupType": "template",
+                "loadFromTemplateId": "Community-Workbooks/IoTHub/IoT Edge",
+                "items": [],
+                "exportParameters": true
+              },
+              "conditionalVisibilities": [
+                {
+                  "parameterName": "InsightsMetricsExists",
+                  "comparison": "isEqualTo",
+                  "value": "yes"
+                },
+                {
+                  "parameterName": "mainAction",
+                  "comparison": "isEqualTo",
+                  "value": "devicelist"
+                }
+              ],
+              "name": "device-group",
+              "styleSettings": {
+                "showBorder": true
+              }
+            },
+            {
+              "type": 12,
+              "content": {
+                "version": "NotebookGroup/1.0",
+                "groupType": "editable",
+                "items": [
+                  {
+                    "type": 9,
+                    "content": {
+                      "version": "KqlParameterItem/1.0",
+                      "parameters": [
+                        {
+                          "id": "bd6d6075-dc8f-43d3-829f-7e2245a3eb21",
+                          "version": "KqlParameterItem/1.0",
+                          "name": "State",
+                          "type": 2,
+                          "isRequired": true,
+                          "multiSelect": true,
+                          "quote": "'",
+                          "delimiter": ",",
+                          "query": "{\"version\":\"1.0.0\",\"content\":\"[ \\r\\n    {\\\"id\\\":\\\"New\\\", \\\"label\\\": \\\"New\\\"},\\r\\n    {\\\"id\\\":\\\"Acknowledged\\\", \\\"label\\\": \\\"Acknowledged\\\"},\\r\\n    {\\\"id\\\":\\\"Closed\\\", \\\"label\\\": \\\"Closed\\\"}\\r\\n]\",\"transformers\":null}",
+                          "crossComponentResources": ["{Subscription}"],
+                          "value": ["value::all"],
+                          "typeSettings": {
+                            "additionalResourceOptions": ["value::all"],
+                            "selectAllValue": "*",
+                            "showDefault": false
+                          },
+                          "queryType": 8
+                        }
+                      ],
+                      "style": "above",
+                      "queryType": 0,
+                      "resourceType": "microsoft.insights/components"
+                    },
+                    "customWidth": "0",
+                    "name": "parameters",
+                    "styleSettings": {
+                      "margin": "10px 0px 0px 10px"
+                    }
+                  },
+                  {
+                    "type": 12,
+                    "content": {
+                      "version": "NotebookGroup/1.0",
+                      "groupType": "editable",
+                      "items": [
+                        {
+                          "type": 12,
+                          "content": {
+                            "version": "NotebookGroup/1.0",
+                            "groupType": "editable",
+                            "items": [
+                              {
+                                "type": 3,
+                                "content": {
+                                  "version": "KqlItem/1.0",
+                                  "query": "AlertsManagementResources | where type =~ 'microsoft.alertsmanagement/alerts'\r\n| where todatetime(properties.essentials.startDateTime) {timeRange}\r\n| where \"*\" in ({alertResources}) or properties.essentials.targetResource in~ ({alertResources})\r\n| extend State=tostring(properties.essentials.alertState)\r\n| where \"*\" in ({State}) or State in ({State})\r\n| summarize Count=count(), New=countif(State==\"New\"), \r\nAcknowledged=countif(State==\"Acknowledged\"), \r\nClosed=countif(State==\"Closed\") \r\nby Severity=tostring(properties.essentials.severity)\r\n| order by Severity asc",
+                                  "size": 3,
+                                  "noDataMessage": "No alerts found",
+                                  "noDataMessageStyle": 3,
+                                  "exportMultipleValues": true,
+                                  "exportedParameters": [
+                                    {
+                                      "fieldName": "Severity",
+                                      "parameterName": "Severity",
+                                      "parameterType": 1
+                                    }
+                                  ],
+                                  "queryType": 1,
+                                  "resourceType": "microsoft.resourcegraph/resources",
+                                  "crossComponentResources": [
+                                    "{Subscription}"
+                                  ],
+                                  "visualization": "table"
+                                },
+                                "name": "Alerts summary"
+                              }
+                            ],
+                            "exportParameters": true
+                          },
+                          "conditionalVisibility": {
+                            "parameterName": "Subscription",
+                            "comparison": "isNotEqualTo"
+                          },
+                          "name": "alert-summary-group"
+                        },
+                        {
+                          "type": 12,
+                          "content": {
+                            "version": "NotebookGroup/1.0",
+                            "groupType": "editable",
+                            "items": [
+                              {
+                                "type": 11,
+                                "content": {
+                                  "version": "LinkItem/1.0",
+                                  "style": "tabs",
+                                  "links": [
+                                    {
+                                      "id": "b4b81349-14f3-49a1-91df-701be106b46a",
+                                      "cellValue": "tab",
+                                      "linkTarget": "parameter",
+                                      "linkLabel": "Alert Details",
+                                      "subTarget": "details",
+                                      "preText": "Alert Details",
+                                      "style": "link"
+                                    },
+                                    {
+                                      "id": "7e0cfa3e-5858-4016-adf1-3695c714d915",
+                                      "cellValue": "tab",
+                                      "linkTarget": "parameter",
+                                      "linkLabel": "Alerts by Region",
+                                      "subTarget": "region",
+                                      "style": "link"
+                                    }
+                                  ]
+                                },
+                                "name": "links - 2"
+                              },
+                              {
+                                "type": 3,
+                                "content": {
+                                  "version": "KqlItem/1.0",
+                                  "query": "AlertsManagementResources | where type =~ 'microsoft.alertsmanagement/alerts'\r\n| where todatetime(properties.essentials.startDateTime) {timeRange}  \r\n| extend Severity=tostring(properties.essentials.severity)\r\n| where Severity in ({Severity})\r\n| extend State=tostring(properties.essentials.alertState)\r\n| project AlertId=id, StartTime=todatetime(tostring(properties.essentials.startDateTime)), Severity, State=tostring(properties.essentials.alertState), Name=name, TargetResource = tostring(properties.essentials.targetResource), MonitorService = tostring(properties.essentials.monitorService), SignalType=tostring(properties.essentials.signalType), Description=tostring(properties.essentials.description)\r\n",
+                                  "size": 3,
+                                  "showExportToExcel": true,
+                                  "queryType": 1,
+                                  "resourceType": "microsoft.resourcegraph/resources",
+                                  "crossComponentResources": [
+                                    "{Subscription}"
+                                  ],
+                                  "visualization": "table",
+                                  "gridSettings": {
+                                    "formatters": [
+                                      {
+                                        "columnMatch": "AlertId",
+                                        "formatter": 5
+                                      },
+                                      {
+                                        "columnMatch": "StartTime",
+                                        "formatter": 6
+                                      },
+                                      {
+                                        "columnMatch": "Severity",
+                                        "formatter": 11
+                                      },
+                                      {
+                                        "columnMatch": "Name",
+                                        "formatter": 1,
+                                        "formatOptions": {
+                                          "linkTarget": "OpenBlade",
+                                          "bladeOpenContext": {
+                                            "bladeName": "AlertDetailsTemplateBlade",
+                                            "extensionName": "Microsoft_Azure_Monitoring",
+                                            "bladeParameters": [
+                                              {
+                                                "name": "alertId",
+                                                "source": "column",
+                                                "value": "AlertId"
+                                              },
+                                              {
+                                                "name": "alertName",
+                                                "source": "column",
+                                                "value": "Name"
+                                              },
+                                              {
+                                                "name": "invokedFrom",
+                                                "source": "static",
+                                                "value": "Workbooks"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "tooltipFormat": {
+                                          "tooltip": "View alert details"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "conditionalVisibilities": [
+                                  {
+                                    "parameterName": "Severity",
+                                    "comparison": "isNotEqualTo"
+                                  },
+                                  {
+                                    "parameterName": "tab",
+                                    "comparison": "isEqualTo",
+                                    "value": "details"
+                                  }
+                                ],
+                                "name": "Alert details"
+                              },
+                              {
+                                "type": 3,
+                                "content": {
+                                  "version": "KqlItem/1.0",
+                                  "query": "AlertsManagementResources | where type =~ 'microsoft.alertsmanagement/alerts'\r\n| where todatetime(properties.essentials.startDateTime) {timeRange}  \r\n| extend State=tostring(properties.essentials.alertState)\r\n| where \"*\" in ({State}) or State in ({State})\r\n| where \"*\" in ({alertResources}) or properties.essentials.targetResource in~ ({alertResources})\r\n| summarize Alerts=count(), New=countif(State==\"New\"), \r\nAcknowledged=countif(State==\"Acknowledged\"), \r\nClosed=countif(State==\"Closed\")\r\nby Resource=tostring(properties.essentials.targetResource )\r\n| order by Alerts desc\r\n",
+                                  "size": 3,
+                                  "title": "Alerts by Region",
+                                  "noDataMessage": "No alerts",
+                                  "noDataMessageStyle": 3,
+                                  "queryType": 1,
+                                  "resourceType": "microsoft.resourcegraph/resources",
+                                  "crossComponentResources": [
+                                    "{Subscription}"
+                                  ],
+                                  "visualization": "map",
+                                  "mapSettings": {
+                                    "locInfo": "AzureResource",
+                                    "locInfoColumn": "Resource",
+                                    "sizeSettings": "Alerts",
+                                    "sizeAggregation": "Sum",
+                                    "legendMetric": "Alerts",
+                                    "legendAggregation": "Sum",
+                                    "itemColorSettings": {
+                                      "nodeColorField": "Alerts",
+                                      "colorAggregation": "Sum",
+                                      "type": "heatmap",
+                                      "heatmapPalette": "greenRed"
+                                    }
+                                  }
+                                },
+                                "conditionalVisibility": {
+                                  "parameterName": "tab",
+                                  "comparison": "isEqualTo",
+                                  "value": "region"
+                                },
+                                "name": "Alerts map"
+                              }
+                            ]
+                          },
+                          "conditionalVisibility": {
+                            "parameterName": "Severity",
+                            "comparison": "isNotEqualTo"
+                          },
+                          "name": "visible if severity selected"
+                        }
+                      ]
+                    },
+                    "conditionalVisibility": {
+                      "parameterName": "Subscription",
+                      "comparison": "isNotEqualTo"
+                    },
+                    "name": "visible if subscriptions selected"
+                  }
+                ],
+                "exportParameters": true
+              },
+              "conditionalVisibility": {
+                "parameterName": "mainAction",
+                "comparison": "isEqualTo",
+                "value": "alerts"
+              },
+              "name": "alerts-group",
+              "styleSettings": {
+                "margin": "15px 0px",
+                "showBorder": true
+              }
+            }
+          ]
+        },
+        "name": "Fleet Overview"
+      }
+    ],
+    "isLocked": false,
+    "defaultResourceIds": [
+        "{{appInsightsResourceId}}",
+        "{{iotHubResourceId}}",
+        "{{subscriptionResourceId}}"
+    ],
+    "fallbackResourceIds": [
+        "{{appInsightsResourceId}}",
+        "{{iotHubResourceId}}",
+        "{{subscriptionResourceId}}"
+    ],
+    "fromTemplateId": "community-Workbooks/IoTHub/IoT Edge"
+  }

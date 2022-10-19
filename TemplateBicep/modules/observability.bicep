@@ -33,23 +33,21 @@ resource appInsight 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-module workbook 'workbook.json' = {
+module workbook './workbook.bicep' = {
   name: 'workbook'
   params: {
-    appInsightsResourceId: appInsight.id
-    iotHubResourceId: iotHub.id
+    appInsightsName: appInsight.name
+    iothubName: iotHub.name
+    location: location
   }
 }
 
-module azureMonitorAlerts 'azureMonitorAlerts.json' = {
+module azureMonitorAlerts './alerts.bicep' = {
   name: 'azureMonitorAlerts'
   params: {
-    appInsightName: appInsight.name
-    iotHubName: iotHub.name
+    appInsightsName: appInsight.name
+    iothubName: iotHub.name
   }
-  dependsOn: [
-    iotHub
-  ]
 }
 
 output appInsightName string = appInsight.name
