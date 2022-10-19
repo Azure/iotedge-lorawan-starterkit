@@ -61,6 +61,25 @@ module discoveryService 'modules/discoveryService.bicep' = {
     iotHubName: iotHub.outputs.iotHubName
     uniqueSolutionPrefix: uniqueSolutionPrefix
     location: location
+    }
+}
+
+module userAssignedIdentity 'modules/userAssignedIdentity.bicep' = {
+  name: 'userAssignedIdentity'
+  params: {
+    uniqueSolutionPrefix: uniqueSolutionPrefix
+    location: location
+    iotHubName: iotHub.outputs.iotHubName
+
   }
 }
 
+module deviceCreation 'modules/deviceCreation.bicep' = {
+  name: 'deviceCreation'
+  params: {
+    location: location
+    iotHubName: iotHub.outputs.iotHubName
+    storageAccountName: storage.outputs.storageAccountName
+    uniqueSolutionPrefix: uniqueSolutionPrefix
+    }
+}
