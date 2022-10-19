@@ -16,7 +16,6 @@ $array | ForEach-Object -Parallel {
 foreach($key in $map.Keys)
 {
   $val = $map[$key]
-  $key.Replace('-','_')
-  "$key= $val" >> $env:GITHUB_ENV
+  "$key.Replace('-','_')= $val" >> $env:GITHUB_ENV
   Write-Host("::add-mask::$val")
 }
