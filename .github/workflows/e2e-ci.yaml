@@ -96,6 +96,8 @@ jobs:
   power_on_azure_vm:
     name: Power ON EFLOW
     if: needs.env_var.outputs.StopFullCi != 'true'
+    environment:
+      name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Az CLI login
