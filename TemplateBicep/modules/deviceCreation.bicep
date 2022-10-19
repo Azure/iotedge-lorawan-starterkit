@@ -5,6 +5,7 @@ param location string = resourceGroup().location
 param storageAccountName string
 param uniqueSolutionPrefix string
 param iotHubName string
+param identityId string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
   name: storageAccountName
@@ -12,6 +13,10 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' existing 
 
 resource iotHub 'Microsoft.Devices/IotHubs@2021-03-31' existing = {
   name: iotHubName
+}
+
+resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2020-04-01' existing = {
+  name: identityId
 }
 
 var containerGroupName = '${uniqueSolutionPrefix}containergroup'
@@ -23,7 +28,7 @@ resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' 
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '/subscriptions/01234567-89AB-CDEF-0123-456789ABCDEF/resourceGroups/myResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/myID': {}
+      identity : {}
     }
   }
   properties: {

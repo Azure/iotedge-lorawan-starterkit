@@ -78,6 +78,7 @@ module deviceCreation 'modules/deviceCreation.bicep' = {
   name: 'deviceCreation'
   params: {
     location: location
+    identityId: userAssignedIdentity.outputs.identityId
     iotHubName: iotHub.outputs.iotHubName
     storageAccountName: storage.outputs.storageAccountName
     uniqueSolutionPrefix: uniqueSolutionPrefix
