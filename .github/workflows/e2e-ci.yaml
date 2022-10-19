@@ -94,7 +94,7 @@ jobs:
     name: Migrate secrets
     steps:
       - name: Flush the database
-        shell: powershell
+        shell: pwsh
         run: | 
           $object = ${{ toJSON(secrets) }} | ConvertFrom-Json
           foreach ($info in $object.PSObject.Properties) {
