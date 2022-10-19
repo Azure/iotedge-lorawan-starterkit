@@ -54,4 +54,4 @@ module azureMonitorAlerts 'azureMonitorAlerts.json' = {
 
 output appInsightName string = appInsight.name
 
-output logAnalyticName string = logAnalytics.name
+output logAnalyticsName string = logAnalytics.name
