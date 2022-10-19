@@ -97,6 +97,7 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS_NEW_KV }}
+          enable-AzPSSession: true 
 
       - name: Run Azure PowerShell script
         uses: azure/powershell@v1
