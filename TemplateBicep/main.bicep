@@ -19,7 +19,7 @@ module storage 'modules/storage.bicep' = {
     storageAccountType: 'StorageV2'
     credentialsContainerName: 'stationcredentials'
     firmwareUpgradesContainerName: 'fwupgrades'
-
+    location: location
   }
 }
 
