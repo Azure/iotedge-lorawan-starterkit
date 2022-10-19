@@ -1,6 +1,5 @@
 param location string = resourceGroup().location
 param sku string = 'B1'
-param iotHubHostName string
 param discoveryZipUrl string
 param iotHubName string
 param appInsightName string
@@ -11,7 +10,6 @@ var webAppName = '${uniqueSolutionPrefix}discovery'
 var hostingPlanName = '${webAppName}plan'
 var iotHubTwinContributorRoleId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/494bdba2-168f-4f31-a0a1-191d2f7c028c'
 var aspNetCoreUrls = 'http://0.0.0.0:80;https://0.0.0.0:443'
-var webSitesApiVersion = '2021-03-01'
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightName
@@ -38,7 +36,7 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
       appSettings: [
         {
           name: 'IotHubHostName'
-          value: iotHubHostName
+          value: iotHub.properties.hostName
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'

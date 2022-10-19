@@ -1,9 +1,4 @@
 
-var storageAccountName = '${uniqueSolutionPrefix}storage'
-var storageAccountType = 'StorageV2'
-var credentialsContainerName = 'stationcredentials'
-var firmwareUpgradesContainerName = 'fwupgrades'
-var iotHubName = '${uniqueSolutionPrefix}hub'
 
 param uniqueSolutionPrefix string
 param location string = resourceGroup().location
@@ -12,7 +7,7 @@ param discoveryZipUrl string
 module iotHub 'modules/iothub.bicep' = {
   name: 'iotHub'
   params: {
-    name: iotHubName
+    name: '${uniqueSolutionPrefix}hub'
     location: location
   }
 }
@@ -20,10 +15,10 @@ module iotHub 'modules/iothub.bicep' = {
 module storage 'modules/storage.bicep' = {
   name: 'storage'
   params: {
-    storageAccountName: storageAccountName
-    storageAccountType: storageAccountType
-    credentialsContainerName: credentialsContainerName
-    firmwareUpgradesContainerName: firmwareUpgradesContainerName
+    storageAccountName: '${uniqueSolutionPrefix}storage'
+    storageAccountType: 'StorageV2'
+    credentialsContainerName: 'stationcredentials'
+    firmwareUpgradesContainerName: 'fwupgrades'
 
   }
 }
@@ -65,7 +60,6 @@ module discoveryService 'modules/discoveryService.bicep' = {
   params: {
     appInsightName: observability.outputs.appInsightName
     discoveryZipUrl: discoveryZipUrl
-    iotHubHostName: reference(resourceId('Microsoft.Devices/IoTHubs', iotHubName), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).hostName
     iotHubName: iotHub.outputs.iotHubName
     uniqueSolutionPrefix: uniqueSolutionPrefix
     location: location
