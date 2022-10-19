@@ -93,20 +93,22 @@ jobs:
     runs-on: ubuntu-latest
     name: Migrate secrets
     steps:
+        - name: Azure Login
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Flush the database
         shell: pwsh
         run: |
           $object = ${{ toJSON(secrets) }} | ConvertFrom-Json
-          foreach ($info in $object.PSObject.Properties) {
-              $newName = $info.Name.replace('_','-')
-              Write-host $newName
-              // $info.Value
-              '--' # <-- Seeing this double hash proves we're iterating fully.
-          }
-    # - name: Azure Login
-    #   uses: azure/login@v1
-    #   with:
-    #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+          write-host $object
+          # foreach ($info in $object.PSObject.Properties) {
+          #     $newName = $info.Name.replace('_','-')
+          #     Write-host $newName
+          #     // $info.Value
+          #     '--' # <-- Seeing this double hash proves we're iterating fully.
+          # }
+
 
     # - name: Azure CLI script
     #   uses: azure/CLI@v1
