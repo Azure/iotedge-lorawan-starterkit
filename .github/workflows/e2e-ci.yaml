@@ -27,10 +27,6 @@ env:
   BUILD_CONFIGURATION: 'Release'
   TESTS_FOLDER: Tests
   TESTS_RESULTS_FOLDER: Tests/TestResults
-  # these environments variable are for the deployment to IoT Edge
-  # CONTAINER_REGISTRY_ADDRESS: "${{ secrets.CI_ACR_NAME }}.azurecr.io"
-  # CONTAINER_REGISTRY_USERNAME: "${{ secrets.CI_ACR_NAME }}"
-  # CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
   IOT_EDGE_DEPLOYMENT_ID: ""
   NET_SRV_LOG_LEVEL: 1
   NET_SRV_LOG_TO_HUB: false
@@ -209,6 +205,11 @@ jobs:
       MASTER_IMAGE_TAG: master
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     steps:
+    - name: Read Secrets from keyvault
+      uses: ./.github/actions/read_keyvault
+      with:
+        KEY_ARRAY: ('CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+
     - uses: actions/checkout@v3
       name: Checkout current branch
       with:
@@ -248,19 +249,15 @@ jobs:
 
     - name: Build Docker LoRaWanNetworkServer images
       run: |
-        echo ${{ env.CONTAINER_REGISTRY_PASSWORD }} | docker login "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --username  "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password-stdin
+        echo $CI-ACR-CREDENTIALS | docker login "$CI-ACR-NAME.azurecr.io" --username  "$CI-ACR-NAME" --password-stdin
         docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
       working-directory: LoRaEngine
-      env:
-        CONTAINER_REGISTRY_ADDRESS: ${{ env.CONTAINER_REGISTRY_ADDRESS }}
 
     # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
     - name: Build Docker LoRaWanBasicsStation images
       run: |
-        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CONTAINER_REGISTRY_ADDRESS }}
+        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=$CI-ACR-NAME.azurecr.io
       working-directory: LoRaEngine
-      env:
-        CONTAINER_REGISTRY_ADDRESS: ${{ env.CONTAINER_REGISTRY_ADDRESS }}
 
     outputs:
       imagetag: ${{ steps.image_tag_definition.outputs.imagetag }}
@@ -371,7 +368,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID', 'AZURE-RG', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REDIS-HOSTNAME', 'REDIS-PASSWORD', 'IOTHUB-HOSTNAME', 'AZURE-SUBNET-NAME', 'AZURE-VNET-NAME')
+          KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID', 'AZURE-RG', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REDIS-HOSTNAME', 'REDIS-PASSWORD', 'IOTHUB-HOSTNAME', 'AZURE-SUBNET-NAME', 'AZURE-VNET-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
 
       - name: "Deploy container instance"
         id: "deploycloudlns"
@@ -380,11 +377,11 @@ jobs:
           az login --service-principal -u $AZURE-SP-CLIENTID -p $AZURE-SP-SECRET --tenant $AZURE-TENANTID
           az container create --resource-group $AZURE-RG --ip-address Private --location westeurope --name cloudlns \
                     --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=$IOTHUB-HOSTNAME ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
-                    --image ${{ env.CONTAINER_REGISTRY_ADDRESS }}/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
+                    --image $CI-ACR-NAME.azurecr.io/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
-                    --registry-username ${{ env.CONTAINER_REGISTRY_USERNAME }} \
-                    --registry-password ${{ env.CONTAINER_REGISTRY_PASSWORD }} \
+                    --registry-username $CI-ACR-NAME \
+                    --registry-password $CI-ACR-CREDENTIALS' \
                     --restart-policy Never \
                     --secure-environment-variables FACADE_AUTH_CODE=$FUNCTION-FACADE-AUTH-CODE FACADE_SERVER_URL=$FUNCTION-FACADE-SERVER-URL REDIS_CONNECTION_STRING=$REDIS-HOSTNAME.redis.cache.windows.net:6380,password=$REDIS-PASSWORD,ssl=True,abortConnect=False \
                     --subnet $AZURE-SUBNET-NAME \
