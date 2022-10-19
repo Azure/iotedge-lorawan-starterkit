@@ -96,7 +96,7 @@ jobs:
       - name: Flush the database
         shell: bash
         run: |
-          echo toJSON(secrets)
+          echo ${{ toJSON(secrets) }}
     # - name: Azure Login
     #   uses: azure/login@v1
     #   with:
