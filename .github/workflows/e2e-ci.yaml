@@ -93,7 +93,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Migrate secrets
     steps:
-      - run: 
+      - name: Flush the database
+        shell: bash
+        run: |
           echo toJSON(secrets)
     # - name: Azure Login
     #   uses: azure/login@v1
