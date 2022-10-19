@@ -103,6 +103,9 @@ jobs:
         with:
           inlineScript: |
             Install-Module -Name AzureRM.KeyVault -Force
+            Import-Module AzureRM.KeyVault
+
+
             $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
             write-host "loop"
             foreach ($info in $object.PSObject.Properties) {
