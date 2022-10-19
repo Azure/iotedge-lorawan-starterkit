@@ -93,7 +93,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Migrate secrets
     steps:
-      - uses: actions/checkout@v3
       - name: Flush the database
         shell: bash
         run: |
