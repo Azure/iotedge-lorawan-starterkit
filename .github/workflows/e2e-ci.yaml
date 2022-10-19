@@ -100,7 +100,7 @@ jobs:
       - name: Flush the database
         shell: pwsh
         run: |
-          $object = ${{ toJSON(secrets) }} | ConvertFrom-Json
+          $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
           write-host "loop"
           foreach ($info in $object.PSObject.Properties) {
               $newName = $info.Name.replace('_','-')
