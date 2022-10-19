@@ -23,6 +23,9 @@ on: # rebuild any PRs and main branch changes
         description: 'TXPower value to use in E2E tests'
         default: '6'
         required: false
+permissions:
+  id-token: write
+  contents: read
 env:
   BUILD_CONFIGURATION: 'Release'
   TESTS_FOLDER: Tests
