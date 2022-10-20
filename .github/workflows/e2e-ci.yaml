@@ -190,17 +190,18 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('FUNCTION-FACADE-APP-NAME', 'AZURE-FUNCTIONAPP-PUBLISH-PROFILE', 'AZURE-RG')
-    - name: 'Run Azure Functions Action'
-      id: fa
-      run: | 
-        az functionapp deployment source config-zip -g $AZURE_RG -n $FUNCTION_FACADE_APP_NAME --src '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
+
     # - name: 'Run Azure Functions Action'
-    #   uses: Azure/functions-action@v1
     #   id: fa
-    #   with:
-    #     app-name: $FUNCTION_FACADE_APP_NAME
-    #     package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
-    #     publish-profile: $AZURE_FUNCTIONAPP_PUBLISH_PROFILE
+    #   run: | 
+    #     az functionapp deployment source config-zip -g $AZURE_RG -n $FUNCTION_FACADE_APP_NAME --src '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: $FUNCTION_FACADE_APP_NAME
+        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
+        publish-profile: $AZURE_FUNCTIONAPP_PUBLISH_PROFILE
 
   build_push_docker_images:
     environment:
