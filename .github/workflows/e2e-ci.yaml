@@ -313,44 +313,37 @@ jobs:
       shell: bash
       name: Generate server and client certificates
       env:
-        SERVER_PFX_PASSWORD: $AZURE_ENV_SERVER_PFX_PASSWORD
-        SSH_PRIVATE_KEY_PATH: $AZURE_ENV_SSH_PRIVATE_KEY_PATH
-        RPI_USERNAME: $AZURE_ENV_RPI_USERNAME
-        RPI_HOST: $AZURE_ENV_RPI_HOST
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
-        CUPS_STATION_EUI: $DEFAULTCUPSSTATIONEUI
-        CUPS_CREDENTIALS_BLOB_URL: $CUPSCREDENTIALSBLOBURL
-        CUPS_FIRMWARE_BLOB_URL: $CUPSFIRMWAREBLOBURL
       run: |
         # -- Credential generation section --
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
-        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
-        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $CUPS_STATION_EUI
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $AZURE_ENV_RPI_HOST $AZURE_ENV_SERVER_PFX_PASSWORD
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $DEFAULTCUPSSTATIONEUI
         # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
-        cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.crt $CERT_REMOTE_PATH/cups.crt
-        cp ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.key $CERT_REMOTE_PATH/cups.key
-        curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_CREDENTIALS_BLOB_URL"
-        echo "::set-output name=clientbundlecrc::$(cat ./Tools/BasicStation-Certificates-Generation/client/$CUPS_STATION_EUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)"
+        cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.crt $CERT_REMOTE_PATH/cups.crt
+        cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.key $CERT_REMOTE_PATH/cups.key
+        curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSCREDENTIALSBLOBURL"
+        echo "::set-output name=clientbundlecrc::$(cat ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)"
         echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
         # -- Firmware upgrade generation section --
         chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
         NEW_FW_VERSION=$(date -u +%s)
         sed -i "s/1.0.1-e2e/$NEW_FW_VERSION/g" ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
-        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $CUPS_STATION_EUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
-        cp ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
-        echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/sig-0.crc)"
-        echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$CUPS_STATION_EUI/fwUpdate.digest)"
+        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $DEFAULTCUPSSTATIONEUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
+        cp ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
+        echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.crc)"
+        echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/fwUpdate.digest)"
         echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
         curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
-        ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
-        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
-        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
+        ssh -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
+        scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/tc.trust
+        scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$AZURE_ENV_RPI_HOST.pfx $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/server.pfx
         # following is needed for the proper setup of trusted ca certificate
         openssl x509 -in ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt -inform DER -out ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem -outform PEM
-        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
+        scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
 
     - id: get_self_hosted_runner_ip_address
       shell: bash
