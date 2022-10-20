@@ -115,11 +115,6 @@ jobs:
         with:
           KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID')
 
-      - name: Test external login
-        shell: bash
-        run: |
-          az login --service-principal -u $AZURE_SP_CLIENTID -p $AZURE_SP_SECRET --tenant $AZURE_TENANTID
-
       - name: Power ON Azure VM
         uses: ./.github/actions/power-azure-vm
         with:

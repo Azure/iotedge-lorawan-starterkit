@@ -17,6 +17,6 @@ foreach($key in $map.Keys)
 {
   $val = $map[$key]
   $modified_key = $key.replace('-','_')
-  "$modified_key = $val" >> $env:GITHUB_ENV
+  "$modified_key=$val" >> $env:GITHUB_ENV
   Write-Host("::add-mask::$val")
 }
