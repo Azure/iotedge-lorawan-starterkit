@@ -64,21 +64,21 @@ module discoveryService 'modules/discoveryService.bicep' = {
     }
 }
 
-module userAssignedIdentity 'modules/userAssignedIdentity.bicep' = {
-  name: 'userAssignedIdentity'
-  params: {
-    uniqueSolutionPrefix: uniqueSolutionPrefix
-    location: location
-    iotHubName: iotHub.outputs.iotHubName
+// module userAssignedIdentity 'modules/userAssignedIdentity.bicep' = {
+//   name: 'userAssignedIdentity'
+//   params: {
+//     uniqueSolutionPrefix: uniqueSolutionPrefix
+//     location: location
+//     iotHubName: iotHub.outputs.iotHubName
 
-  }
-}
+//   }
+// }
 
 module deviceCreation 'modules/deviceCreation.bicep' = {
   name: 'deviceCreation'
   params: {
     location: location
-    identityId: userAssignedIdentity.outputs.identityId
+    // identityId: userAssignedIdentity.outputs.identityId
     iotHubName: iotHub.outputs.iotHubName
     storageAccountName: storage.outputs.storageAccountName
     uniqueSolutionPrefix: uniqueSolutionPrefix
