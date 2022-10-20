@@ -118,8 +118,10 @@ jobs:
             {
               echo $elem
               $value= $hash[$elem]
-              $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
-              Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name AIO-$newName -SecretValue $secureKey 
+              if($value){
+                $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name AIO-$elem -SecretValue $secureKey 
+              }
             }
           azPSVersion: "latest"
 
