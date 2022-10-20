@@ -336,7 +336,7 @@ jobs:
         echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.crc)"
         echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/fwUpdate.digest)"
         echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
-        curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
+        curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSFIRMWAREBLOBURL"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
         scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/tc.trust
