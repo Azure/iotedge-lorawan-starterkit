@@ -214,15 +214,15 @@ jobs:
       MASTER_IMAGE_TAG: master
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     steps:
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
-
     - uses: actions/checkout@v3
       name: Checkout current branch
       with:
         fetch-depth: '2'
+
+    - name: Read Secrets from keyvault
+      uses: ./.github/actions/read_keyvault
+      with:
+        KEY_ARRAY: ('CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
 
     - id: image_tag_definition
       run: |
