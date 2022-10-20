@@ -108,24 +108,6 @@ jobs:
         with:
           inlineScript: |
 
-            # $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
-            # write-host "loop"
-            # foreach ($info in $object.PSObject.Properties) {
-            #     $newName = $info.Name.replace('_','-')
-            #     echo $newName
-            #     $secureKey = ConvertTo-SecureString -String $info.Value -AsPlainText -Force
-            #     Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name $newName -SecretValue $secureKey
-            #     Write-host "$newName"
-            # }
-            # $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
-            # write-host "loop"
-            # foreach ($info in $object.PSObject.Properties) {
-            #     $newName = $info.Name.replace('_','-')
-            #     echo $newName
-            #     $hash.Add($newName,$info.Value)
-            # }
-
-
               $secureKey = ConvertTo-SecureString -String $SERVER_PFX_PASSWORD -AsPlainText -Force
               Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name 'AIO-$newName' -SecretValue $secureKey 
           azPSVersion: "latest"
