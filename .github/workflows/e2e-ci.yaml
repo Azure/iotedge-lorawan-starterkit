@@ -262,14 +262,14 @@ jobs:
 
     - name: Build Docker LoRaWanNetworkServer images
       run: |
-        echo $CI_ACR_CREDENTIALS | docker login "${{ env.CI_ACR_NAME }}.azurecr.io" --username  "$CI_ACR_NAME" --password-stdin
-        docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
+        echo $CI_ACR_CREDENTIALS | docker login "$CI_ACR_NAME.azurecr.io" --username  "$CI_ACR_NAME" --password-stdin
+        docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64 --set *.args.CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
       working-directory: LoRaEngine
 
     # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
     - name: Build Docker LoRaWanBasicsStation images
       run: |
-        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=${{ env.CI_ACR_NAME }}.azurecr.io
+        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
       working-directory: LoRaEngine
 
     outputs:
@@ -390,7 +390,7 @@ jobs:
           az login --service-principal -u $AZURE_SP_CLIENTID -p $AZURE_SP_SECRET --tenant $AZURE_TENANTID 
           az container create --resource-group $AZURE_RG --ip-address Private --location westeurope --name cloudlns \
                     --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=$IOTHUB_HOSTNAME ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
-                    --image ${{ env.CI_ACR_NAME }}.azurecr.io/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
+                    --image $CI_ACR_NAME.azurecr.io/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
                     --ports 5000 \
                     --protocol TCP \
                     --registry-username $CI_ACR_NAME \
