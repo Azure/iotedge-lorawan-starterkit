@@ -150,6 +150,7 @@ jobs:
       - name: Flush the database
         shell: bash
         run: |
+          printenv
           wget https://github.com/IBM-Cloud/redli/releases/download/v0.5.2/redli_0.5.2_linux_amd64.tar.gz
           tar xzf redli_0.5.2_linux_amd64.tar.gz
           chmod +x redli
