@@ -161,41 +161,41 @@ jobs:
   #           }
   #         azPSVersion: "latest"
 
-  # migrate_secret_3:
-  #   runs-on: ubuntu-latest
-  #   name: Migrate secrets
-  #   environment:
-  #     name: CI_CONCENTRATOR_EFLOW_ARM32
-  #   steps:
-  #     - name: Azure Login
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS_NEW_KV }}
-  #         enable-AzPSSession: true 
+  migrate_secret_3:
+    runs-on: ubuntu-latest
+    name: Migrate secrets
+    environment:
+      name: CI_CONCENTRATOR_EFLOW_ARM32
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NEW_KV }}
+          enable-AzPSSession: true 
 
-  #     - name: Run Azure PowerShell script
-  #       uses: azure/powershell@v1
-  #       with:
-  #         inlineScript: |
-  #           $hash = @{}
-  #           $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
-  #           write-host "loop"
-  #           foreach ($info in $object.PSObject.Properties) {
-  #               $newName = $info.Name.replace('_','-')
-  #               echo $newName
-  #               $hash.Add($newName,$info.Value)
-  #           }
-  #           $data = @('SERVER-PFX-PASSWORD','SSH-PRIVATE-KEY-PATH','RPI-USERNAME','RPI-HOST', 'DEPLOYMENT-FILE-NAME', 'DEVICE-ID', 'IOTHUB-OWNER-CONNECTION-STRING', 'IOT-EDGE-DEPLOYMENT-ID', 'LBS-FIXED-STATION-EUI')
-  #           foreach($elem in $data) 
-  #           {
-  #             echo $elem
-  #             $value= $hash[$elem]
-  #             if($value){
-  #               $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
-  #               Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name EFLOW-ARM-$elem -SecretValue $secureKey 
-  #             }
-  #           }
-  #         azPSVersion: "latest"
+      - name: Run Azure PowerShell script
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            $hash = @{}
+            $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
+            write-host "loop"
+            foreach ($info in $object.PSObject.Properties) {
+                $newName = $info.Name.replace('_','-')
+                echo $newName
+                $hash.Add($newName,$info.Value)
+            }
+            $data = @('SERVER-PFX-PASSWORD','SSH-PRIVATE-KEY-PATH','RPI-USERNAME','RPI-HOST', 'DEPLOYMENT-FILE-NAME', 'DEVICE-ID', 'IOTHUB-OWNER-CONNECTION-STRING', 'IOT-EDGE-DEPLOYMENT-ID', 'LBS-FIXED-STATION-EUI')
+            foreach($elem in $data) 
+            {
+              echo $elem
+              $value= $hash[$elem]
+              if($value){
+                $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name EFLOW-ARM-$elem -SecretValue $secureKey 
+              }
+            }
+          azPSVersion: "latest"
 
   migrate_secret_4:
     runs-on: ubuntu-latest
@@ -228,7 +228,7 @@ jobs:
               $value= $hash[$elem]
               if($value){
                 $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
-                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name EFLOW-ARM-$elem -SecretValue $secureKey 
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name AZURE-ENV-$elem -SecretValue $secureKey 
               }
             }
           azPSVersion: "latest"
