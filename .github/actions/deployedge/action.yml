@@ -48,7 +48,7 @@ runs:
       $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-arm64v8",'')
       echo $LBS_IMAGE_TAG
       echo "::set-env name=LBS_VERSION::$LBS_IMAGE_TAG"
-    # shell: pwsh
+    shell: bash
     name: Compute latest LBS build
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
