@@ -487,7 +487,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
