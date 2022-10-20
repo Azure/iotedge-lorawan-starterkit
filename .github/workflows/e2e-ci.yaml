@@ -103,6 +103,8 @@ jobs:
 
       - name: Run Azure PowerShell script
         uses: azure/powershell@v1
+        env:
+          SERVER_PFX_PASSWORD: ${{ secrets.SERVER_PFX_PASSWORD }}
         with:
           inlineScript: |
 
@@ -124,8 +126,7 @@ jobs:
             # }
 
 
-              $value= ${{ secrets.SERVER_PFX_PASSWORD }}
-              $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
+              $secureKey = ConvertTo-SecureString -String $SERVER_PFX_PASSWORD -AsPlainText -Force
               Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name 'AIO-$newName' -SecretValue $secureKey 
           azPSVersion: "latest"
 
