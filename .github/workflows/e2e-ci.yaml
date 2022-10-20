@@ -107,6 +107,9 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - uses: actions/checkout@v3
+        name: Checkout current branch
+
       - name: Power ON Azure VM
         uses: ./.github/actions/power-azure-vm
         with:
@@ -387,7 +390,7 @@ jobs:
                     --ports 5000 \
                     --protocol TCP \
                     --registry-username $CI_ACR_NAME \
-                    --registry-password $CI_ACR_CREDENTIALS' \
+                    --registry-password $CI_ACR_CREDENTIALS \
                     --restart-policy Never \
                     --secure-environment-variables FACADE_AUTH_CODE=$FUNCTION_FACADE_AUTH_CODE FACADE_SERVER_URL=$FUNCTION_FACADE_SERVER_URL REDIS_CONNECTION_STRING=$REDIS_HOSTNAME.redis.cache.windows.net:6380,password=$REDIS_PASSWORD,ssl=True,abortConnect=False \
                     --subnet $AZURE_SUBNET_NAME \
@@ -850,5 +853,5 @@ jobs:
       - name: "Delete azure container instance for cloudlns"
         shell: bash
         run: |
-          az container logs -g $AZURE_RG --name cloudlns
+          ! az container logs -g $AZURE_RG --name cloudlns
           ! az container delete --yes --resource-group $AZURE_RG --name cloudlns --output none
