@@ -117,6 +117,7 @@ jobs:
 
             # }
             $hash = @{}
+            $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
 
             foreach ($info in $object.PSObject.Properties) {
                 $newName = $info.Name.replace('_','-')
