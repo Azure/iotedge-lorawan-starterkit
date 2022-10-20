@@ -3,7 +3,7 @@ param iotHubName string
 param uniqueSolutionPrefix string
 
 var userAssignedIdentityName = '${uniqueSolutionPrefix}identity'
-var contributorName = '${uniqueSolutionPrefix}contributor'
+var contributorName = '${uniqueSolutionPrefix}iothubcontributor'
 
 resource iotHub 'Microsoft.Devices/IotHubs@2021-03-31' existing = {
   name: iotHubName
@@ -19,7 +19,7 @@ resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@
 }
 
 resource iotHubRegistryContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: contributorName
+  name: guid(contributorName, iotHubName)
   scope: iotHub
   properties: {
     principalId: userAssignedIdentity.properties.principalId

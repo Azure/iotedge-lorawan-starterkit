@@ -15,20 +15,20 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-03-31' existing = {
   name: iotHubName
 }
 
-resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2020-04-01' existing = {
+resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: identityId
 }
 
 var containerGroupName = '${uniqueSolutionPrefix}containergroup'
 
 resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: 'runPowerShellInline'
+  name: '${uniqueSolutionPrefix}runPowerShellInline'
   location: location
   kind: 'AzureCLI'
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      identity : {}
+      '${identity.id}': {} 
     }
   }
   properties: {
@@ -41,7 +41,6 @@ resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' 
       storageAccountKey: '${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
     }
     azCliVersion: '2.0.80'
-    arguments: '-arg \\"something\\"'
     environmentVariables: [
       {
         name: 'rgName'
@@ -57,15 +56,9 @@ resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' 
       }
     ]
     scriptContent: '''
-      param([string] $arg)
-      $output = \'arg {0}. env var {1}.\' -f $arg,\${Env:var1}
-      Write-Output $output
-
-      az iot hub device-identity create --hub-name ${Env:iotHubName}  --device-id ${Env:deviceId}
-
-      $DeploymentScriptOutputs = @{}
-      $DeploymentScriptOutputs[\'text\'] = $output
-    ''' // or primaryScriptUri: 'https://raw.githubusercontent.com/Azure/azure-docs-bicep-samples/main/samples/deployment-script/inlineScript.ps1'
+      az iot hub device-identity create --hub-name ${Env:iotHubName} --device-id ${Env:deviceId}
+    ''' 
+    // or primaryScriptUri: 'https://raw.githubusercontent.com/Azure/azure-docs-bicep-samples/main/samples/deployment-script/inlineScript.ps1'
     supportingScriptUris: []
     timeout: 'PT30M'
     cleanupPreference: 'OnSuccess'
