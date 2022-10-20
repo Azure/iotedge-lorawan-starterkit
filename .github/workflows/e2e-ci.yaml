@@ -156,7 +156,7 @@ jobs:
               $value= $hash[$elem]
               if($value){
                 $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
-                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name AIO-$elem -SecretValue $secureKey 
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name EFLOW-VM-$elem -SecretValue $secureKey 
               }
             }
           azPSVersion: "latest"
@@ -192,7 +192,7 @@ jobs:
               $value= $hash[$elem]
               if($value){
                 $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
-                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name AIO-$elem -SecretValue $secureKey 
+                Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name EFLOW-ARM-$elem -SecretValue $secureKey 
               }
             }
           azPSVersion: "latest"
