@@ -436,7 +436,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('LBS-FIXED-STATION-EUI', 'IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'IOT-EDGE-DEPLOYMENT-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'SERVER-PFX-PASSWORD', 'DEPLOYMENT-FILE-NAME', 'ARCHITECTURE')
+          KEY_ARRAY: ('LBS-FIXED-STATION-EUI', 'IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'IOT-EDGE-DEPLOYMENT-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'SERVER-PFX-PASSWORD', 'DEPLOYMENT-FILE-NAME')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -457,7 +457,7 @@ jobs:
           NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
         with:
           deployment_file_name: '$DEPLOYMENT_FILE_NAME'
-          architecture: '$ARCHITECTURE'
+          architecture: arm32v7
           iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
 
 # Deploy IoT Edge solution to EFLOW gateway
@@ -490,7 +490,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'IOT-EDGE-DEPLOYMENT-ID', 'DEPLOYMENT-FILE-NAME', 'ARCHITECTURE')
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'IOT-EDGE-DEPLOYMENT-ID', 'DEPLOYMENT-FILE-NAME')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -501,7 +501,7 @@ jobs:
           IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
         with:
           deployment_file_name: '$DEPLOYMENT_FILE_NAME'
-          architecture: '$ARCHITECTURE'
+          architecture: amd64
           iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
 
   # Deploy IoT Edge solution to standalone Concentrator
@@ -532,7 +532,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'IOT-EDGE-DEPLOYMENT-ID', 'LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'DEPLOYMENT-FILE-NAME', 'ARCHITECTURE')
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'IOT-EDGE-DEPLOYMENT-ID', 'LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'DEPLOYMENT-FILE-NAME')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -548,7 +548,7 @@ jobs:
           APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS_CONNECTION_STRING
         with:
           deployment_file_name: '$DEPLOYMENT_FILE_NAME'
-          architecture: '$ARCHITECTURE'
+          architecture: arm32v7
           iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
           waitForLnsDeployment: false
 
