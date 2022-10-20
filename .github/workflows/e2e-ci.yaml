@@ -307,16 +307,16 @@ jobs:
     - name: Read Secrets from keyvault
       uses: ./.github/actions/read_keyvault
       with:
-        KEY_ARRAY: ('EFLOW-VM-SERVER-PFX-PASSWORD', 'EFLOW-VM-SSH-PRIVATE-KEY-PATH', 'EFLOW-VM-RPI-USERNAME', 'EFLOW-VM-RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
+        KEY_ARRAY: ('AZURE-ENV-SERVER-PFX-PASSWORD', 'AZURE-ENV-SSH-PRIVATE-KEY-PATH', 'AZURE-ENV-RPI-USERNAME', 'AZURE-ENV-RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
 
     - id: generate_step
       shell: bash
       name: Generate server and client certificates
       env:
-        SERVER_PFX_PASSWORD: $EFLOW_VM_SERVER_PFX_PASSWORD
-        SSH_PRIVATE_KEY_PATH: $EFLOW_VM_SSH_PRIVATE_KEY_PATH
-        RPI_USERNAME: $EFLOW_VM_RPI_USERNAME
-        RPI_HOST: $EFLOW_VM_RPI_HOST
+        SERVER_PFX_PASSWORD: $AZURE_ENV_SERVER_PFX_PASSWORD
+        SSH_PRIVATE_KEY_PATH: $AZURE_ENV_SSH_PRIVATE_KEY_PATH
+        RPI_USERNAME: $AZURE_ENV_RPI_USERNAME
+        RPI_HOST: $AZURE_ENV_RPI_HOST
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
         CUPS_STATION_EUI: $DEFAULTCUPSSTATIONEUI
         CUPS_CREDENTIALS_BLOB_URL: $CUPSCREDENTIALSBLOBURL
@@ -324,7 +324,7 @@ jobs:
       run: |
         # -- Credential generation section --
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
-        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $EFLOW_VM_RPI_HOST $EFLOW_VM_SERVER_PFX_PASSWORD
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $CUPS_STATION_EUI
         # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
@@ -345,12 +345,12 @@ jobs:
         echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
         curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
-        ssh -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
-        scp -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST:$CERT_REMOTE_PATH/tc.trust
-        scp -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$EFLOW_VM_RPI_HOST.pfx $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST:$CERT_REMOTE_PATH/server.pfx
+        ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
+        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
+        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
         # following is needed for the proper setup of trusted ca certificate
         openssl x509 -in ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt -inform DER -out ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem -outform PEM
-        scp -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
+        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
 
     - id: get_self_hosted_runner_ip_address
       shell: bash
@@ -394,7 +394,6 @@ jobs:
         id: "deploycloudlns"
         shell: bash
         run: |
-          az login --service-principal -u $AZURE_SP_CLIENTID -p $AZURE_SP_SECRET --tenant $AZURE_TENANTID 
           az container create --resource-group $AZURE_RG --ip-address Private --location westeurope --name cloudlns \
                     --environment-variables LOG_TO_TCP_ADDRESS=${{ needs.certificates_job.outputs.itestupip }} LOG_TO_TCP_PORT=6100 LOG_TO_TCP=true LOG_LEVEL=1 IOTHUBHOSTNAME=$IOTHUB_HOSTNAME ENABLE_GATEWAY=false CLOUD_DEPLOYMENT=true \
                     --image $CI_ACR_NAME.azurecr.io/lorawannetworksrvmodule:${{needs.build_push_docker_images.outputs.imagetag}}-amd64 \
@@ -855,6 +854,5 @@ jobs:
       - name: "Delete azure container instance for cloudlns"
         shell: bash
         run: |
-          az login --service-principal -u $AZURE_SP_CLIENTID -p $AZURE_SP_SECRET --tenant $AZURE_TENANTID
           az container logs -g $AZURE_RG --name cloudlns
           ! az container delete --yes --resource-group $AZURE_RG --name cloudlns --output none
