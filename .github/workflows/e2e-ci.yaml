@@ -189,7 +189,7 @@ jobs:
     - name: Read Secrets from keyvault
       uses: ./.github/actions/read_keyvault
       with:
-        KEY_ARRAY: ('FUNCTION-FACADE-APP-NAME', 'AZURE-FUNCTIONAPP-PUBLISH-PROFILE')
+        KEY_ARRAY: ('FUNCTION-FACADE-APP-NAME', 'AZURE-FUNCTIONAPP-PUBLISH-PROFILE', 'AZURE-RG')
     - name: 'Run Azure Functions Action'
       id: fa
       run: | 
