@@ -1,8 +1,8 @@
 #This docker builds a container for the LoRa Basics station on amd64 architecture
 
 # NOTE: Use either docker.io or your own registry address to build the image
-ARG SOURCE_CONTAINER_REGISTRY_ADDRESS=your-registry-address.azurecr.io
-FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/amd64/debian:buster as build
+ARG CONTAINER_REGISTRY_ADDRESS=your-registry-address.azurecr.io
+FROM $CONTAINER_REGISTRY_ADDRESS/amd64/debian:buster as build
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
@@ -11,7 +11,7 @@ WORKDIR /basicstation
 
 RUN make platform=linux variant=std
 
-FROM $SOURCE_CONTAINER_REGISTRY_ADDRESS/amd64/debian:buster-slim
+FROM $CONTAINER_REGISTRY_ADDRESS/amd64/debian:buster-slim
 WORKDIR /basicstation
 COPY --from=build /basicstation/build-linux-std/bin/station ./station.std
 COPY LoRaEngine/modules/LoRaBasicsStationModule/helper-functions.sh .
