@@ -510,7 +510,7 @@ jobs:
     - env_var
     - build_push_docker_images
     environment:
-      name: CI_CONCENTRATOR_EFLOW_ARM32
+      name: CI
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on ItestArm2 concentrator
