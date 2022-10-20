@@ -307,16 +307,16 @@ jobs:
     - name: Read Secrets from keyvault
       uses: ./.github/actions/read_keyvault
       with:
-        KEY_ARRAY: ('SERVER-PFX-PASSWORD', 'SSH-PRIVATE-KEY-PATH', 'RPI-USERNAME', 'RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
+        KEY_ARRAY: ('EFLOW-VM-SERVER-PFX-PASSWORD', 'EFLOW-VM-SSH-PRIVATE-KEY-PATH', 'EFLOW-VM-RPI-USERNAME', 'EFLOW-VM-RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
 
     - id: generate_step
       shell: bash
       name: Generate server and client certificates
       env:
-        SERVER_PFX_PASSWORD: $SERVER_PFX_PASSWORD
-        SSH_PRIVATE_KEY_PATH: $SSH_PRIVATE_KEY_PATH
-        RPI_USERNAME: $RPI_USERNAME
-        RPI_HOST: $RPI_HOST
+        SERVER_PFX_PASSWORD: $EFLOW_VM_SERVER_PFX_PASSWORD
+        SSH_PRIVATE_KEY_PATH: $EFLOW_VM_SSH_PRIVATE_KEY_PATH
+        RPI_USERNAME: $EFLOW_VM_RPI_USERNAME
+        RPI_HOST: $EFLOW_VM_RPI_HOST
         CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
         CUPS_STATION_EUI: $DEFAULTCUPSSTATIONEUI
         CUPS_CREDENTIALS_BLOB_URL: $CUPSCREDENTIALSBLOBURL
@@ -324,7 +324,7 @@ jobs:
       run: |
         # -- Credential generation section --
         chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
-        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $RPI_HOST $SERVER_PFX_PASSWORD
+        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $EFLOW_VM_RPI_HOST $EFLOW_VM_SERVER_PFX_PASSWORD
         ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $CUPS_STATION_EUI
         # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
         cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
@@ -345,12 +345,12 @@ jobs:
         echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
         curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPS_FIRMWARE_BLOB_URL"
         # following commands are copying to remote "aio" device the required server and trust certificates
-        ssh -i $SSH_PRIVATE_KEY_PATH $RPI_USERNAME@$RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
-        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/tc.trust
-        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$RPI_HOST.pfx $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/server.pfx
+        ssh -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
+        scp -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST:$CERT_REMOTE_PATH/tc.trust
+        scp -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$EFLOW_VM_RPI_HOST.pfx $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST:$CERT_REMOTE_PATH/server.pfx
         # following is needed for the proper setup of trusted ca certificate
         openssl x509 -in ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt -inform DER -out ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem -outform PEM
-        scp -i $SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $RPI_USERNAME@$RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
+        scp -i $EFLOW_VM_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $EFLOW_VM_RPI_USERNAME@$EFLOW_VM_RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
 
     - id: get_self_hosted_runner_ip_address
       shell: bash
@@ -440,15 +440,15 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('LBS-FIXED-STATION-EUI', 'IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'SERVER-PFX-PASSWORD', 'DEPLOYMENT-FILE-NAME')
+          KEY_ARRAY: ('AIO-LBS-FIXED-STATION-EUI', 'AIO-IOTHUB-OWNER-CONNECTION-STRING', 'AIO-DEVICE-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'AIO-SERVER-PFX-PASSWORD', 'AIO-DEPLOYMENT-FILE-NAME')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
-          LBS_FIXED_STATION_EUI: $LBS_FIXED_STATION_EUI
-          IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
-          DEVICE_ID: $DEVICE_ID
+          LBS_FIXED_STATION_EUI: $AIO_LBS_FIXED_STATION_EUI
+          IOTHUB_CONNECTION_STRING: $AIO_IOTHUB_OWNER_CONNECTION_STRING
+          DEVICE_ID: $AIO_DEVICE_ID
           IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
           FACADE_SERVER_URL: $FUNCTION_FACADE_SERVER_URL
           FACADE_AUTH_CODE: $FUNCTION_FACADE_AUTH_CODE
@@ -457,10 +457,10 @@ jobs:
           LOG_ANALYTICS_SHARED_KEY: $LOG_ANALYTICS_SHARED_KEY
           APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS_CONNECTION_STRING
           CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
-          SERVER_PFX_PASSWORD: $SERVER_PFX_PASSWORD
+          SERVER_PFX_PASSWORD: $AIO_SERVER_PFX_PASSWORD
           NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
         with:
-          deployment_file_name: '$DEPLOYMENT_FILE_NAME'
+          deployment_file_name: '$AIO_DEPLOYMENT_FILE_NAME'
           architecture: arm32v7
           iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
 
@@ -495,17 +495,17 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'DEPLOYMENT-FILE-NAME')
+          KEY_ARRAY: ('EFLOW-VM-IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
-          IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
-          DEVICE_ID: $DEVICE_ID
+          IOTHUB_CONNECTION_STRING: $EFLOW_VM_IOTHUB_OWNER_CONNECTION_STRING
+          DEVICE_ID: $EFLOW_VM_DEVICE_ID
           IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
         with:
-          deployment_file_name: '$DEPLOYMENT_FILE_NAME'
+          deployment_file_name: '$EFLOW_VM_DEPLOYMENT_FILE_NAME'
           architecture: amd64
           iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
 
@@ -538,22 +538,22 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'DEVICE-ID', 'LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'DEPLOYMENT-FILE-NAME')
+          KEY_ARRAY: ('EFLOW-ARM-IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-ARM-DEVICE-ID', 'EFLOW-ARM-LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'EFLOW-ARM-DEPLOYMENT-FILE-NAME')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
         id: deploy_edge
         env:
-          IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
-          DEVICE_ID: $DEVICE_ID
+          IOTHUB_CONNECTION_STRING: $EFLOW_ARM_IOTHUB_OWNER_CONNECTION_STRING
+          DEVICE_ID: $EFLOW_ARM_DEVICE_ID
           IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
-          LBS_FIXED_STATION_EUI: $LBS_FIXED_STATION_EUI
+          LBS_FIXED_STATION_EUI: $EFLOW_ARM_LBS_FIXED_STATION_EUI
           IOT_HUB_RESOURCE_ID: $IOT_HUB_RESOURCE_ID
           LOG_ANALYTICS_WORKSPACE_ID: $LOGANALYTICS_WORKSPACE_ID
           LOG_ANALYTICS_SHARED_KEY: $LOG_ANALYTICS_SHARED_KEY
           APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS_CONNECTION_STRING
         with:
-          deployment_file_name: '$DEPLOYMENT_FILE_NAME'
+          deployment_file_name: '$EFLOW_ARM_DEPLOYMENT_FILE_NAME'
           architecture: arm32v7
           iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
           waitForLnsDeployment: false
