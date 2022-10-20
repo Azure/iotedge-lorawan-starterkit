@@ -266,13 +266,13 @@ jobs:
     - name: Build Docker LoRaWanNetworkServer images
       run: |
         echo $CI_ACR_CREDENTIALS | docker login "$CI_ACR_NAME.azurecr.io" --username  "$CI_ACR_NAME" --password-stdin
-        docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64 --set *.args.CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
+        CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
       working-directory: LoRaEngine
 
     # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
     - name: Build Docker LoRaWanBasicsStation images
       run: |
-        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
+        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8
       working-directory: LoRaEngine
 
     outputs:
