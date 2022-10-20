@@ -118,12 +118,9 @@ jobs:
       - name: Power ON Azure VM
         uses: ./.github/actions/power-azure-vm
         with:
-          AZURE_VM_NAME: eflow
-          AZURE_RG_NAME: lorae2etests
+          AZURE_VM_NAME: lorae2etestvm
+          AZURE_RG_NAME: lorae2etest
           POWER_SWITCH: true
-          AZURE_SP_CLIENTID: $AZURE_SP_CLIENTID
-          AZURE_SP_SECRET: $AZURE_SP_SECRET
-          AZURE_TENANTID: $AZURE_TENANTID
 
   reset_redis_cache:
     environment: 
@@ -819,9 +816,6 @@ jobs:
           AZURE_VM_NAME: eflow
           AZURE_RG_NAME: lorae2etests
           POWER_SWITCH: false
-          AZURE_SP_CLIENTID: $AZURE_SP_CLIENTID
-          AZURE_SP_SECRET: $AZURE_SP_SECRET
-          AZURE_TENANTID: $AZURE_TENANTID
 
   delete_cloud_lns:
     name: Delete cloud LNS
