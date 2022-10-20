@@ -115,22 +115,18 @@ jobs:
             #     Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name $newName -SecretValue $secureKey
             #     Write-host "$newName"
             # }
-            $hash = @{}
-            $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
-            write-host "loop"
-            foreach ($info in $object.PSObject.Properties) {
-                $newName = $info.Name.replace('_','-')
-                echo $newName
-                $hash.Add($newName,$info.Value)
-            }
-            $data = @('SERVER-PFX-PASSWORD','SSH-PRIVATE-KEY-PATH','RPI-USERNAME','RPI-HOST', 'DEPLOYMENT-FILE-NAME', 'DEVICE-ID', 'IOTHUB-OWNER-CONNECTION-STRING', 'IOT-EDGE-DEPLOYMENT-ID', 'LBS-FIXED-STATION-EUI')
-            echo $data
-            foreach($info in $data) 
-            {
-              $value= $hash[$info]
+            # $object = '${{ toJSON(secrets) }}' | ConvertFrom-Json
+            # write-host "loop"
+            # foreach ($info in $object.PSObject.Properties) {
+            #     $newName = $info.Name.replace('_','-')
+            #     echo $newName
+            #     $hash.Add($newName,$info.Value)
+            # }
+
+
+              $value= ${{ secrets.SERVER-PFX-PASSWORD }}
               $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
               Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name 'aio-$newName' -SecretValue $secureKey 
-            }
           azPSVersion: "latest"
 
 
