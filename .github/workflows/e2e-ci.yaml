@@ -107,14 +107,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
-        name: Checkout current branch
-
-      - name: Read Secrets from keyvault
-        uses: ./.github/actions/read_keyvault
-        with:
-          KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID')
-
       - name: Power ON Azure VM
         uses: ./.github/actions/power-azure-vm
         with:
@@ -453,9 +445,9 @@ jobs:
           CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
           SERVER_PFX_PASSWORD: $AIO_SERVER_PFX_PASSWORD
           NET_SRV_LOG_TO_TCP_ADDRESS: "itestup"
-          CONTAINER_REGISTRY_USERNAME: $CI_ACR_NAME
-          CONTAINER_REGISTRY_PASSWORD: $CI_ACR_CREDENTIALS
-          CONTAINER_REGISTRY_ADDRESS: $CI_ACR_NAME.azurecr.io
+          CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
+          CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
+          CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
         with:
           deployment_file_name: '$AIO_DEPLOYMENT_FILE_NAME'
           architecture: arm32v7
@@ -501,9 +493,9 @@ jobs:
           IOTHUB_CONNECTION_STRING: $IOTHUB_OWNER_CONNECTION_STRING
           DEVICE_ID: $EFLOW_VM_DEVICE_ID
           IOT_EDGE_DEPLOYMENT_ID: $IOT_EDGE_DEPLOYMENT_ID
-          CONTAINER_REGISTRY_USERNAME: $CI_ACR_NAME
-          CONTAINER_REGISTRY_PASSWORD: $CI_ACR_CREDENTIALS
-          CONTAINER_REGISTRY_ADDRESS: $CI_ACR_NAME.azurecr.io
+          CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
+          CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
+          CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
         with:
           deployment_file_name: '$EFLOW_VM_DEPLOYMENT_FILE_NAME'
           architecture: amd64
@@ -552,9 +544,9 @@ jobs:
           LOG_ANALYTICS_WORKSPACE_ID: $LOGANALYTICS_WORKSPACE_ID
           LOG_ANALYTICS_SHARED_KEY: $LOG_ANALYTICS_SHARED_KEY
           APPLICATIONINSIGHTS_CONNECTION_STRING: $APPLICATIONINSIGHTS_CONNECTION_STRING
-          CONTAINER_REGISTRY_USERNAME: $CI_ACR_NAME
-          CONTAINER_REGISTRY_PASSWORD: $CI_ACR_CREDENTIALS
-          CONTAINER_REGISTRY_ADDRESS: $CI_ACR_NAME.azurecr.io
+          CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
+          CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
+          CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
         with:
           deployment_file_name: '$EFLOW_ARM_DEPLOYMENT_FILE_NAME'
           architecture: arm32v7
