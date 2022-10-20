@@ -124,9 +124,9 @@ jobs:
             # }
 
 
-              $value= ${{ secrets.SERVER-PFX-PASSWORD }}
+              $value= ${{ secrets.SERVER_PFX_PASSWORD }}
               $secureKey = ConvertTo-SecureString -String $value -AsPlainText -Force
-              Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name 'aio-$newName' -SecretValue $secureKey 
+              Set-AzKeyVaultSecret -VaultName 'lorae2etestkeyvault' -Name 'AIO-$newName' -SecretValue $secureKey 
           azPSVersion: "latest"
 
 
