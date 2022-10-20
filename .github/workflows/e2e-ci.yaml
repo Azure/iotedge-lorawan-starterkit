@@ -201,7 +201,7 @@ jobs:
       with:
         app-name: $FUNCTION_FACADE_APP_NAME
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
-        publish-profile: $AZURE_FUNCTIONAPP_PUBLISH_PROFILE
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
   build_push_docker_images:
     environment:
