@@ -791,6 +791,8 @@ jobs:
 
   power_off_azure_vm:
     name: Power OFF EFLOW
+    environment:
+      name: CI
     if: always()
     runs-on: ubuntu-latest
     needs:
