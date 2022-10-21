@@ -40,8 +40,9 @@ runs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
   - run: |
-      $env:POWERSHELL_TELEMETRY_OPTOUT=true
       pwd
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: true
     shell: pwsh
 
   # Replacement need to occur to be compliant with the IoT Edge tool, we should remove in the future.
