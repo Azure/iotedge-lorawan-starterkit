@@ -454,7 +454,7 @@ jobs:
         with:
           deployment_file_name: '$AIO_DEPLOYMENT_FILE_NAME'
           architecture: arm32v7
-          iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
+          iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
 
 # Deploy IoT Edge solution to EFLOW gateway
   deploy_eflow_gw_iot_edge:
