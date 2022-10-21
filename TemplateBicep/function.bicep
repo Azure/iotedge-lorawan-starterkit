@@ -1,40 +1,19 @@
-@description('Provision a final LoRa device in the IoT hub in addition to the gateway.')
 param deployDevice bool
+param gitUsername string
+param version string
 
-@description('The Git Username. Default is Azure.')
-param gitUsername string = 'Azure'
-
-@description('The Azure location where to create the hosting plan. Default value is resource group location.')
 param hostingPlanLocation string = resourceGroup().location
-
 @description('Hosting plan SKU. Default is Y1.')
 param hostingPlanSkuName string = 'Y1'
-
 @description('Hosting Plan SKU tiers. Default value is Dynamic.')
 param hostingPlanSkuTier string = 'Dynamic'
-
-@description('Prefix used for resource names. Should be unique as this will also be used for domain names.')
 param uniqueSolutionPrefix string
 
-@description('Controls whether observability is set up for IoT Edge.')
 param useAzureMonitorOnEdge bool
-
-@description('The Git version to use. Default is 2.1.0.')
-param version string = '2.1.0'
-
-@description('The name of the redis resource.')
 param redisCacheName string
-
-@description('The name of the iot hub resource.')
 param iotHubName string
-
-@description('The storage account name.')
 param storageAccountName string
-
-@description('The log analytics workspace name.')
 param logAnalyticsName string
-
-@description('The application insights name.')
 param appInsightName string
 
 var functionName = '${uniqueSolutionPrefix}function'
@@ -172,3 +151,4 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
+output functionUrl string = azureFunction.properties.defaultHostName

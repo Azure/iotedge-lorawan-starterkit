@@ -10,6 +10,7 @@ param evaluationPeriods int = 4
 @description('Dynamic Threshold Failing Periods configurations https://docs.microsoft.com/azure/azure-monitor/alerts/alerts-dynamic-thresholds#what-do-the-advanced-settings-in-dynamic-thresholds-mean')
 param failingPeriods int = 4
 
+@description('Metric namespace for the alert. Default is LoRaWan')
 param metricNamespace string = 'LoRaWan'
 
 @description('Every hour (5 mins, 15 mins, 30 mins, etc.)')

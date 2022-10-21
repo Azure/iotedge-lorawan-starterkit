@@ -1,8 +1,45 @@
 param location string = resourceGroup().location
-param uniqueSolutionPrefix string
-param discoveryZipUrl string
 
-module iotHub 'modules/iothub.bicep' = {
+@description('Prefix used for resource names. Should be unique as this will also be used for domain names.')
+param uniqueSolutionPrefix string
+
+@description('The name of the Edge gateway')
+param edgeGatewayName string
+
+@description('Provision a final LoRa device in the IoT hub in addition to the gateway')
+param deployDevice bool
+
+@description('Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value')
+param resetPin int 
+
+@description('In what region is your gateway deployed?')
+@allowed(['EU','US'])
+param region string = 'EU'
+
+@description('The StationEUI of the sample concentrator device')
+param stationEui string = 'AA555A0000000101'
+
+@description('[In Mbps] Custom SPI speed for your gateway, currently only supported for ARM gateways')
+@allowed([8,2])
+param spiSpeed int = 8
+
+@description('SPI Dev version for x86 based gateway')
+@allowed([0,1,2])
+param spiDev int = 0
+
+@description('Controls whether observability is set up for IoT edge.')
+param useAzureMonitorOnEdge bool = true
+
+@description('Controls whether the standalone discovery service should be deployed.')
+param useDiscoveryService bool = false
+
+@description('The Git Username. Default is Azure.')
+param gitUsername string = 'Azure'
+
+@description('The Git version to use. Default is 2.2.0.')
+param version string = '2.2.0'
+
+module iotHub './iothub.bicep' = {
   name: 'iotHub'
   params: {
     name: '${uniqueSolutionPrefix}hub'
@@ -10,18 +47,16 @@ module iotHub 'modules/iothub.bicep' = {
   }
 }
 
-module storage 'modules/storage.bicep' = {
+module storage './storage.bicep' = {
   name: 'storage'
   params: {
-    storageAccountName: '${uniqueSolutionPrefix}storage'
+    uniqueSolutionPrefix: uniqueSolutionPrefix
     storageAccountType: 'StorageV2'
-    credentialsContainerName: 'stationcredentials'
-    firmwareUpgradesContainerName: 'fwupgrades'
     location: location
   }
 }
 
-module redisCache 'modules/redis.bicep' = {
+module redisCache './redis.bicep' = {
   name: 'redisCache'
   params: {
     uniqueSolutionPrefix: uniqueSolutionPrefix
@@ -29,35 +64,39 @@ module redisCache 'modules/redis.bicep' = {
   }
 }
 
-module function 'modules/function.bicep' = {
+module function './function.bicep' = {
   name: 'function'
   params: {
     appInsightName: observability.outputs.appInsightName
     logAnalyticsName: observability.outputs.logAnalyticsName
-    deployDevice: true
+    deployDevice: deployDevice
     uniqueSolutionPrefix: uniqueSolutionPrefix
-    useAzureMonitorOnEdge: true
+    useAzureMonitorOnEdge: useAzureMonitorOnEdge
     hostingPlanLocation: location
     redisCacheName: redisCache.outputs.redisCacheName
     iotHubName: iotHub.outputs.iotHubName
     storageAccountName: storage.outputs.storageAccountName
+    gitUsername: gitUsername
+    version: version
   }
 }
 
-module observability 'modules/observability.bicep' = {
+module observability './observability.bicep' = {
   name: 'observability'
   params: {
     prefix: uniqueSolutionPrefix
     iotHubName: iotHub.outputs.iotHubName
     location: location
+    useAzureMonitorOnEdge: useAzureMonitorOnEdge
   }
 }
 
-module discoveryService 'modules/discoveryService.bicep' = {
+module discoveryService './discoveryService.bicep' = if (useDiscoveryService) {
   name: 'discoveryService'
   params: {
     appInsightName: observability.outputs.appInsightName
-    discoveryZipUrl: discoveryZipUrl
+    version: version
+    gitUsername: gitUsername
     iotHubName: iotHub.outputs.iotHubName
     uniqueSolutionPrefix: uniqueSolutionPrefix
     location: location

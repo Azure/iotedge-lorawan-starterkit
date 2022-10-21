@@ -1,6 +1,7 @@
 param prefix string
 param iotHubName string
 param location string
+param useAzureMonitorOnEdge bool
 
 resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' existing = {
   name: iotHubName
@@ -33,7 +34,7 @@ resource appInsight 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-module workbook './workbook.bicep' = {
+module workbook './workbook.bicep' = if (useAzureMonitorOnEdge) {
   name: 'workbook'
   params: {
     appInsightsName: appInsight.name
@@ -42,7 +43,7 @@ module workbook './workbook.bicep' = {
   }
 }
 
-module azureMonitorAlerts './alerts.bicep' = {
+module azureMonitorAlerts './alerts.bicep' = if (useAzureMonitorOnEdge) {
   name: 'azureMonitorAlerts'
   params: {
     appInsightsName: appInsight.name
@@ -51,5 +52,4 @@ module azureMonitorAlerts './alerts.bicep' = {
 }
 
 output appInsightName string = appInsight.name
-
 output logAnalyticsName string = logAnalytics.name

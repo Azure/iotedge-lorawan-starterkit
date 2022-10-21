@@ -1,10 +1,11 @@
 param location string = resourceGroup().location
 param sku string = 'B1'
-param discoveryZipUrl string
+param version string
 param iotHubName string
 param appInsightName string
 param roleNameGuid string = guid(resourceGroup().id, 'twincontributor')
 param uniqueSolutionPrefix string
+param gitUsername string
 
 var webAppName = '${uniqueSolutionPrefix}discovery'
 var hostingPlanName = '${webAppName}plan'
@@ -26,6 +27,8 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     name: sku
   }
 }
+
+var discoveryZipUrl = 'https://github.com/${gitUsername}/iotedge-lorawan-starterkit/releases/download/v${version}/discoveryservice-${version}.zip'
 
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   name: webAppName
