@@ -24,7 +24,9 @@ var containerGroupName = '${uniqueSolutionPrefix}containergroup'
 resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: '${uniqueSolutionPrefix}runPowerShellInline'
   location: location
-  kind: 'AzureCLI'
+  // kind: 'AzureCLI'
+  kind: 'AzurePowerShell'
+
   // identity: {
   //   type: 'UserAssigned'
   //   userAssignedIdentities: {
@@ -40,7 +42,8 @@ resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' 
       storageAccountName: storageAccount.name
       storageAccountKey: '${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
     }
-    azCliVersion: '2.41.0'
+    // azCliVersion: '2.41.0'
+    azPowerShellVersion: '6.4'
     environmentVariables: [
       {
         name: 'rgName'
@@ -56,8 +59,9 @@ resource runPowerShellInline 'Microsoft.Resources/deploymentScripts@2020-10-01' 
       }
     ]
     scriptContent: '''
-    az extension add --name azure-iot
-    az iot hub device-identity create --hub-name ${Env:iotHubName} --device-id ${Env:deviceId}
+    # az extension add --name azure-iot
+    # az iot hub device-identity create --hub-name ${Env:iotHubName} --device-id ${Env:deviceId}
+    Add-AzIotHubDevice -ResourceGroup \"${Env:rgName}" -IotHubName \"${Env:iotHubName}\" -DeviceId \"${Env:deviceId}\"
     ''' 
     // or primaryScriptUri: 'https://raw.githubusercontent.com/Azure/azure-docs-bicep-samples/main/samples/deployment-script/inlineScript.ps1'
     supportingScriptUris: []
