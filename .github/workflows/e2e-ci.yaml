@@ -452,7 +452,7 @@ jobs:
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
         with:
-          deployment_file_name: '$AIO_DEPLOYMENT_FILE_NAME'
+          deployment_file_name: '${{ env.AIO_DEPLOYMENT_FILE_NAME }}'
           architecture: arm32v7
           iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
 
@@ -500,9 +500,9 @@ jobs:
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
         with:
-          deployment_file_name: '$EFLOW_VM_DEPLOYMENT_FILE_NAME'
+          deployment_file_name: '${{ env.EFLOW_VM_DEPLOYMENT_FILE_NAME }}'
           architecture: amd64
-          iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
+          iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
 
   # Deploy IoT Edge solution to standalone Concentrator
   deploy_eflow_concentrator_iot_edge:
@@ -551,9 +551,9 @@ jobs:
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
         with:
-          deployment_file_name: '$EFLOW_ARM_DEPLOYMENT_FILE_NAME'
+          deployment_file_name: '${{ env.EFLOW_ARM_DEPLOYMENT_FILE_NAME }}'
           architecture: arm32v7
-          iot_edge_deployment_id: '$IOT_EDGE_DEPLOYMENT_ID'
+          iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
           waitForLnsDeployment: false
 
   load_test_job:
