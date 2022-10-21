@@ -151,4 +151,4 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
-output functionUrl string = azureFunction.properties.defaultHostName
+output functionName string = azureFunction.name
