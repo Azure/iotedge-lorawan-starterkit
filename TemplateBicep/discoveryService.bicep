@@ -9,7 +9,6 @@ param gitUsername string
 
 var webAppName = '${uniqueSolutionPrefix}discovery'
 var hostingPlanName = '${webAppName}plan'
-var iotHubTwinContributorRoleId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/494bdba2-168f-4f31-a0a1-191d2f7c028c'
 var aspNetCoreUrls = 'http://0.0.0.0:80;https://0.0.0.0:443'
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
@@ -62,6 +61,7 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
+var iotHubTwinContributorRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '494bdba2-168f-4f31-a0a1-191d2f7c028c')
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: roleNameGuid
   scope: iotHub
