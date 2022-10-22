@@ -499,6 +499,8 @@ jobs:
           CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
+          FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
+          FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
         with:
           deployment_file_name: '${{ env.EFLOW_VM_DEPLOYMENT_FILE_NAME }}'
           architecture: amd64
