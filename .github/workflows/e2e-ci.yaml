@@ -451,6 +451,8 @@ jobs:
           CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
+          LBS_SPI_DEV: "0"
+          LBS_SPI_SPEED: "8"
         with:
           deployment_file_name: '${{ env.AIO_DEPLOYMENT_FILE_NAME }}'
           architecture: arm32v7
@@ -487,7 +489,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING')
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'IOT-HUB-RESOURCE-ID')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -501,6 +503,7 @@ jobs:
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
           FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
           FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+          IOT_HUB_RESOURCE_ID: ${{ env.IOT_HUB_RESOURCE_ID }}
         with:
           deployment_file_name: '${{ env.EFLOW_VM_DEPLOYMENT_FILE_NAME }}'
           architecture: amd64
@@ -546,12 +549,15 @@ jobs:
           IOT_EDGE_DEPLOYMENT_ID: ${{ env.IOT_EDGE_DEPLOYMENT_ID }}
           LBS_FIXED_STATION_EUI: ${{ env.EFLOW_ARM_LBS_FIXED_STATION_EUI }}
           IOT_HUB_RESOURCE_ID: ${{ env.IOT_HUB_RESOURCE_ID }}
-          LOG_ANALYTICS_WORKSPACE_ID: ${{ env.LOGANALYTICS_WORKSPACE_ID }}
+          LOG_ANALYTICS_WORKSPACE_ID: ${{ env.LOG_ANALYTICS_WORKSPACE_ID }}
           LOG_ANALYTICS_SHARED_KEY: ${{ env.LOG_ANALYTICS_SHARED_KEY }}
           APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ env.APPLICATIONINSIGHTS_CONNECTION_STRING }}
           CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
+          LBS_SPI_DEV: "0"
+          LBS_SPI_SPEED: "8"
+          LBS_TC_URI: "ws://10.0.0.4"
         with:
           deployment_file_name: '${{ env.EFLOW_ARM_DEPLOYMENT_FILE_NAME }}'
           architecture: arm32v7
