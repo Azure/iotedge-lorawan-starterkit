@@ -538,7 +538,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-ARM-DEVICE-ID', 'EFLOW-ARM-LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'EFLOW-ARM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-ARM-DEVICE-ID', 'EFLOW-ARM-LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'EFLOW-ARM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'EFLOW-VM-TC-URI-ENDPOINT')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -557,7 +557,7 @@ jobs:
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
           LBS_SPI_DEV: "0"
           LBS_SPI_SPEED: "8"
-          LBS_TC_URI: "ws://10.0.0.4"
+          LBS_TC_URI: "${{ env.EFLOW_VM_TC_URI_ENDPOINT }}"
         with:
           deployment_file_name: '${{ env.EFLOW_ARM_DEPLOYMENT_FILE_NAME }}'
           architecture: arm32v7
