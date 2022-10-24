@@ -14,7 +14,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using global::LoRaTools;
     using global::LoRaTools.CommonAPI;
     using LoRaWan.Tests.Common;
-    using LoRaWan.Tests.Unit.IoTHubImpl;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;

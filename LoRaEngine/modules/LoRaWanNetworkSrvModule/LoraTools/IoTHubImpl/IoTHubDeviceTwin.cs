@@ -4,7 +4,6 @@
 namespace LoRaTools.IoTHubImpl
 {
     using System;
-    using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Shared;
 
     public class IoTHubDeviceTwin : IDeviceTwin
