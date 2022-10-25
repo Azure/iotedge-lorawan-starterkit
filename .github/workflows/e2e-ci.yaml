@@ -949,8 +949,10 @@ jobs:
         with:
           KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID', 'AZURE-RG')
 
+      # we don't want to error if the container instance is not present.
       - name: "Delete azure container instance for cloudlns"
         shell: bash
         run: |
-          ! az container logs -g $AZURE_RG --name cloudlns
-          ! az container delete --yes --resource-group $AZURE_RG --name cloudlns --output none
+          set +x
+          az container logs -g $AZURE_RG --name cloudlns
+          az container delete --yes --resource-group $AZURE_RG --name cloudlns --output none
