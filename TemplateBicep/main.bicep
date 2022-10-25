@@ -103,3 +103,20 @@ module discoveryService './discoveryService.bicep' = if (useDiscoveryService) {
   }
 }
 
+module createDevices 'devices.bicep' = {
+  name: 'createDevices'
+  params: {
+    location: location
+    deployDevice: deployDevice
+    logAnalyticsName: observability.outputs.logAnalyticsName
+    functionAppName: function.outputs.functionName
+    iothubName: iotHub.outputs.iotHubName
+    edgeGatewayName: edgeGatewayName
+    resetPin: resetPin
+    region: region
+    stationEui: stationEui
+    spiSpeed: spiSpeed
+    spiDev: spiDev
+  }
+}
+
