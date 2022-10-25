@@ -46,5 +46,5 @@ Option 2: Run the device provisioning Bicep
 
 ```plain
 az deployment group create --resource-group <resource-group-name> --template-file ./devices.bicep --parameters iothubName="<unique-name>" 
-resetPin=<based-on-your-setup> edgeGatewayName="<gateway-device-name>" spiSpeed=<based-on-your-setup> spiDev=<based-on-your-setup> functionAppName="<function-name>" region="<lora-region>" stationEui="<concentrator-device-name>" logAnalyticsName="<log-analytics-name>" createDevice=true
+resetPin=<based-on-your-setup> edgeGatewayName="<gateway-device-name>" spiSpeed=<based-on-your-setup> spiDev=<based-on-your-setup> functionAppName="<function-name>" region="<lora-region>" stationEui="<concentrator-device-name>" logAnalyticsName="<log-analytics-name>" deployDevice=true
 ```
