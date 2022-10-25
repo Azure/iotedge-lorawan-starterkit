@@ -58,13 +58,13 @@ jobs:
       run: |
         if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Set up for workflow dispatch"
-          echo "::set-output name=E2ETestsToRun::${{ github.event.inputs.TestsToRun }}"
+          echo "E2ETestsToRun=${{ github.event.inputs.TestsToRun }}" >> $GITHUB_OUTPUT
         elif [ ${{ github.event_name }} == 'pull_request' ]; then
           echo "Set up for pull request"
-          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]"
+          echo "E2ETestsToRun=[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]" >> $GITHUB_OUTPUT
         else
           echo "Set up for cron trigger"
-          echo "::set-output name=E2ETestsToRun::[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]"
+          echo "E2ETestsToRun=[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]" >> $GITHUB_OUTPUT
         fi
 
     - id: check-if-run
@@ -72,7 +72,7 @@ jobs:
       shell: bash
       if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true
       run: |
-        echo "::set-output name=StopFullCi::true"
+        echo "StopFullCi=true" >> $GITHUB_OUTPUT
 
     - id: set_txpower
       name: Set TXPower value
@@ -84,7 +84,7 @@ jobs:
           txPower=14
         fi
         echo "Setting TxPower to $txPower"
-        echo "::set-output name=TxPower::$txPower"
+        echo "TxPower=$txPower" >> $GITHUB_OUTPUT
 
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
@@ -250,7 +250,7 @@ jobs:
         echo "Using image tag $IMAGE_TAG"
         echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
         echo "::set-env name=LBS_VERSION::$IMAGE_TAG"
-        echo "::set-output name=imagetag::$IMAGE_TAG"
+        echo "imagetag=$IMAGE_TAG" >> $GITHUB_OUTPUT
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
@@ -320,17 +320,17 @@ jobs:
         cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.crt $CERT_REMOTE_PATH/cups.crt
         cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.key $CERT_REMOTE_PATH/cups.key
         curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSCREDENTIALSBLOBURL"
-        echo "::set-output name=clientbundlecrc::$(cat ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)"
-        echo "::set-output name=clientthumbprint::$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')"
+        echo "clientbundlecrc=$(cat ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)" >> $GITHUB_OUTPUT 
+        echo "clientthumbprint=$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')" >> $GITHUB_OUTPUT
         # -- Firmware upgrade generation section --
         chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
         NEW_FW_VERSION=$(date -u +%s)
         sed -i "s/1.0.1-e2e/$NEW_FW_VERSION/g" ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
         ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $DEFAULTCUPSSTATIONEUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
         cp ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
-        echo "::set-output name=clientsigkeycrc::$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.crc)"
-        echo "::set-output name=clientfwdigest::$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/fwUpdate.digest)"
-        echo "::set-output name=clientfwversion::$NEW_FW_VERSION"
+        echo "clientsigkeycrc=$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.crc)" >> $GITHUB_OUTPUT
+        echo "clientfwdigest=$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/fwUpdate.digest)" >> $GITHUB_OUTPUT
+        echo "clientfwversion=$NEW_FW_VERSION" >> $GITHUB_OUTPUT
         curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSFIRMWAREBLOBURL"
         # following commands are copying to remote "aio" device the required server and trust certificates
         ssh -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
@@ -344,7 +344,7 @@ jobs:
       shell: bash
       name: Get internal Ip address of the itestup device
       run: |
-        echo "::set-output name=itestupip::$(ip address list tun0 | grep -Po 'inet \K[\d.]+')"
+        echo "itestupip=$(ip address list tun0 | grep -Po 'inet \K[\d.]+')" >> $GITHUB_OUTPUT
     outputs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
       clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
@@ -395,7 +395,7 @@ jobs:
                     --secure-environment-variables FACADE_AUTH_CODE=$FUNCTION_FACADE_AUTH_CODE FACADE_SERVER_URL=$FUNCTION_FACADE_SERVER_URL REDIS_CONNECTION_STRING=$REDIS_HOSTNAME.redis.cache.windows.net:6380,password=$REDIS_PASSWORD,ssl=True,abortConnect=False \
                     --subnet $AZURE_SUBNET_NAME \
                     --vnet $AZURE_VNET_NAME --output none
-          echo "::set-output name=cloudlnsprivateip::$(az container show --name cloudlns --resource-group $AZURE_RG --query ipAddress.ip -o tsv)"
+          echo "cloudlnsprivateip=$(az container show --name cloudlns --resource-group $AZURE_RG --query ipAddress.ip -o tsv)" >> $GITHUB_OUTPUT
     outputs:
       cloudlnsprivateip: ${{ steps.deploycloudlns.outputs.cloudlnsprivateip }}
 
