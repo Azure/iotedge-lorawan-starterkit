@@ -593,7 +593,7 @@ jobs:
     - name: Read Secrets from keyvault
       uses: ./.github/actions/read_keyvault
       with:
-        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'IOTHUB-CI-CONSUMER-GROUP', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
+        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.1
@@ -610,7 +610,7 @@ jobs:
         files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
       env:
         INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ env.IOTHUB_CI_CONSUMER_GROUP }}
+        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ci
         INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
         INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
         INTEGRATIONTEST_DevicePrefix: '03'
@@ -668,7 +668,7 @@ jobs:
     - name: Read Secrets from keyvault
       uses: ./.github/actions/read_keyvault
       with:
-        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'IOTHUB-CI-CONSUMER-GROUP', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
+        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.1
@@ -685,7 +685,7 @@ jobs:
         files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
       env:
         INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ env.IOTHUB_CI_CONSUMER_GROUP }}
+        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ci
         INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
         INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
         INTEGRATIONTEST_DevicePrefix: '12'
@@ -755,7 +755,7 @@ jobs:
     - name: Read Secrets from keyvault
       uses: ./.github/actions/read_keyvault
       with:
-        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'IOTHUB-CI-CONSUMER-GROUP', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
+        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.1
@@ -772,7 +772,7 @@ jobs:
         files: '${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
       env:
         E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
-        E2ETESTS_IoTHubEventHubConsumerGroup: ${{ env.IOTHUB_CI_CONSUMER_GROUP }}
+        E2ETESTS_IoTHubEventHubConsumerGroup: ci
         E2ETESTS_LeafDeviceGatewayID: itestarm1
         E2ETESTS_DevicePrefix: '01'
         E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
