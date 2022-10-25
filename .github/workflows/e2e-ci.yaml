@@ -740,6 +740,8 @@ jobs:
       - certificates_job
       - load_test_job
     runs-on: [ self-hosted, x64 ]
+    env:
+      TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
 
     steps:
     - name: Az CLI login
@@ -799,7 +801,6 @@ jobs:
         E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
         E2ETESTS_CupsFwUrl: ${{ env.CUPSFIRMWAREBLOBURL }}
         E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
-        TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
 
     # Builds and runs E2E tests
     - name: Build E2E tests
