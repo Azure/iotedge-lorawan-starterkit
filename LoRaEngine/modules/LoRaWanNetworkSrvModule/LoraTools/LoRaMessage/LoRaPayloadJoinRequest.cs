@@ -3,7 +3,6 @@
 
 namespace LoRaTools.LoRaMessage
 {
-    using System;
     using LoRaWan;
 
     /// <summary>
