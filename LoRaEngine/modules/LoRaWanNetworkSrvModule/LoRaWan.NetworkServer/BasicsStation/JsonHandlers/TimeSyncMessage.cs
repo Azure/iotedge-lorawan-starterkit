@@ -8,8 +8,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     internal class TimeSyncMessage
     {
-        public ulong txTime { get; set; }
-        public ulong gpsTime { get; set; }
-        public LnsMessageType messageType { get; set; }
+        public ulong txtime { get; set; }
+        public ulong gpstime { get; set; }
+        public string msgtype { get; set; }
     }
 }
