@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly ITracing tracing;
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
-        private Timer timer1;
+        //private Timer timer1;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
@@ -154,7 +154,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
                     await socket.SendAsync(routerConfigResponse, cancellationToken);
                     // start method
-                    timer1 = new Timer(timer_Elapsed, socket, 2, 2000);
+                    // timer1 = new Timer(timer_Elapsed, socket, 2, 2000);
                     break;
                 case LnsMessageType.JoinRequest:
                     LogReceivedMessage(this.logger, "jreq", json, null);
@@ -217,9 +217,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 case LnsMessageType.TimeSync:
                     var timeSyncData = JsonSerializer.Deserialize<TimeSyncMessage>(json);
                     LogReceivedMessage(this.logger, "TimeSync", json, null);
-                    timeSyncData.gpsTime = (ulong)DateTime.UtcNow.Subtract(
-                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                        ).TotalMilliseconds;// to micro;
+                    timeSyncData.gpstime = (ulong)DateTime.UtcNow.Subtract(
+                        new DateTime(1980, 1, 6, 0, 0, 0, DateTimeKind.Utc)
+                        ).TotalMilliseconds * 1000; // to micro
+                    timeSyncData.msgtype = "timesync";
                     await socket.SendAsync(JsonSerializer.Serialize(timeSyncData), cancellationToken);
                     break;
                 case var messageType and (LnsMessageType.ProprietaryDataFrame
@@ -258,7 +259,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
         public void Dispose()
         {
-            this.timer1?.Dispose();
+            //this.timer1?.Dispose();
         }
     }
 }
