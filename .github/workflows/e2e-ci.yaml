@@ -489,7 +489,7 @@ jobs:
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
         with:
-          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'IOT-HUB-RESOURCE-ID')
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'IOT-HUB-RESOURCE-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE')
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -501,8 +501,8 @@ jobs:
           CONTAINER_REGISTRY_USERNAME: ${{ env.CI_ACR_NAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ env.CI_ACR_CREDENTIALS }}
           CONTAINER_REGISTRY_ADDRESS: ${{ env.CI_ACR_NAME }}.azurecr.io
-          FACADE_SERVER_URL: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
-          FACADE_AUTH_CODE: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
+          FACADE_SERVER_URL: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+          FACADE_AUTH_CODE: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
           IOT_HUB_RESOURCE_ID: ${{ env.IOT_HUB_RESOURCE_ID }}
         with:
           deployment_file_name: '${{ env.EFLOW_VM_DEPLOYMENT_FILE_NAME }}'
@@ -579,23 +579,21 @@ jobs:
       - env_var
       - certificates_job
     runs-on: [ self-hosted, x64 ]
-    env:
-      INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-      INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
-      INTEGRATIONTEST_IoTHubConnectionString: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
-      INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
-      INTEGRATIONTEST_DevicePrefix: '03'
-      INTEGRATIONTEST_RunningInCI: true
-      INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ secrets.LOAD_TEST_LNS_ENDPOINTS }}
-      INTEGRATIONTEST_NumberOfLoadTestDevices: 10
-      INTEGRATIONTEST_NumberOfLoadTestConcentrators: 4
-      INTEGRATIONTEST_FunctionAppCode: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
-      INTEGRATIONTEST_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
-      INTEGRATIONTEST_TcpLogPort: 6000
-
     steps:
+    - name: Az CLI login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
     - uses: actions/checkout@v3
       name: Checkout current branch
+
+    - name: Read Secrets from keyvault
+      uses: ./.github/actions/read_keyvault
+      with:
+        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'IOTHUB-CI-CONSUMER-GROUP', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.1
@@ -610,6 +608,19 @@ jobs:
       uses: cschleiden/replace-tokens@v1
       with:
         files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
+      env:
+        INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ env.IOTHUB_CI_CONSUMER_GROUP }}
+        INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
+        INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
+        INTEGRATIONTEST_DevicePrefix: '03'
+        INTEGRATIONTEST_RunningInCI: true
+        INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ env.LOAD_TEST_LNS_ENDPOINTS }}
+        INTEGRATIONTEST_NumberOfLoadTestDevices: 10
+        INTEGRATIONTEST_NumberOfLoadTestConcentrators: 4
+        INTEGRATIONTEST_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
+        INTEGRATIONTEST_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+        INTEGRATIONTEST_TcpLogPort: 6000
 
     - name: Build load tests
       run: |
@@ -642,23 +653,22 @@ jobs:
       - env_var
       - certificates_job
     runs-on: [ self-hosted, x64 ]
-    env:
-      INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-      INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
-      INTEGRATIONTEST_IoTHubConnectionString: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
-      INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
-      INTEGRATIONTEST_DevicePrefix: '12'
-      INTEGRATIONTEST_RunningInCI: true
-      INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \\\"1\\\": \\\"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\\\" }"
-      INTEGRATIONTEST_NumberOfLoadTestDevices: 1
-      INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
-      INTEGRATIONTEST_FunctionAppCode: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
-      INTEGRATIONTEST_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
-      INTEGRATIONTEST_TcpLogPort: 6100
 
     steps:
+    - name: Az CLI login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
     - uses: actions/checkout@v2
       name: Checkout current branch
+
+    - name: Read Secrets from keyvault
+      uses: ./.github/actions/read_keyvault
+      with:
+        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'IOTHUB-CI-CONSUMER-GROUP', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.1
@@ -673,6 +683,19 @@ jobs:
       uses: cschleiden/replace-tokens@v1
       with:
         files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
+      env:
+        INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ${{ env.IOTHUB_CI_CONSUMER_GROUP }}
+        INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
+        INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
+        INTEGRATIONTEST_DevicePrefix: '12'
+        INTEGRATIONTEST_RunningInCI: true
+        INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \\\"1\\\": \\\"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\\\" }"
+        INTEGRATIONTEST_NumberOfLoadTestDevices: 1
+        INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
+        INTEGRATIONTEST_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
+        INTEGRATIONTEST_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+        INTEGRATIONTEST_TcpLogPort: 6100
 
     - name: Build simulated cloud tests
       run: |
@@ -717,40 +740,22 @@ jobs:
       - certificates_job
       - load_test_job
     runs-on: [ self-hosted, x64 ]
-    env:
-      E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
-      E2ETESTS_IoTHubEventHubConsumerGroup: ${{ secrets.IOTHUB_CI_CONSUMER_GROUP }}
-      E2ETESTS_LeafDeviceGatewayID: itestarm1
-      E2ETESTS_DevicePrefix: '01'
-      E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
-      E2ETESTS_EnsureHasEventMaximumTries: 5
-      E2ETESTS_IoTHubConnectionString: ${{ secrets.IOTHUB_OWNER_CONNECTION_STRING }}
-      E2ETESTS_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-      E2ETESTS_FunctionAppCode: ${{ secrets.FUNCTION_FACADE_AUTH_CODE }}
-      E2ETESTS_FunctionAppBaseUrl: ${{ secrets.FUNCTION_FACADE_SERVER_URL }}
-      E2ETESTS_RunningInCI: true
-      E2ETESTS_RemoteConcentratorConnection: ${{ secrets.REMOTECONCENTRATORCONNECTION }}
-      E2ETESTS_BasicStationExecutablePath: ${{ secrets.BASICSTATIONEXECUTABLEPATH }}
-      E2ETESTS_SshPrivateKeyPath: ${{ secrets.SSHPRIVATEKEYPATH }}
-      E2ETESTS_SharedLnsEndpoint: ${{ secrets.SHAREDLNSENDPOINT }}
-      E2ETESTS_SharedCupsEndpoint: ${{ secrets.SHAREDCUPSENDPOINT }}
-      E2ETESTS_DefaultBasicStationEui: ${{ secrets.DEFAULTCISTATIONEUI }}
-      E2ETESTS_RadioDev: ${{ secrets.CIBASICSTATIONRADIODEV }}
-      E2ETESTS_CupsBasicStationEui: ${{ secrets.DEFAULTCUPSSTATIONEUI }}
-      E2ETESTS_IsCorecellBasicStation: false
-      E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
-      E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
-      E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
-      E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
-      E2ETESTS_CupsBasicStationVersion: "2.0.6(rak833x64/std)"
-      E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
-      E2ETESTS_CupsFwUrl: ${{ secrets.CUPSFIRMWAREBLOBURL }}
-      E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
-      TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
 
     steps:
+    - name: Az CLI login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
     - uses: actions/checkout@v3
       name: Checkout current branch
+
+    - name: Read Secrets from keyvault
+      uses: ./.github/actions/read_keyvault
+      with:
+        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'IOTHUB-CI-CONSUMER-GROUP', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.1
@@ -765,6 +770,36 @@ jobs:
       uses: cschleiden/replace-tokens@v1
       with:
         files: '${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
+      env:
+        E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
+        E2ETESTS_IoTHubEventHubConsumerGroup: ${{ env.IOTHUB_CI_CONSUMER_GROUP }}
+        E2ETESTS_LeafDeviceGatewayID: itestarm1
+        E2ETESTS_DevicePrefix: '01'
+        E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
+        E2ETESTS_EnsureHasEventMaximumTries: 5
+        E2ETESTS_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
+        E2ETESTS_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+        E2ETESTS_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
+        E2ETESTS_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+        E2ETESTS_RunningInCI: true
+        E2ETESTS_RemoteConcentratorConnection: ${{ env.REMOTECONCENTRATORCONNECTION }}
+        E2ETESTS_BasicStationExecutablePath: ${{ env.BASICSTATIONEXECUTABLEPATH }}
+        E2ETESTS_SshPrivateKeyPath: ${{ env.SSHPRIVATEKEYPATH }}
+        E2ETESTS_SharedLnsEndpoint: ${{ env.SHAREDLNSENDPOINT }}
+        E2ETESTS_SharedCupsEndpoint: ${{ env.SHAREDCUPSENDPOINT }}
+        E2ETESTS_DefaultBasicStationEui: ${{ env.DEFAULTCISTATIONEUI }}
+        E2ETESTS_RadioDev: ${{ env.CIBASICSTATIONRADIODEV }}
+        E2ETESTS_CupsBasicStationEui: ${{ env.DEFAULTCUPSSTATIONEUI }}
+        E2ETESTS_IsCorecellBasicStation: false
+        E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
+        E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
+        E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
+        E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
+        E2ETESTS_CupsBasicStationVersion: "2.0.6(rak833x64/std)"
+        E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
+        E2ETESTS_CupsFwUrl: ${{ env.CUPSFIRMWAREBLOBURL }}
+        E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
+        TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
 
     # Builds and runs E2E tests
     - name: Build E2E tests
