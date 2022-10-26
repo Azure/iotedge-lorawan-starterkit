@@ -34,7 +34,7 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.AS923:
                     region = AS923;
                     return true;
-                case LoRaRegionType.AU915RP1:
+                case LoRaRegionType.AU915:
                     region = AU915RP1;
                     return true;
 

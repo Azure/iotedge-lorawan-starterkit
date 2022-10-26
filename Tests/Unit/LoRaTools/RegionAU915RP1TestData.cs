@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
         public static TheoryData<Region, LoRaRegionType> TestTranslateToRegionData =>
            TheoryDataFactory.From(new[]
            {
-                (Region, LoRaRegionType.AU915RP1),
+                (Region, LoRaRegionType.AU915),
            });
 
         public static TheoryData<Region, Hertz, int> TestTryGetJoinChannelIndexData =>

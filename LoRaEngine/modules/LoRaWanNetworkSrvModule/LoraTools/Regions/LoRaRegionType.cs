@@ -11,7 +11,7 @@ namespace LoRaTools.Regions
         CN470RP1,
         CN470RP2,
         AS923,
-        AU915RP1,
+        AU915,
         // Following regions are added in the enum for BasicsStation compatibility
         EU863,
         US902
