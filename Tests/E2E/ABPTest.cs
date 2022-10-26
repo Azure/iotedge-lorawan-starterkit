@@ -144,8 +144,8 @@ namespace LoRaWan.Tests.E2E
             // Starting ADR test protocol
             Log($"{device.DeviceID}: Starting ADR protocol");
 
-            const int messageFollowNumer = 56;
-            for (var i = 0; i < messageFollowNumer; ++i)
+            const int messageFollowNumber = 56;
+            for (var i = 0; i < messageFollowNumber; ++i)
             {
                 var message = GeneratePayloadMessage();
                 await ArduinoDevice.transferPacketAsync(message, 10);
@@ -164,7 +164,7 @@ namespace LoRaWan.Tests.E2E
             if (device.IsMultiGw)
             {
                 // We need to specify the message number to avoid counting previous occurences of this message.
-                var expectedDeduplicationNumber = messageFollowNumer + MESSAGES_COUNT + MESSAGES_COUNT - 1;
+                var expectedDeduplicationNumber = messageFollowNumber + MESSAGES_COUNT + MESSAGES_COUNT - 1;
                 var searchTokenADRAlreadySent = $"{device.DeviceID}: duplication strategy indicated to not process message: {expectedDeduplicationNumber}";
                 var ignored = await TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase), new SearchLogOptions(searchTokenADRAlreadySent));
 
