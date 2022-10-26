@@ -56,11 +56,11 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 2. The radio configuration needs to be stored as a desired twin property of the newly created LBS device. Make sure to store the configuration under `properties.desired.routerConfig`
    - The configuration follows the `router_config` format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.
 
-   - The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]`
+   - The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DCA632FFFEB32FC5","DCA632FFFEB32FC7"]]` which will restrict the range of devices that the concentrator will listen to. In the example below we set this limit to all devices to offer an easy quickstart, it is advised to restrict the value in production.
 
    - A full configuration example might look like this, relative to the desired twin property path `properties.desired`: <!-- markdownlint-disable MD046 -->
 
-   - The default settings here below are compatible from the Region Example we provide in the Arduino folder.
+   - The default settings here below are compatible from the Region Example we provide in the Arduino folder. 
 
     === "EU863 Example Configuration"
 
