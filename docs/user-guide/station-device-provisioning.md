@@ -770,7 +770,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
                             "freq": 916600000
                         },
                         "chan_FSK": {
-                            "enable": true,
+                            "enable": false,
                             "radio": 1,
                             "if": 300000
                         },
