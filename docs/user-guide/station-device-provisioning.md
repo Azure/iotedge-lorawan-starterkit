@@ -67,11 +67,12 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         ``` json
         "routerConfig": {
           "NetID": [1],
-          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
+          "JoinEui": [["0000000000000000", "FFFFFFFFFFFFFFFF"]],
           "region": "EU863",
           "hwspec": "sx1301/1",
           "freq_range": [863000000, 870000000],
           "DRs": [
+            [12, 125, 0],
             [11, 125, 0],
             [10, 125, 0],
             [9, 125, 0],
@@ -94,7 +95,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
               "chan_multiSF_0": { "enable": true, "radio": 1, "if": -400000 },
               "chan_multiSF_1": { "enable": true, "radio": 1, "if": -200000 },
               "chan_multiSF_2": { "enable": true, "radio": 1, "if": 0 },
-              "chan_multiSF_3": { "enable": true, "radio": 0, "if": -400000 },
+              "chan_multiSF_3": { "enable": true, "radio": 1, "if": -400000 },
               "chan_multiSF_4": { "enable": true, "radio": 0, "if": -200000 },
               "chan_multiSF_5": { "enable": true, "radio": 0, "if": 0 },
               "chan_multiSF_6": { "enable": true, "radio": 0, "if": 200000 },
@@ -126,7 +127,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
         ``` json
         "routerConfig": {
           "NetID": [1],
-          "JoinEui": [["DCA632FFFEB32FC5", "DCA632FFFEB32FC7"]],
+          "JoinEui": [["0000000000000000", "FFFFFFFFFFFFFFFF"]],
           "region": "US902",
           "hwspec": "sx1301/1",
           "freq_range": [902000000, 928000000],
@@ -144,7 +145,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
             [10, 500, 1],
             [9, 500, 1],
             [8, 500, 1],
-            [8, 500, 1]
+            [7, 500, 1]
           ],
           "sx1301_conf": [
             {
@@ -273,7 +274,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
             "NetID": [
               1
             ],
-            "JoinEui": [],
+            "JoinEui": [[ "0000000000000000", "FFFFFFFFFFFFFFFF" ]],
             "region": "AS923",
             "hwspec": "sx1301/1",
             "freq_range": [
@@ -407,7 +408,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
             "NetID": [
               1
             ],
-            "JoinEui": [],
+            "JoinEui": [[ "0000000000000000", "FFFFFFFFFFFFFFFF" ]],
             "region": "AS923",
             "hwspec": "sx1301/1",
             "freq_range": [
@@ -542,7 +543,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
             "NetID": [
               1
             ],
-            "JoinEui": [],
+            "JoinEui": [[ "0000000000000000", "FFFFFFFFFFFFFFFF" ]],
             "region": "AS923",
             "hwspec": "sx1301/1",
             "freq_range": [
