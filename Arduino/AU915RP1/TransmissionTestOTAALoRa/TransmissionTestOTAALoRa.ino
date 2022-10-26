@@ -37,6 +37,7 @@ void setup(void)
     lora.setKey(NULL, NULL, appKey);
 
     lora.setDeciveMode(LWOTAA);
+    lora.setDataRate(dr, physicalType);
 
 
  // Disable Channels not used from the active channel list
