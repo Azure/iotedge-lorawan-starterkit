@@ -22,7 +22,7 @@ iot hub ABP desired properties for deviceid: 46AAC86800430028
 
 //set initial datarate and physical information for the device
 _data_rate_t dr=DR5;
-_physical_type_t physicalType =AU915 ;
+_physical_type_t physicalType=AU915;
 
 //internal variables
 char data[10];
@@ -48,7 +48,7 @@ void setup(void)
     lora.setJoinDutyCycle(false);
 
   // Disable Channels not used from the active channel list
-  for (int i = 8 ; i< 71; i++){
+  for (int i = 8 ; i < 71; i++) {
     lora.setChannelOFF(i);
   }
 

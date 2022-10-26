@@ -18,8 +18,8 @@ iot hub OTAA desired properties for deviceid: 47AAC86800430028
   */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr=DR2;
-_physical_type_t physicalType =AU915 ;
+_data_rate_t dr=DR5;
+_physical_type_t physicalType=AU915;
 
 //internal variables
 char data[10];
@@ -41,7 +41,7 @@ void setup(void)
 
 
  // Disable Channels not used from the active channel list
-  for (int i = 8 ; i< 72; i++){
+  for (int i = 8 ; i < 72; i++){
     lora.setChannelOFF(i);
   } 
 
