@@ -8,7 +8,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("add", HelpText = "Add a new device to IoT Hub.")]
-    public class AddOptions : OptionsBase
+    public class AddOptions
     {
         private const string ConcentratorSetName = "Contentrator";
         private const string LoRaDeviceSetName = "LoRaDevice";
@@ -17,7 +17,7 @@ namespace LoRaWan.Tools.CLI.Options
             "type",
             Required = true,
             HelpText = "Device type: Must be ABP, OTAA or Concentrator.")]
-        public string Type { get; set; }
+        public DeviceType Type { get; set; }
 
         [Option(
             "region",
@@ -221,5 +221,12 @@ namespace LoRaWan.Tools.CLI.Options
             HelpText = "FCntResetCounter (Frame counter reset counter value): 0 through 4294967295. (optional)",
             SetName = LoRaDeviceSetName)]
         public string FCntResetCounter { get; set; }
+
+        [Option(
+            "network",
+            Required = false,
+            HelpText = "Network name"
+            )]
+        public string Network { get; set; }
     }
 }
