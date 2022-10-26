@@ -665,7 +665,171 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
             "eirp": 5
           }
         }
-        ```
+        ``` 
+
+    "AU915RP1 Example Configuration"
+
+       ``` json
+           {
+            "routerConfig": {
+                "NetID": [
+                    1
+                ],
+                "JoinEui": [
+                    [
+                        "0000000000000000",
+                        "FFFFFFFFFFFFFFFF"
+                    ]
+                ],
+                "region": "AU915",
+                "hwspec": "sx1301/1",
+                "freq_range": [
+                    915000000,
+                    928000000
+                ],
+                "DRs": [
+                    [
+                        12,
+                        125,
+                        0
+                    ],
+                    [
+                        11,
+                        125,
+                        0
+                    ],
+                    [
+                        10,
+                        125,
+                        0
+                    ],
+                    [
+                        9,
+                        125,
+                        0
+                    ],
+                    [
+                        8,
+                        125,
+                        0
+                    ],
+                    [
+                        7,
+                        125,
+                        0
+                    ],
+                    [
+                        8,
+                        500,
+                        0
+                    ],
+                    [
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        12,
+                        500,
+                        0
+                    ],
+                    [
+                        11,
+                        500,
+                        0
+                    ],
+                    [
+                        10,
+                        500,
+                        0
+                    ],
+                    [
+                        9,
+                        500,
+                        0
+                    ],
+                    [
+                        8,
+                        500,
+                        0
+                    ],
+                    [
+                        7,
+                        500,
+                        0
+                    ]
+                ],
+                "sx1301_conf": [
+                    {
+                        "radio_0": {
+                            "enable": true,
+                            "freq": 915600000
+                        },
+                        "radio_1": {
+                            "enable": true,
+                            "freq": 916600000
+                        },
+                        "chan_FSK": {
+                            "enable": true,
+                            "radio": 1,
+                            "if": 300000
+                        },
+                        "chan_Lora_std": {
+                            "enable": false,
+                            "radio": 1,
+                            "if": -200000,
+                            "bandwidth": 250000,
+                            "spread_factor": 7
+                        },
+                        "chan_multiSF_0": {
+                            "enable": true,
+                            "radio": 1,
+                            "if": -400000
+                        },
+                        "chan_multiSF_1": {
+                            "enable": true,
+                            "radio": 1,
+                            "if": -200000
+                        },
+                        "chan_multiSF_2": {
+                            "enable": true,
+                            "radio": 1,
+                            "if": 0
+                        },
+                        "chan_multiSF_3": {
+                            "enable": true,
+                            "radio": 0,
+                            "if": -400000
+                        },
+                        "chan_multiSF_4": {
+                            "enable": true,
+                            "radio": 0,
+                            "if": -200000
+                        },
+                        "chan_multiSF_5": {
+                            "enable": true,
+                            "radio": 0,
+                            "if": 0
+                        },
+                        "chan_multiSF_6": {
+                            "enable": true,
+                            "radio": 0,
+                            "if": 200000
+                        },
+                        "chan_multiSF_7": {
+                            "enable": true,
+                            "radio": 0,
+                            "if": 400000
+                        }
+                    }
+                ],
+                "nocca": true,
+                "nodc": true,
+                "nodwell": true
+            }
+        }
+      
+   ```
 
    - <!-- markdownlint-enable MD046 --> A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
