@@ -823,8 +823,8 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
                 "nodwell": true
             }
         }
-      
-   ```
+
+       ```
 
    - <!-- markdownlint-enable MD046 --> A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
