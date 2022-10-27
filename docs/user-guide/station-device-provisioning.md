@@ -60,7 +60,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 
    - A full configuration example might look like this, relative to the desired twin property path `properties.desired`: <!-- markdownlint-disable MD046 -->
 
-   - The default settings here below are compatible from the Region Example we provide in the Arduino folder. 
+   - The default settings here below are compatible from the Region Example we provide in the Arduino folder.
 
     === "EU863 Example Configuration"
 
