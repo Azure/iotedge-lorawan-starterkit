@@ -98,6 +98,8 @@ jobs:
   build_docker_images:
     name: Build Docker Images
     runs-on: ubuntu-latest
+    environment:
+      name: CI
     steps:
     - name: Az CLI login
       uses: azure/login@v1
