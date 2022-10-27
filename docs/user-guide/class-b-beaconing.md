@@ -3,9 +3,11 @@
 This doc describes the process of locking a Class-B arduino device to a beaconing signal issued from the basic station and reading the GPS coordinates transmitted by that beacon.
 
 ## Network Server
+
 The LoRaWAN network server (`LoraWanNetworkSrvModule`) doesn't need any special configuration beyond the usual required launch settings.
 
 ## Basic Station / Concentrator
+
 For this setup, we use a concentrator with a GPS antenna attached.
 
 > **Note**: The GPS data can be faked by the concentrator in the case when no GPS antenna is available. **This has not yet been tested**. See [Class B Beaconing Settings](https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=conf.html), [Creating a FIFO](https://tldp.org/LDP/lpg/node17.html) and [GPS NMEA data](https://www.gpsworld.com/what-exactly-is-gps-nmea-data/#:~:text=Today%20in%20the%20world%20of,and%20match%20hardware%20and%20software.) for more information.

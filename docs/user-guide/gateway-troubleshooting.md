@@ -2,7 +2,7 @@
 
 We list some of the the issues we have encountered running the basics station; and tips on how to resolve them:
 
->The following errors were encountered when setting up the basics station for Class-B beaconing (see [this page](class-b-beaconing.md) for more context). 
+>The following errors were encountered when setting up the basics station for Class-B beaconing (see [this page](class-b-beaconing.md) for more context).
 
 1. The concentrator fails to connect:
 
