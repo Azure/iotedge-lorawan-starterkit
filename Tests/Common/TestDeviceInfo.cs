@@ -50,21 +50,21 @@ namespace LoRaWan.Tests.Common
         // Project supports following values: DecoderGpsSensor, DecoderTemperatureSensor, DecoderValueSensor
         public string SensorDecoder { get; set; } = "DecoderValueSensor";
 
-        public ReceiveWindowNumber PreferredWindow { get; set; } = ReceiveWindow1;
+        public ReceiveWindowNumber? PreferredWindow { get; set; } = ReceiveWindow1;
 
         public LoRaDeviceClassType ClassType { get; set; } = LoRaDeviceClassType.A;
 
-        public int RX2DataRate { get; set; }
+        public int? RX2DataRate { get; set; }
 
-        public uint RX1DROffset { get; set; }
+        public uint? RX1DROffset { get; set; }
 
         public bool Supports32BitFCnt { get; set; }
 
         public DeduplicationMode Deduplication { get; set; } = DeduplicationMode.Drop; // default to drop
 
-        public ushort RXDelay { get; set; }
+        public ushort? RXDelay { get; set; }
 
-        public int KeepAliveTimeout { get; set; }
+        public int? KeepAliveTimeout { get; set; }
 
         public bool IsMultiGw => string.IsNullOrEmpty(GatewayID);
 

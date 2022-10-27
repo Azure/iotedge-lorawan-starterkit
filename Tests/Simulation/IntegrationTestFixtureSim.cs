@@ -120,6 +120,12 @@ namespace LoRaWan.Tests.Simulation
                     DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
                     RouterConfig = JObject.Parse(jsonString),
                     IsIoTHubDevice = true,
+                    SensorDecoder = null,
+                    PreferredWindow = null,
+                    RX1DROffset = null,
+                    RX2DataRate = null,
+                    RXDelay= null,
+                    KeepAliveTimeout = null
                 });
             }
 
