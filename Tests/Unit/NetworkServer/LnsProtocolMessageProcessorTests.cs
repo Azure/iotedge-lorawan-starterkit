@@ -195,6 +195,38 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             Assert.True(sentEnd.Value);
         }
 
+        [Fact]
+        public async Task InternalHandleDataAsync_ShouldSendExpectedJsonResponseType_ForTimeSyncMessage()
+        {
+            // arrange
+            var expectedSubstring = @"""msgtype"":""timesync""";
+            InitializeConfigurationServiceMock();
+            SetDataPathParameter();
+
+            SetupSocketReceiveAsync(@"{ msgtype: 'timesync', txtime: 1023024197 }");
+
+            // intercepting the SendAsync to verify that what we sent is actually what we expected
+            var sentString = string.Empty;
+            WebSocketMessageType? sentType = null;
+            bool? sentEnd = null;
+            this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                           .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
+                           {
+                               sentString = Encoding.UTF8.GetString(message);
+                               sentType = type;
+                               sentEnd = end;
+                           });
+
+            // act
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
+
+            // assert
+            Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
+            Assert.Equal(WebSocketMessageType.Text, sentType.Value);
+            Assert.True(sentEnd.Value);
+        }
 
         [Theory]
         [InlineData(LnsMessageType.ProprietaryDataFrame)]
