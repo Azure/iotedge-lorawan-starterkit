@@ -126,5 +126,5 @@ jobs:
     - name: Build docker images
       run: |
         echo $CI_ACR_CREDENTIALS | docker login "$CI_ACR_NAME.azurecr.io" --username "$CI_ACR_NAME" --password-stdin
-        docker buildx bake --set *.args.SOURCE_CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
+        docker buildx bake --set *.args.CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io
       working-directory: LoRaEngine
