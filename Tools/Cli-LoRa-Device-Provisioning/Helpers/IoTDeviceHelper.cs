@@ -972,11 +972,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 Properties = twinProperties
             };
 
-            twin.Tags[Constants.DeviceTypeTagName] = "concentrator";
-            twin.Tags[Constants.RegionTagName] = opts.Region.ToLowerInvariant();
+            twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.Concentrator };
+            twin.Tags[DeviceTags.RegionTagName] = opts.Region.ToLowerInvariant();
             if (string.IsNullOrEmpty(opts.Network))
             {
-                twin.Tags[Constants.NetworkTagName] = opts.Network;
+                twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
             }
 
             return twin;
@@ -1060,10 +1060,10 @@ namespace LoRaWan.Tools.CLI.Helpers
                 Properties = twinProperties
             };
 
-            twin.Tags[Constants.DeviceTypeTagName] = "leaf";
+            twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.Leaf };
             if (!string.IsNullOrEmpty(opts.Network))
             {
-                twin.Tags[Constants.NetworkTagName] = opts.Network;
+                twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
             }
 
             return twin;
@@ -1400,8 +1400,8 @@ namespace LoRaWan.Tools.CLI.Helpers
             };
 
             var twin = new Twin();
-            twin.Tags[Constants.DeviceTypeTagName] = "gateway";
-            twin.Tags[Constants.NetworkTagName] = opts.Network;
+            twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.NetworkServer, DeviceTags.DeviceTypes.BasicsStation };
+            twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
 
             (var success, var result) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.AddDeviceWithTwinAsync(device, twin));
 

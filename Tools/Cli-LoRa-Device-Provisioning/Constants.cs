@@ -7,8 +7,5 @@ namespace LoRaWan.Tools.CLI
     {
         internal const uint DefaultNetId = 1;
         internal const string HexAlphabet = "0123456789ABCDEF";
-        internal const string DeviceTypeTagName = "lora_device_type";
-        internal const string NetworkTagName = "network";
-        internal const string RegionTagName = "lora_region";
     }
 }
