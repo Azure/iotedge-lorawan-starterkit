@@ -257,6 +257,125 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         }
 
         [Fact]
+        public void WriteRouterConfigWithBcning()
+        {
+            var ValidStationConfigurationWithBcning =
+            GetTwinConfigurationJson(new[] { new NetId(1) },
+                                     new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                                     "EU863",
+                                     "sx1301/1",
+                                     (new Hertz(863000000), new Hertz(870000000)),
+                                     new[]
+                                     {
+                                         (SF11, BW125, false),
+                                         (SF10, BW125, false),
+                                         (SF9 , BW125, false),
+                                         (SF8 , BW125, false),
+                                         (SF7 , BW125, false),
+                                         (SF7 , BW250, false),
+                                     },
+                                     includeBcning: true,
+                                     flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations) ;
+
+        var ValidRouterConfigMessageWithBcning = JsonUtil.Strictify(@"{
+            'msgtype': 'router_config',
+            'NetID': [1],
+            'JoinEui': [[0, 18446744073709551615]],
+	        'region': 'EU863',
+	        'hwspec': 'sx1301/1',
+	        'freq_range': [ 863000000, 870000000 ],
+            'DRs': [ [ 11, 125, 0 ],
+                       [ 10, 125, 0 ],
+                       [ 9, 125, 0 ],
+                       [ 8, 125, 0 ],
+                       [ 7, 125, 0 ],
+                       [ 7, 250, 0 ] ],
+            'sx1301_conf': [
+                        {
+                            'radio_0': {
+                                'enable': true,
+                                'freq': 867500000
+                            },
+                            'radio_1': {
+                                'enable': true,
+                                'freq': 868500000
+                            },
+                            'chan_FSK': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 300000
+                            },
+                            'chan_Lora_std': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -200000,
+                                'bandwidth': 250000,
+                                'spread_factor': 7
+                            },
+                            'chan_multiSF_0': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -400000
+                            },
+                            'chan_multiSF_1': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -200000
+                            },
+                            'chan_multiSF_2': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 0
+                            },
+                            'chan_multiSF_3': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -400000
+                            },
+                            'chan_multiSF_4': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -200000
+                            },
+                            'chan_multiSF_5': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 0
+                            },
+                            'chan_multiSF_6': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 200000
+                            },
+                            'chan_multiSF_7': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 400000
+                            }
+                        }
+                    ],
+            'nocca': true,
+            'nodc': true,
+            'nodwell': true,
+            'bcning': {
+                'DR': 3,
+                'layout': [
+                    2,
+                    8,
+                    17
+                ],
+                'freqs': [
+                    869525000
+                ]
+            }}");
+        // act
+        var actual = LnsStationConfiguration.GetConfiguration(ValidStationConfigurationWithBcning);
+
+        // assert
+        Assert.Equal(JsonUtil.Minify(ValidRouterConfigMessageWithBcning), actual);
+        }
+
+        [Fact]
         public void WriteRouterConfig_ThrowsArgumentException_WithInvalidFrequencyRange()
         {
             // arrange
@@ -345,6 +464,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                                         (Hertz Min, Hertz Max) freqRange,
                                                         IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
                                                         string sx1301Conf = null,
+                                                        bool includeBcning = false,
                                                         RouterConfigStationFlags flags = RouterConfigStationFlags.None)
         {
             var defaultSx1301Conf = JsonUtil.Strictify(@"[{
@@ -410,7 +530,20 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                 }
             }]");
 
-            const string template = @"{{
+            var defaultBcning = JsonUtil.Strictify(@"{
+                'DR': 3,
+                'layout': [
+                    2,
+                    8,
+                    17
+                ],
+                'freqs': [
+                    869525000
+                ]
+             }");
+
+            const string template = @"{
+                {
                 ""msgtype"": ""router_config"",
                 ""NetID"": {0},
                 ""JoinEui"": {1},
@@ -422,11 +555,12 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                 ""nocca"": {7},
                 ""nodc"": {8},
                 ""nodwell"": {9}
+                {10}
             }}";
 
             static string Serialize(object obj) => JsonSerializer.Serialize(obj);
 
-            return string.Format(CultureInfo.InvariantCulture, Regex.Replace(template, "\\s+", string.Empty),
+           return string.Format(CultureInfo.InvariantCulture, Regex.Replace(template, "\\s+", string.Empty),
                                  Serialize(allowedNetIds.Select(nid => nid.NetworkId)),
                                  Serialize(joinEuiRanges?.Select(r => new[] { r.Min.ToString(), r.Max.ToString() })),
                                  Serialize(region), Serialize(hwspec),
@@ -435,7 +569,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                  sx1301Conf ?? defaultSx1301Conf,
                                  Serialize((flags & RouterConfigStationFlags.NoClearChannelAssessment) == RouterConfigStationFlags.NoClearChannelAssessment),
                                  Serialize((flags & RouterConfigStationFlags.NoDutyCycle) == RouterConfigStationFlags.NoDutyCycle),
-                                 Serialize((flags & RouterConfigStationFlags.NoDwellTimeLimitations) == RouterConfigStationFlags.NoDwellTimeLimitations));
+                                 Serialize((flags & RouterConfigStationFlags.NoDwellTimeLimitations) == RouterConfigStationFlags.NoDwellTimeLimitations),
+                                 includeBcning? ",\"bcning\": "+defaultBcning: "");
         }
 
         [Fact]
