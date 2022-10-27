@@ -5,6 +5,7 @@ namespace LoRaWan.Tools.CLI
 {
     using System;
     using System.Buffers.Binary;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -14,12 +15,16 @@ namespace LoRaWan.Tools.CLI
     using CommandLine;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
+    using Microsoft.Azure.Devices;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using QueryOptions = Options.QueryOptions;
 
     public static class Program
     {
         private static readonly ConfigurationHelper ConfigurationHelper = new ConfigurationHelper();
+        private const string EDGE_GATEWAY_MANIFEST_FILE = "./gateway-deployment-template.json";
+        private const string EDGE_GATEWAY_OBSERVABILITY_MANIFEST_FILE = "./gateway-observability-layer-template.json";
 
         public static async Task<int> Main(string[] args)
         {
@@ -28,7 +33,7 @@ namespace LoRaWan.Tools.CLI
             try
             {
                 WriteAzureLogo();
-                Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Tool.");
+                Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Device Provisioning Tool.");
                 Console.Write("This tool complements ");
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine("http://aka.ms/lora");
@@ -41,13 +46,20 @@ namespace LoRaWan.Tools.CLI
                     return (int)ExitCode.Error;
                 }
 
-                var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
+                using var parser = new Parser(config =>
+                {
+                    config.CaseInsensitiveEnumValues = true;
+                    config.HelpWriter = Console.Error;
+                });
+
+                var success = await parser.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, AddGatewayOption, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
                     .MapResult(
                         (ListOptions opts) => RunListAndReturnExitCode(opts),
                         (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
                         (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
                         (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(opts),
                         (AddOptions opts) => RunAddAndReturnExitCode(opts),
+                        (AddGatewayOption opts) => RunAddGatewayAndReturnExitCode(opts),
                         (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
                         (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
                         (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
@@ -151,40 +163,14 @@ namespace LoRaWan.Tools.CLI
 
         private static async Task<bool> RunAddAndReturnExitCode(AddOptions opts)
         {
-            var isSuccess = false;
-
             opts = IoTDeviceHelper.CleanOptions(opts, true) as AddOptions;
 
-            if (opts.Type.Equals("concentrator", StringComparison.OrdinalIgnoreCase))
+            if (opts.Type == DeviceType.Concentrator)
             {
-                var isVerified = IoTDeviceHelper.VerifyConcentrator(opts);
-                if (!isVerified) return false;
-                if (!opts.NoCups && ConfigurationHelper.CertificateStorageContainerClient is null)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, "Storage account is not correctly configured.");
-                    return false;
-                }
-
-                if (await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, ConfigurationHelper) is not null)
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, "Station was already created, please use the 'update' verb to update an existing station.");
-                    return false;
-                }
-
-                if (opts.NoCups)
-                {
-                    var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, 0, null);
-                    return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, true);
-                }
-                else
-                {
-                    return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
-                    {
-                        var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
-                        return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, true);
-                    });
-                }
+                return await CreateConcentratorDevice(opts);
             }
+
+            var isSuccess = false;
 
             opts = IoTDeviceHelper.CompleteMissingAddOptions(opts, ConfigurationHelper);
 
@@ -195,7 +181,7 @@ namespace LoRaWan.Tools.CLI
             }
             else
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Can not add {opts.Type.ToUpper(CultureInfo.InvariantCulture)} device.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Can not add {opts.Type.ToString().ToUpper(CultureInfo.InvariantCulture)} device.");
             }
 
             if (isSuccess)
@@ -205,6 +191,112 @@ namespace LoRaWan.Tools.CLI
             }
 
             return isSuccess;
+        }
+
+        private static async Task<bool> RunAddGatewayAndReturnExitCode(AddGatewayOption opts)
+        {
+            if (true == opts.MonitoringEnabled)
+            {
+                if (string.IsNullOrEmpty(opts.IoTHubResourceId))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Provide iot hub resource identifier when enabling gateway monitoring.");
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(opts.LogAnalyticsWorkspaceId))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Provide log analytics workspace identifier when enabling gateway monitoring.");
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(opts.LogAnalyticsSharedKey))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Provide log analytics shared key when enabling gateway monitoring.");
+                    return false;
+                }
+
+                var deploymentLayerContent = await GetEdgeObservabilityDeployment(opts);
+                if (!await IoTDeviceHelper.CreateObservabilityDeploymentLayer(opts, deploymentLayerContent, ConfigurationHelper))
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "Failed to deploy observability deployment layer.");
+                    return false;
+                }
+            }
+
+            var deviceConfigurationContent = await GetEdgeGatewayDeployment(opts);
+            return await IoTDeviceHelper.CreateGatewayTwin(opts, deviceConfigurationContent, ConfigurationHelper);
+        }
+
+        private static async Task<ConfigurationContent> GetEdgeObservabilityDeployment(AddGatewayOption opts)
+        {
+            var manifest = await File.ReadAllTextAsync(EDGE_GATEWAY_OBSERVABILITY_MANIFEST_FILE);
+            var tokenReplacements = new Dictionary<string, string>
+            {
+                { "[$iot_hub_resource_id]", opts.IoTHubResourceId },
+                { "[$log_analytics_workspace_id]", opts.LogAnalyticsWorkspaceId },
+                { "[$log_analytics_shared_key]", opts.LogAnalyticsSharedKey },
+            };
+
+            foreach (var token in tokenReplacements)
+            {
+                manifest = manifest.Replace(token.Key, token.Value);
+            }
+
+            return JsonConvert.DeserializeObject<ConfigurationContent>(manifest);
+        }
+
+        private static async Task<ConfigurationContent> GetEdgeGatewayDeployment(AddGatewayOption opts)
+        {
+            var manifest = await File.ReadAllTextAsync(EDGE_GATEWAY_MANIFEST_FILE);
+            var tokenReplacements = new Dictionary<string, string>
+            {
+                { "[$reset_pin]", opts.ResetPin.ToString() },
+                { "[\"$spi_speed\"]", opts.SpiSpeed != AddGatewayOption.DefaultSpiSpeed ? string.Empty : ",\"SPI_SPEED\":{\"value\":\"2\"}" },
+                { "[\"$spi_dev\"]", opts.SpiDev != AddGatewayOption.DefaultSpiDev ? string.Empty : $",\"SPI_DEV\":{{\"value\":\"{opts.SpiDev}\"}}" },
+                { "[$TWIN_FACADE_SERVER_URL]", opts.ApiURL.ToString() },
+                { "[$TWIN_FACADE_AUTH_CODE]", opts.ApiAuthCode },
+                { "[$TWIN_HOST_ADDRESS]", opts.TwinHostAddress },
+                { "[$TWIN_NETWORK]", opts.Network },
+                { "[$az_edge_version]", opts.AzureIotEdgeVersion }
+            };
+
+            foreach (var token in tokenReplacements)
+            {
+                manifest = manifest.Replace(token.Key, token.Value);
+            }
+
+            return JsonConvert.DeserializeObject<ConfigurationContent>(manifest);
+        }
+
+        private static async Task<bool> CreateConcentratorDevice(AddOptions opts)
+        {
+            var isVerified = IoTDeviceHelper.VerifyConcentrator(opts);
+            if (!isVerified) return false;
+            if (!opts.NoCups && ConfigurationHelper.CertificateStorageContainerClient is null)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Storage account is not correctly configured.");
+                return false;
+            }
+
+            if (await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, ConfigurationHelper) is not null)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Station was already created, please use the 'update' verb to update an existing station.");
+                return false;
+            }
+
+            if (opts.NoCups)
+            {
+                var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, 0, null);
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, true);
+            }
+            else
+            {
+                return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+                {
+                    var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
+                    return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, true);
+                });
+            }
         }
 
         private static async Task<bool> RunRotateCertificateAndReturnExitCodeAsync(RotateCertificateOptions opts)

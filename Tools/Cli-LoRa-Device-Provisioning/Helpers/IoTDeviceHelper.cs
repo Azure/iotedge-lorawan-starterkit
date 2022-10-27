@@ -83,7 +83,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 isValid = VerifyDevice(
                     new AddOptions()
                     {
-                        Type = "ABP",
+                        Type = DeviceType.ABP,
                         DevEui = devEui,
                         AppEui = appEui,
                         AppKey = appKey,
@@ -121,7 +121,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 isValid = VerifyDevice(
                     new AddOptions()
                     {
-                        Type = "OTAA",
+                        Type = DeviceType.OTAA,
                         DevEui = devEui,
                         AppEui = appEui,
                         AppKey = appKey,
@@ -280,7 +280,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
 
             // ABP device specific properties
-            if (string.Equals(opts.Type, "ABP", StringComparison.OrdinalIgnoreCase))
+            if (opts.Type == DeviceType.ABP)
             {
                 if (string.IsNullOrEmpty(opts.NwkSKey))
                 {
@@ -406,7 +406,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // ******************************************************************************************
             // ABP device specific properties
             // ******************************************************************************************
-            if (string.Equals(opts.Type, "ABP", StringComparison.OrdinalIgnoreCase))
+            if (opts.Type == DeviceType.ABP)
             {
                 // NwkSKey
                 if (string.IsNullOrEmpty(opts.NwkSKey))
@@ -967,10 +967,19 @@ namespace LoRaWan.Tools.CLI.Helpers
                 twinProperties.Desired[TwinProperty.ClientThumbprint] = new JArray(opts.ClientCertificateThumbprints);
             }
 
-            return new Twin
+            var twin = new Twin
             {
                 Properties = twinProperties
             };
+
+            twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.Concentrator };
+            twin.Tags[DeviceTags.RegionTagName] = opts.Region.ToLowerInvariant();
+            if (string.IsNullOrEmpty(opts.Network))
+            {
+                twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
+            }
+
+            return twin;
         }
 
         public static Twin CreateDeviceTwin(AddOptions opts)
@@ -983,7 +992,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // ******************************************************************************************
 
             // ABP device specific properties
-            if (string.Equals(opts.Type, "ABP", StringComparison.OrdinalIgnoreCase))
+            if (opts.Type == DeviceType.ABP)
             {
                 Console.WriteLine($"Creating ABP device twin: {opts.DevEui}...");
 
@@ -1046,10 +1055,18 @@ namespace LoRaWan.Tools.CLI.Helpers
                 twinProperties.Desired[TwinProperty.KeepAliveTimeout] = ValidationHelper.ConvertToBoolTwinProperty(opts.KeepAliveTimeout);
 
             Console.WriteLine("done.");
-            return new Twin
+            var twin = new Twin
             {
                 Properties = twinProperties
             };
+
+            twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.Leaf };
+            if (!string.IsNullOrEmpty(opts.Network))
+            {
+                twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
+            }
+
+            return twin;
         }
 
         public static Twin UpdateDeviceTwin(Twin twin, UpdateOptions opts)
@@ -1351,6 +1368,76 @@ namespace LoRaWan.Tools.CLI.Helpers
                 StatusConsole.WriteLogLine(MessageType.Error, logMessage);
                 return (false, default);
             }
+        }
+
+        private static async Task<bool> ExecuteWithIotHubErrorHandlingAsync(Func<Task> executeAsync, string errorMessageContext = null)
+        {
+            try
+            {
+                await executeAsync();
+                return true;
+            }
+            catch (Exception ex) when (ex is UnauthorizedException
+                                          or IotHubCommunicationException)
+            {
+                var logMessage = errorMessageContext is { } e
+                    ? $"{e}: {ex.Message}"
+                    : ex.Message;
+                StatusConsole.WriteLogLine(MessageType.Error, logMessage);
+                return false;
+            }
+        }
+
+        internal static async Task<bool> CreateGatewayTwin(AddGatewayOption opts, ConfigurationContent deviceConfigurationContent, ConfigurationHelper configurationHelper)
+        {
+            // Add new device
+            var device = new Device(opts.DeviceId)
+            {
+                Capabilities = new DeviceCapabilities
+                {
+                    IotEdge = true,
+                }
+            };
+
+            var twin = new Twin();
+            twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.NetworkServer, DeviceTags.DeviceTypes.BasicsStation };
+            twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
+
+            (var success, var result) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.AddDeviceWithTwinAsync(device, twin));
+
+            if (!result.IsSuccessful)
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Adding gateway device failed:");
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine($"Device Id: {error.DeviceId}, Code: {error.ErrorCode}, Error: {error.ErrorStatus}");
+                }
+
+                return false;
+            }
+
+            if (!success)
+                return false;
+
+
+            var applyConfigurationSuccess = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.ApplyConfigurationContentOnDeviceAsync(opts.DeviceId, deviceConfigurationContent));
+
+            if (!applyConfigurationSuccess)
+                return false;
+
+            return true;
+        }
+
+        internal static async Task<bool> CreateObservabilityDeploymentLayer(AddGatewayOption opts, ConfigurationContent deploymentLayerContent, ConfigurationHelper configurationHelper)
+        {
+            var configuration = new Configuration($"obs-deployment-layer-{Guid.NewGuid()}")
+            {
+                Content = deploymentLayerContent,
+                TargetCondition = $"deviceId='{opts.DeviceId}'",
+            };
+
+            (var succeded, var _) = await ExecuteWithIotHubErrorHandlingAsync(() => configurationHelper.RegistryManager.AddConfigurationAsync(configuration));
+            return succeded;
         }
     }
 }

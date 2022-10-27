@@ -12,7 +12,6 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
     using global::LoraKeysManagerFacade;
     using global::LoRaTools;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;

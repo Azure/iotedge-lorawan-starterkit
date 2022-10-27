@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("verify", HelpText = "Verify a single device in IoT Hub.")]
-    public class VerifyOptions : OptionsBase
+    public class VerifyOptions
     {
         [Option(
             "deveui",
