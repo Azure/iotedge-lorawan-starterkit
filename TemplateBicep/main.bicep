@@ -39,6 +39,9 @@ param gitUsername string = 'Azure'
 @description('The Git version to use. Default is 2.2.0.')
 param version string = '2.2.0'
 
+@description('The location of the cli tool to be used for device provisioning.')
+param loraCliUrl string = 'https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v${version}/lora-cli.linux-musl-x64.tar.gz'
+
 module iotHub './iothub.bicep' = {
   name: 'iotHub'
   params: {
@@ -117,6 +120,6 @@ module createDevices 'devices.bicep' = {
     stationEui: stationEui
     spiSpeed: spiSpeed
     spiDev: spiDev
+    loraCliUrl: loraCliUrl
   }
 }
-

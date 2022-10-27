@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("list", HelpText = "Lits devices in IoT Hub.")]
-    public class ListOptions : OptionsBase
+    public class ListOptions
     {
         [Option(
             "page",

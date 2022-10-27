@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("upgrade-firmware", HelpText = "Triggers a firmware upgrade for a station.")]
-    public class UpgradeFirmwareOptions : OptionsBase
+    public class UpgradeFirmwareOptions
     {
         [Option("storage-connection-string",
                 Required = true,
