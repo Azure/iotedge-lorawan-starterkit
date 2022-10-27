@@ -13,14 +13,13 @@ on: # rebuild any PRs and main branch changes
       - master
       - dev
   workflow_dispatch:
+permissions:
+  id-token: write
 env:
   buildConfiguration: 'Release'
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
   TESTS_FOLDER: Tests
   TESTS_RESULTS_FOLDER: Tests/TestResults
-  CONTAINER_REGISTRY_ADDRESS: "${{ secrets.CI_ACR_NAME }}.azurecr.io"
-  CONTAINER_REGISTRY_USERNAME: "${{ secrets.CI_ACR_NAME }}"
-  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CI_ACR_CREDENTIALS }}
 
 jobs:
   build_and_test:
