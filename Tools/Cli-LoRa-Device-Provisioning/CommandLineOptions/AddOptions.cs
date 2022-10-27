@@ -225,7 +225,7 @@ namespace LoRaWan.Tools.CLI.Options
         [Option(
             "network",
             Required = false,
-            HelpText = "Network name"
+            HelpText = "Network identifier for LNS Discovery purposes"
             )]
         public string Network { get; set; }
     }

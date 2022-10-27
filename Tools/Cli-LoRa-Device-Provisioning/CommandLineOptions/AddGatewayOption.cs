@@ -72,7 +72,7 @@ namespace LoRaWan.Tools.CLI.Options
             "network",
             Required = false,
             Default = DefaultNetwork,
-            HelpText = "Network name"
+            HelpText = "Network identifier for LNS Discovery purposes"
             )]
         public string Network { get; set; }
 
