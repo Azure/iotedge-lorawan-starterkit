@@ -39,7 +39,7 @@ For device creation debugging, there are alternatives other than deploying the w
 Option 1: Run bash script locally
 
 ```plain
-FACADE_SERVER_URL="https://myapp.com/api" IOTHUB_CONNECTION_STRING="<iothub-connection-string>" LORA_CLI_URL="https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v2.2.0/lora-cli.linux-x64.tar.gz" EDGE_GATEWAY_NAME="<iotedge-device-name>" STATION_DEVICE_NAME="<concentrator-device-name>" DEPLOY_DEVICE=1 RESET_PIN=25 ./create_device.sh
+FACADE_SERVER_URL="https://myapp.com/api" IOTHUB_CONNECTION_STRING="<iothub-connection-string>" LORA_CLI_URL="https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v2.2.0/lora-cli.linux-x64.tar.gz" EDGE_GATEWAY_NAME="<iotedge-device-name>" STATION_DEVICE_NAME="<concentrator-device-name>" DEPLOY_DEVICE=1 RESET_PIN=<concentrator-reset-pin> ./create_device.sh
 ```
 
 Option 2: Run the device provisioning Bicep
