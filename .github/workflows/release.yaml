@@ -1,0 +1,12 @@
+name: release
+on: 
+  push:
+    branches:
+      - "feature/1928-release"
+
+jobs:
+  do-nothing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
