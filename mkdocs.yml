@@ -96,6 +96,7 @@ nav:
     - user-guide/ci-setup.md
     - user-guide/adaptive-data-rate.md
     - user-guide/class-b-beaconing.md
+    - user-guide/gateway-troubleshooting.md
   - 'Samples':
     - samples/arduino.md
     - 'Decoders':
