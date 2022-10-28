@@ -72,7 +72,6 @@ module function './function.bicep' = {
   params: {
     appInsightName: observability.outputs.appInsightName
     logAnalyticsName: observability.outputs.logAnalyticsName
-    deployDevice: deployDevice
     uniqueSolutionPrefix: uniqueSolutionPrefix
     useAzureMonitorOnEdge: useAzureMonitorOnEdge
     hostingPlanLocation: location

@@ -1,4 +1,3 @@
-param deployDevice bool
 param gitUsername string
 param version string
 
