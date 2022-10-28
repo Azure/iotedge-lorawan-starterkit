@@ -19,7 +19,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
         private const string NetworkName = "quickstartnetwork";
         private const string DevEUI = "46AAC86800430028";
         private const string Decoder = "DecoderValueSensor";
-        private const string LoRaVersion = "2.2.0";
+        private const string LoRaVersion = "999.999.10"; // using an non-existing version to ensure it is not hardcoded with a valid value
         private const string IotEdgeVersion = "1.4";
 
         // OTAA Properties
@@ -180,7 +180,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             var actualSpiSpeed = 2;
 
             // Act
-            var args = CreateArgs($"add-gateway --reset-pin {resetPin} --device-id {deviceId} --spi-dev {spiDev} --spi-speed {spiSpeed} --api-url {facadeURL} --api-key {facadeAuthCode} --lns-host-address {lnsHostAddress} --network {networkId}");
+            var args = CreateArgs($"add-gateway --reset-pin {resetPin} --device-id {deviceId} --spi-dev {spiDev} --spi-speed {spiSpeed} --api-url {facadeURL} --api-key {facadeAuthCode} --lns-host-address {lnsHostAddress} --network {networkId} --lora-version {LoRaVersion}");
             var actual = await Program.Run(args, this.configurationHelper);
 
             // Assert
@@ -217,7 +217,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
                 });
 
             // Act
-            var args = CreateArgs($"add-gateway --reset-pin {resetPin} --device-id {deviceId}  --api-url {facadeURL} --api-key {facadeAuthCode} --lns-host-address {lnsHostAddress} --network {NetworkName}");
+            var args = CreateArgs($"add-gateway --reset-pin {resetPin} --device-id {deviceId}  --api-url {facadeURL} --api-key {facadeAuthCode} --lns-host-address {lnsHostAddress} --network {NetworkName} --lora-version {LoRaVersion}");
             var actual = await Program.Run(args, this.configurationHelper);
 
             // Assert
@@ -254,7 +254,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
                 });
 
             // Act
-            var args = CreateArgs($"add-gateway --reset-pin {resetPin} --device-id {deviceId} --api-url {facadeURL} --api-key {facadeAuthCode} --lns-host-address {lnsHostAddress} --network {NetworkName} --monitoring true --iothub-resource-id {iothubResourceId} --log-analytics-workspace-id {logAnalyticsWorkspaceId} --log-analytics-shared-key {logAnalyticsWorkspaceKey}");
+            var args = CreateArgs($"add-gateway --reset-pin {resetPin} --device-id {deviceId} --api-url {facadeURL} --api-key {facadeAuthCode} --lns-host-address {lnsHostAddress} --network {NetworkName} --monitoring true --iothub-resource-id {iothubResourceId} --log-analytics-workspace-id {logAnalyticsWorkspaceId} --log-analytics-shared-key {logAnalyticsWorkspaceKey} --lora-version {LoRaVersion}");
             var actual = await Program.Run(args, this.configurationHelper);
 
             // Assert

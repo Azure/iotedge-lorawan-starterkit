@@ -36,7 +36,7 @@ param useDiscoveryService bool = false
 @description('The Git Username. Default is Azure.')
 param gitUsername string = 'Azure'
 
-@description('The Git version to use. Default is 2.2.0.')
+@description('The LoRaWAN Starter Kit version to use.')
 param version string = '2.2.0'
 
 @description('The location of the cli tool to be used for device provisioning.')
@@ -121,5 +121,6 @@ module createDevices 'devices.bicep' = {
     spiSpeed: spiSpeed
     spiDev: spiDev
     loraCliUrl: loraCliUrl
+    version: version
   }
 }

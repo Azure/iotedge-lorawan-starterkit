@@ -262,7 +262,8 @@ namespace LoRaWan.Tools.CLI
                 { "[$TWIN_FACADE_AUTH_CODE]", opts.ApiAuthCode },
                 { "[$TWIN_HOST_ADDRESS]", opts.TwinHostAddress },
                 { "[$TWIN_NETWORK]", opts.Network },
-                { "[$az_edge_version]", opts.AzureIotEdgeVersion }
+                { "[$az_edge_version]", opts.AzureIotEdgeVersion },
+                { "[$lora_version]", opts.LoRaVersion },
             };
 
             foreach (var token in tokenReplacements)
