@@ -12,35 +12,35 @@ env:
   DOTNET_VERSION: '6.0.x'
 
 jobs:
-  BuildAndPushDockerImages:
-    strategy:
-      matrix:
-        image:
-          - amd64
-          - arm32v7
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
-        id: buildx
-        with:
-          install: true
-      - name: Login to docker hub
-        run: |
-          docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push images
-        run: |
-          docker buildx build -f "./LoRaEngine/modules/LoRaWanNetworkSrvModule/Dockerfile.${{ matrix.image }}" -t $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION-${{ matrix.image }} --output type=image,push=true "."
-          docker buildx build -f "./LoRaEngine/modules/LoRaBasicsStationModule/Dockerfile.${{ matrix.image }}" -t $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-${{ matrix.image }} --build-arg CONTAINER_REGISTRY_ADDRESS=docker.io --output type=image,push=true "."
-      - name: Create manifests
-        run: |
-          docker manifest create $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION-${{ matrix.image }} --amend
-          docker manifest create $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-${{ matrix.image }} --amend
-          docker manifest push $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION
-          docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
-    env:
-      DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}  
+  #BuildAndPushDockerImages:
+  #  strategy:
+  #    matrix:
+  #      image:
+  #        - amd64
+  #        - arm32v7
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v3
+  #    - uses: docker/setup-qemu-action@v2
+  #    - uses: docker/setup-buildx-action@v2
+  #      id: buildx
+  #      with:
+  #        install: true
+  #    - name: Login to docker hub
+  #      run: |
+  #        docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
+  #    - name: Build and push images
+  #      run: |
+  #        docker buildx build -f "./LoRaEngine/modules/LoRaWanNetworkSrvModule/Dockerfile.${{ matrix.image }}" -t $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION-${{ matrix.image }} --output type=image,push=true "."
+  #        docker buildx build -f "./LoRaEngine/modules/LoRaBasicsStationModule/Dockerfile.${{ matrix.image }}" -t $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-${{ matrix.image }} --build-arg CONTAINER_REGISTRY_ADDRESS=docker.io --output type=image,push=true "."
+  #    - name: Create manifests
+  #      run: |
+  #        docker manifest create $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION-${{ matrix.image }} --amend
+  #        docker manifest create $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-${{ matrix.image }} --amend
+  #        docker manifest push $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION
+  #        docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
+  #  env:
+  #    DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}  
   
   CreatePRToUpdateDoc:
     runs-on: ubuntu-latest
@@ -57,48 +57,48 @@ jobs:
           git push --set-upstream origin $BRANCH_NAME
           gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base docs/main --title "Update button URL with version $VERSION." --body "Update button URL with version $VERSION."
 
-  CreateRelease:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3.0.1
-        with: 
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Package Azure Function
-        run: |
-          dotnet publish LoRaEngine/LoraKeysManagerFacade -c Release
-          FUNCTION_ZIP=function-${VERSION}.zip
-          zip -r $FUNCTION_ZIP LoRaEngine/LoraKeysManagerFacade/bin/Release/net6.0
-          # Define FUNCTION_ZIP env var for next steps.
-          echo "FUNCTION_ZIP=$FUNCTION_ZIP" >> $GITHUB_ENV
-      - name: Package Discovery Service
-        run: |
-          dotnet publish LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj -c Release
-          PUBLISH_FOLDER=LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/bin/Release/net6.0/publish
-          DISCOVERY_SERVICE_ZIP=discoveryservice-${VERSION}.beta1.zip
-          zip -r $DISCOVERY_SERVICE_ZIP $PUBLISH_FOLDER
-          # Define DISCOVERY_SERVICE_ZIP env var for next steps.
-          echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
-      - name: Generate ARM file
-        working-directory: TemplateBicep
-        run: |
-          az bicep build --file main.bicep --outfile $ARM_FILE
-      - name: Compile provisioning CLI for different platform
-        working-directory: Tools/Cli-LoRa-Device-Provisioning
-        shell: pwsh 
-        run: pwsh BuildForRelease.ps1
-      - name: Create Prerelease
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net6.0
-          gh release create v$VERSION TemplateBicep/$ARM_FILE $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
-          $CLI_RELEASE_PATH/linux-x64/lora-cli.linux-x64.tar.gz \
-          $CLI_RELEASE_PATH/linux-musl-x64/lora-cli.linux-musl-x64.tar.gz \
-          $CLI_RELEASE_PATH/win-x64/lora-cli.win-x64.zip \
-          $CLI_RELEASE_PATH/osx-x64/lora-cli.osx-x64.zip \
-            --title "Release v$VERSION" --prerelease --repo ${{ github.repository }} --notes ""
-    needs: BuildAndPushDockerImages
-    env:
-      ARM_FILE: azuredeploy.json
+  #CreateRelease:
+  #  permissions:
+  #    contents: write
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v3
+  #    - uses: actions/setup-dotnet@v3.0.1
+  #      with: 
+  #        dotnet-version: ${{ env.DOTNET_VERSION }}
+  #    - name: Package Azure Function
+  #      run: |
+  #        dotnet publish LoRaEngine/LoraKeysManagerFacade -c Release
+  #        FUNCTION_ZIP=function-${VERSION}.zip
+  #        zip -r $FUNCTION_ZIP LoRaEngine/LoraKeysManagerFacade/bin/Release/net6.0
+  #        # Define FUNCTION_ZIP env var for next steps.
+  #        echo "FUNCTION_ZIP=$FUNCTION_ZIP" >> $GITHUB_ENV
+  #    - name: Package Discovery Service
+  #      run: |
+  #        dotnet publish LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj -c Release
+  #        PUBLISH_FOLDER=LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/bin/Release/net6.0/publish
+  #        DISCOVERY_SERVICE_ZIP=discoveryservice-${VERSION}.beta1.zip
+  #        zip -r $DISCOVERY_SERVICE_ZIP $PUBLISH_FOLDER
+  #        # Define DISCOVERY_SERVICE_ZIP env var for next steps.
+  #        echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
+  #    - name: Generate ARM file
+  #      working-directory: TemplateBicep
+  #      run: |
+  #        az bicep build --file main.bicep --outfile $ARM_FILE
+  #    - name: Compile provisioning CLI for different platform
+  #      working-directory: Tools/Cli-LoRa-Device-Provisioning
+  #      shell: pwsh 
+  #      run: pwsh BuildForRelease.ps1
+  #    - name: Create Prerelease
+  #      run: |
+  #        echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+  #        CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net6.0
+  #        gh release create v$VERSION TemplateBicep/$ARM_FILE $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
+  #        $CLI_RELEASE_PATH/linux-x64/lora-cli.linux-x64.tar.gz \
+  #        $CLI_RELEASE_PATH/linux-musl-x64/lora-cli.linux-musl-x64.tar.gz \
+  #        $CLI_RELEASE_PATH/win-x64/lora-cli.win-x64.zip \
+  #        $CLI_RELEASE_PATH/osx-x64/lora-cli.osx-x64.zip \
+  #          --title "Release v$VERSION" --prerelease --repo ${{ github.repository }} --notes ""
+  #  needs: BuildAndPushDockerImages
+  #  env:
+  #    ARM_FILE: azuredeploy.json
