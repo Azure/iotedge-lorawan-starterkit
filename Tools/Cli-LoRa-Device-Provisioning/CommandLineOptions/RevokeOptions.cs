@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("revoke", HelpText = "Revokes a client certificate thumbprint for a station.")]
-    public class RevokeOptions : OptionsBase
+    public class RevokeOptions
     {
         [Option("stationeui",
                 Required = true,
