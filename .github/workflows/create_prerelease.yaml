@@ -65,7 +65,6 @@ jobs:
       - name: Generate ARM file
         working-directory: TemplateBicep
         run: |
-          az bicep build --file main.bicep
           az bicep build --file main.bicep --outfile $ARM_FILE
       - name: Compile provisioning CLI for different platform
         working-directory: Tools/Cli-LoRa-Device-Provisioning
