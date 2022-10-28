@@ -26,6 +26,7 @@ on: # rebuild any PRs and main branch changes
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 env:
   BUILD_CONFIGURATION: 'Release'
   TESTS_FOLDER: Tests
