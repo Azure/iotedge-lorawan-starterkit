@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using System.Net;
     using System.Net.WebSockets;
     using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Common;
@@ -16,6 +17,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     using global::LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using LoRaWan.Tests.Unit.LoRaTools;
     using Microsoft.AspNetCore.Http;
@@ -199,11 +201,17 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         public async Task InternalHandleDataAsync_ShouldSendExpectedJsonResponseType_ForTimeSyncMessage()
         {
             // arrange
-            var expectedSubstring = @"""msgtype"":""timesync""";
+            var receievedMsgType = "timesync";
+            ulong receivedTxTime = 1023024197;
+            var minimumExpectedGpsTime = (ulong)DateTime.UtcNow.AddMinutes(-10)
+                .Subtract(LnsProtocolMessageProcessor.GpsEpoch).TotalMilliseconds * 1000;
+            var maximumExpectedGpsTime = (ulong)DateTime.UtcNow.AddMinutes(10)
+                .Subtract(LnsProtocolMessageProcessor.GpsEpoch).TotalMilliseconds * 1000;
+
             InitializeConfigurationServiceMock();
             SetDataPathParameter();
 
-            SetupSocketReceiveAsync(@"{ msgtype: 'timesync', txtime: 1023024197 }");
+            SetupSocketReceiveAsync("{ msgtype: '" + receievedMsgType + "', txtime: " + receivedTxTime + "}");
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
@@ -223,7 +231,11 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                        CancellationToken.None);
 
             // assert
-            Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
+            var sentJson = JsonSerializer.Deserialize<TimeSyncMessage>(sentString);
+            Assert.Equal(sentJson.MsgType, receievedMsgType);
+            Assert.Equal(sentJson.TxTime, receivedTxTime);
+            Assert.True(sentJson.GpsTime > minimumExpectedGpsTime);
+            Assert.True(sentJson.GpsTime < maximumExpectedGpsTime);
             Assert.Equal(WebSocketMessageType.Text, sentType.Value);
             Assert.True(sentEnd.Value);
         }
