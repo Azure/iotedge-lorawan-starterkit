@@ -1,4 +1,3 @@
-param deployDevice bool
 param gitUsername string
 param version string
 
@@ -107,24 +106,12 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
           value: '~4'
         }
         {
-          name: 'DEPLOY_DEVICE'
-          value: string(deployDevice)
-        }
-        {
-          name: 'DEVICE_CONFIG_LOCATION'
-          value: 'https://raw.githubusercontent.com/${gitUsername}/iotedge-lorawan-starterkit/v${version}/Template/deviceConfiguration.json'
-        }
-        {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: reference(appInsights.id, '2015-05-01').InstrumentationKey
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: functionZipBinary
-        }
-        {
-          name: 'OBSERVABILITY_CONFIG_LOCATION'
-          value: 'https://raw.githubusercontent.com/${gitUsername}/iotedge-lorawan-starterkit/v${version}/Template/observabilityConfiguration.json'
         }
         {
           name: 'IOT_HUB_RESOURCE_ID'
@@ -137,14 +124,6 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'LOG_ANALYTICS_WORKSPACE_KEY'
           value: useAzureMonitorOnEdge ? listKeys(logAnalytics.id, '2022-10-01').primarySharedKey : ''
-        }
-        {
-          name: 'EU863_CONFIG_LOCATION'
-          value: 'https://raw.githubusercontent.com/${gitUsername}/iotedge-lorawan-starterkit/v${version}/Tools/Cli-LoRa-Device-Provisioning/DefaultRouterConfig/EU863.json'
-        }
-        {
-          name: 'US902_CONFIG_LOCATION'
-          value: 'https://raw.githubusercontent.com/${gitUsername}/iotedge-lorawan-starterkit/v${version}/Tools/Cli-LoRa-Device-Provisioning/DefaultRouterConfig/US902.json'
         }
       ]
     }

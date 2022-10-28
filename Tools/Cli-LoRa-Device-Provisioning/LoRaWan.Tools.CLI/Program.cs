@@ -22,7 +22,6 @@ namespace LoRaWan.Tools.CLI
 
     public static class Program
     {
-        private static readonly ConfigurationHelper ConfigurationHelper = new ConfigurationHelper();
         private const string EDGE_GATEWAY_MANIFEST_FILE = "./gateway-deployment-template.json";
         private const string EDGE_GATEWAY_OBSERVABILITY_MANIFEST_FILE = "./gateway-observability-layer-template.json";
 
@@ -30,53 +29,24 @@ namespace LoRaWan.Tools.CLI
         {
             if (args is null) throw new ArgumentNullException(nameof(args));
 
+            WriteAzureLogo();
+            Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Device Provisioning Tool.");
+            Console.Write("This tool complements ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("http://aka.ms/lora");
+            Console.ResetColor();
+            Console.WriteLine();
+
             try
             {
-                WriteAzureLogo();
-                Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Device Provisioning Tool.");
-                Console.Write("This tool complements ");
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("http://aka.ms/lora");
-                Console.ResetColor();
-                Console.WriteLine();
-
-                if (!ConfigurationHelper.ReadConfig(args))
+                var configurationHelper = new ConfigurationHelper();
+                if (!configurationHelper.ReadConfig(args))
                 {
                     WriteToConsole("Failed to parse configuration.", ConsoleColor.Red);
                     return (int)ExitCode.Error;
                 }
 
-                using var parser = new Parser(config =>
-                {
-                    config.CaseInsensitiveEnumValues = true;
-                    config.HelpWriter = Console.Error;
-                });
-
-                var success = await parser.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, AddGatewayOption, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
-                    .MapResult(
-                        (ListOptions opts) => RunListAndReturnExitCode(opts),
-                        (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
-                        (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
-                        (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(opts),
-                        (AddOptions opts) => RunAddAndReturnExitCode(opts),
-                        (AddGatewayOption opts) => RunAddGatewayAndReturnExitCode(opts),
-                        (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
-                        (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
-                        (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(opts),
-                        (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(opts),
-                        (UpgradeFirmwareOptions opts) => RunUpgradeFirmwareAndReturnExitCodeAsync(opts),
-                        errs => Task.FromResult(false));
-
-                if (success)
-                {
-                    WriteToConsole("Successfully terminated.", ConsoleColor.Green);
-                    return (int)ExitCode.Success;
-                }
-                else
-                {
-                    WriteToConsole("Terminated with errors.", ConsoleColor.Red);
-                    return (int)ExitCode.Error;
-                }
+                return await Run(args, configurationHelper);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             // Fallback error handling for whole CLI.
@@ -86,17 +56,52 @@ namespace LoRaWan.Tools.CLI
                 WriteToConsole($"Terminated with error: {ex}.", ConsoleColor.Red);
                 return (int)ExitCode.Error;
             }
+        }
 
-            static void WriteToConsole(string message, ConsoleColor color)
+        internal static async Task<int> Run(string[] args, ConfigurationHelper configurationHelper)
+        {
+            using var parser = new Parser(config =>
             {
-                Console.ForegroundColor = color;
-                Console.WriteLine();
-                Console.WriteLine(message);
-                Console.ResetColor();
+                config.CaseInsensitiveEnumValues = true;
+                config.HelpWriter = Console.Error;
+            });
+
+            var success = await parser.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, AddGatewayOption, UpdateOptions, RemoveOptions, RotateCertificateOptions, RevokeOptions, UpgradeFirmwareOptions>(args)
+                .MapResult(
+                    (ListOptions opts) => RunListAndReturnExitCode(configurationHelper, opts),
+                    (QueryOptions opts) => RunQueryAndReturnExitCode(configurationHelper, opts),
+                    (VerifyOptions opts) => RunVerifyAndReturnExitCode(configurationHelper, opts),
+                    (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(configurationHelper, opts),
+                    (AddOptions opts) => RunAddAndReturnExitCode(configurationHelper, opts),
+                    (AddGatewayOption opts) => RunAddGatewayAndReturnExitCode(configurationHelper, opts),
+                    (UpdateOptions opts) => RunUpdateAndReturnExitCode(configurationHelper, opts),
+                    (RemoveOptions opts) => RunRemoveAndReturnExitCode(configurationHelper, opts),
+                    (RotateCertificateOptions opts) => RunRotateCertificateAndReturnExitCodeAsync(configurationHelper, opts),
+                    (RevokeOptions opts) => RunRevokeAndReturnExitCodeAsync(configurationHelper, opts),
+                    (UpgradeFirmwareOptions opts) => RunUpgradeFirmwareAndReturnExitCodeAsync(configurationHelper, opts),
+                    errs => Task.FromResult(false));
+
+            if (success)
+            {
+                WriteToConsole("Successfully terminated.", ConsoleColor.Green);
+                return (int)ExitCode.Success;
+            }
+            else
+            {
+                WriteToConsole("Terminated with errors.", ConsoleColor.Red);
+                return (int)ExitCode.Error;
             }
         }
 
-        private static async Task<bool> RunListAndReturnExitCode(ListOptions opts)
+        private static void WriteToConsole(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine();
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        private static async Task<bool> RunListAndReturnExitCode(ConfigurationHelper configurationHelper, ListOptions opts)
         {
             if (!int.TryParse(opts.Page, out var page))
                 page = 10;
@@ -104,14 +109,14 @@ namespace LoRaWan.Tools.CLI
             if (!int.TryParse(opts.Total, out var total))
                 total = -1;
 
-            var isSuccess = await IoTDeviceHelper.QueryDevices(ConfigurationHelper, page, total);
+            var isSuccess = await IoTDeviceHelper.QueryDevices(configurationHelper, page, total);
 
             return isSuccess;
         }
 
-        private static async Task<bool> RunQueryAndReturnExitCode(QueryOptions opts)
+        private static async Task<bool> RunQueryAndReturnExitCode(ConfigurationHelper configurationHelper, QueryOptions opts)
         {
-            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, ConfigurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
@@ -125,14 +130,14 @@ namespace LoRaWan.Tools.CLI
             }
         }
 
-        private static async Task<bool> RunVerifyAndReturnExitCode(VerifyOptions opts)
+        private static async Task<bool> RunVerifyAndReturnExitCode(ConfigurationHelper configurationHelper, VerifyOptions opts)
         {
-            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, ConfigurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
                 StatusConsole.WriteTwin(opts.DevEui, twin);
-                return IoTDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, ConfigurationHelper, true);
+                return IoTDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true);
             }
             else
             {
@@ -141,12 +146,12 @@ namespace LoRaWan.Tools.CLI
             }
         }
 
-        private static async Task<bool> RunBulkVerifyAndReturnExitCode(BulkVerifyOptions opts)
+        private static async Task<bool> RunBulkVerifyAndReturnExitCode(ConfigurationHelper configurationHelper, BulkVerifyOptions opts)
         {
             if (!int.TryParse(opts.Page, out var page))
                 page = 0;
 
-            var isSuccess = await IoTDeviceHelper.QueryDevicesAndVerify(ConfigurationHelper, page);
+            var isSuccess = await IoTDeviceHelper.QueryDevicesAndVerify(configurationHelper, page);
 
             Console.WriteLine();
             if (isSuccess)
@@ -161,23 +166,23 @@ namespace LoRaWan.Tools.CLI
             return isSuccess;
         }
 
-        private static async Task<bool> RunAddAndReturnExitCode(AddOptions opts)
+        private static async Task<bool> RunAddAndReturnExitCode(ConfigurationHelper configurationHelper, AddOptions opts)
         {
             opts = IoTDeviceHelper.CleanOptions(opts, true) as AddOptions;
 
             if (opts.Type == DeviceType.Concentrator)
             {
-                return await CreateConcentratorDevice(opts);
+                return await CreateConcentratorDevice(configurationHelper, opts);
             }
 
             var isSuccess = false;
 
-            opts = IoTDeviceHelper.CompleteMissingAddOptions(opts, ConfigurationHelper);
+            opts = IoTDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
 
-            if (IoTDeviceHelper.VerifyDevice(opts, null, null, null, ConfigurationHelper, true))
+            if (IoTDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
             {
                 var twin = IoTDeviceHelper.CreateDeviceTwin(opts);
-                isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, ConfigurationHelper, true);
+                isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
             }
             else
             {
@@ -186,14 +191,14 @@ namespace LoRaWan.Tools.CLI
 
             if (isSuccess)
             {
-                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, ConfigurationHelper);
+                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
                 StatusConsole.WriteTwin(opts.DevEui, twin);
             }
 
             return isSuccess;
         }
 
-        private static async Task<bool> RunAddGatewayAndReturnExitCode(AddGatewayOption opts)
+        private static async Task<bool> RunAddGatewayAndReturnExitCode(ConfigurationHelper configurationHelper, AddGatewayOption opts)
         {
             if (true == opts.MonitoringEnabled)
             {
@@ -216,7 +221,7 @@ namespace LoRaWan.Tools.CLI
                 }
 
                 var deploymentLayerContent = await GetEdgeObservabilityDeployment(opts);
-                if (!await IoTDeviceHelper.CreateObservabilityDeploymentLayer(opts, deploymentLayerContent, ConfigurationHelper))
+                if (!await IoTDeviceHelper.CreateObservabilityDeploymentLayer(opts, deploymentLayerContent, configurationHelper))
                 {
                     StatusConsole.WriteLogLine(MessageType.Error, "Failed to deploy observability deployment layer.");
                     return false;
@@ -224,7 +229,7 @@ namespace LoRaWan.Tools.CLI
             }
 
             var deviceConfigurationContent = await GetEdgeGatewayDeployment(opts);
-            return await IoTDeviceHelper.CreateGatewayTwin(opts, deviceConfigurationContent, ConfigurationHelper);
+            return await IoTDeviceHelper.CreateGatewayTwin(opts, deviceConfigurationContent, configurationHelper);
         }
 
         private static async Task<ConfigurationContent> GetEdgeObservabilityDeployment(AddGatewayOption opts)
@@ -251,13 +256,14 @@ namespace LoRaWan.Tools.CLI
             var tokenReplacements = new Dictionary<string, string>
             {
                 { "[$reset_pin]", opts.ResetPin.ToString() },
-                { "[\"$spi_speed\"]", opts.SpiSpeed != AddGatewayOption.DefaultSpiSpeed ? string.Empty : ",\"SPI_SPEED\":{\"value\":\"2\"}" },
-                { "[\"$spi_dev\"]", opts.SpiDev != AddGatewayOption.DefaultSpiDev ? string.Empty : $",\"SPI_DEV\":{{\"value\":\"{opts.SpiDev}\"}}" },
+                { "[\"$spi_speed\"]", opts.SpiSpeed == AddGatewayOption.DefaultSpiSpeed ? string.Empty : ",\"SPI_SPEED\":{\"value\":\"2\"}" },
+                { "[\"$spi_dev\"]", opts.SpiDev == AddGatewayOption.DefaultSpiDev ? string.Empty : $",\"SPI_DEV\":{{\"value\":\"{opts.SpiDev}\"}}" },
                 { "[$TWIN_FACADE_SERVER_URL]", opts.ApiURL.ToString() },
                 { "[$TWIN_FACADE_AUTH_CODE]", opts.ApiAuthCode },
                 { "[$TWIN_HOST_ADDRESS]", opts.TwinHostAddress },
                 { "[$TWIN_NETWORK]", opts.Network },
-                { "[$az_edge_version]", opts.AzureIotEdgeVersion }
+                { "[$az_edge_version]", opts.AzureIotEdgeVersion },
+                { "[$lora_version]", opts.LoRaVersion },
             };
 
             foreach (var token in tokenReplacements)
@@ -268,17 +274,17 @@ namespace LoRaWan.Tools.CLI
             return JsonConvert.DeserializeObject<ConfigurationContent>(manifest);
         }
 
-        private static async Task<bool> CreateConcentratorDevice(AddOptions opts)
+        private static async Task<bool> CreateConcentratorDevice(ConfigurationHelper configurationHelper, AddOptions opts)
         {
             var isVerified = IoTDeviceHelper.VerifyConcentrator(opts);
             if (!isVerified) return false;
-            if (!opts.NoCups && ConfigurationHelper.CertificateStorageContainerClient is null)
+            if (!opts.NoCups && configurationHelper.CertificateStorageContainerClient is null)
             {
                 StatusConsole.WriteLogLine(MessageType.Error, "Storage account is not correctly configured.");
                 return false;
             }
 
-            if (await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, ConfigurationHelper) is not null)
+            if (await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper) is not null)
             {
                 StatusConsole.WriteLogLine(MessageType.Error, "Station was already created, please use the 'update' verb to update an existing station.");
                 return false;
@@ -287,19 +293,19 @@ namespace LoRaWan.Tools.CLI
             if (opts.NoCups)
             {
                 var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, 0, null);
-                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, true);
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
             }
             else
             {
-                return await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+                return await UploadCertificateBundleAsync(configurationHelper, opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
                 {
                     var twin = IoTDeviceHelper.CreateConcentratorTwin(opts, crcHash, bundleStorageUri);
-                    return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, true);
+                    return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, true);
                 });
             }
         }
 
-        private static async Task<bool> RunRotateCertificateAndReturnExitCodeAsync(RotateCertificateOptions opts)
+        private static async Task<bool> RunRotateCertificateAndReturnExitCodeAsync(ConfigurationHelper configurationHelper, RotateCertificateOptions opts)
         {
             if (!File.Exists(opts.CertificateBundleLocation))
             {
@@ -307,7 +313,7 @@ namespace LoRaWan.Tools.CLI
                 return false;
             }
 
-            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, ConfigurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
             if (twin is null)
             {
@@ -321,7 +327,7 @@ namespace LoRaWan.Tools.CLI
             var oldTcCredentialBundleLocation = new Uri(cupsProperties[TwinProperty.TcCredentialUrl].ToString());
 
             // Upload new certificate bundle
-            var success = await UploadCertificateBundleAsync(opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
+            var success = await UploadCertificateBundleAsync(configurationHelper, opts.CertificateBundleLocation, opts.StationEui, async (crcHash, bundleStorageUri) =>
             {
                 var thumbprints = (JArray)twinJObject[TwinProperty.ClientThumbprint];
                 if (!thumbprints.Any(t => string.Equals(t.ToString(), opts.ClientCertificateThumbprint, StringComparison.OrdinalIgnoreCase)))
@@ -333,25 +339,25 @@ namespace LoRaWan.Tools.CLI
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.CupsCredentialUrl] = bundleStorageUri;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.TcCredentialUrl] = bundleStorageUri;
 
-                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, isNewDevice: false);
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
             });
 
             // Clean up old certificate bundles
             try
             {
-                _ = await ConfigurationHelper.CertificateStorageContainerClient.DeleteBlobIfExistsAsync(oldCupsCredentialBundleLocation.Segments.Last());
+                _ = await configurationHelper.CertificateStorageContainerClient.DeleteBlobIfExistsAsync(oldCupsCredentialBundleLocation.Segments.Last());
             }
             finally
             {
-                _ = await ConfigurationHelper.CertificateStorageContainerClient.DeleteBlobIfExistsAsync(oldTcCredentialBundleLocation.Segments.Last());
+                _ = await configurationHelper.CertificateStorageContainerClient.DeleteBlobIfExistsAsync(oldTcCredentialBundleLocation.Segments.Last());
             }
 
             return success;
         }
 
-        private static async Task<bool> RunRevokeAndReturnExitCodeAsync(RevokeOptions opts)
+        private static async Task<bool> RunRevokeAndReturnExitCodeAsync(ConfigurationHelper configurationHelper, RevokeOptions opts)
         {
-            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, ConfigurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
             if (twin is null)
             {
@@ -368,25 +374,25 @@ namespace LoRaWan.Tools.CLI
 
             t?.Remove();
             twin.Properties.Desired[TwinProperty.ClientThumbprint] = clientThumprints;
-            return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, isNewDevice: false);
+            return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
         }
 
-        private static async Task<bool> RunUpdateAndReturnExitCode(UpdateOptions opts)
+        private static async Task<bool> RunUpdateAndReturnExitCode(ConfigurationHelper configurationHelper, UpdateOptions opts)
         {
             var isSuccess = false;
 
             opts = IoTDeviceHelper.CleanOptions(opts, false) as UpdateOptions;
-            opts = IoTDeviceHelper.CompleteMissingUpdateOptions(opts, ConfigurationHelper);
+            opts = IoTDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
 
-            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, ConfigurationHelper);
+            var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
                 twin = IoTDeviceHelper.UpdateDeviceTwin(twin, opts);
 
-                if (IoTDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, ConfigurationHelper, true))
+                if (IoTDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true))
                 {
-                    isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, ConfigurationHelper, false);
+                    isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false);
 
                     if (isSuccess)
                     {
@@ -414,10 +420,10 @@ namespace LoRaWan.Tools.CLI
             return isSuccess;
         }
 
-        private static async Task<bool> UploadCertificateBundleAsync(string certificateBundleLocation, string stationEui, Func<uint, Uri, Task<bool>> uploadSuccessActionAsync)
+        private static async Task<bool> UploadCertificateBundleAsync(ConfigurationHelper configurationHelper, string certificateBundleLocation, string stationEui, Func<uint, Uri, Task<bool>> uploadSuccessActionAsync)
         {
             var certificateBundleBlobName = $"{stationEui}-{Guid.NewGuid():N}";
-            var blobClient = ConfigurationHelper.CertificateStorageContainerClient.GetBlobClient(certificateBundleBlobName);
+            var blobClient = configurationHelper.CertificateStorageContainerClient.GetBlobClient(certificateBundleBlobName);
             var fileContent = File.ReadAllBytes(certificateBundleLocation);
 
             try
@@ -447,7 +453,7 @@ namespace LoRaWan.Tools.CLI
             Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
         }
 
-        private static async Task<bool> RunUpgradeFirmwareAndReturnExitCodeAsync(UpgradeFirmwareOptions opts)
+        private static async Task<bool> RunUpgradeFirmwareAndReturnExitCodeAsync(ConfigurationHelper configurationHelper, UpgradeFirmwareOptions opts)
         {
             if (!File.Exists(opts.FirmwareLocation))
             {
@@ -468,9 +474,9 @@ namespace LoRaWan.Tools.CLI
             }
 
             // Upload firmware file to storage account
-            var success = await UploadFirmwareAsync(opts.FirmwareLocation, opts.StationEui, opts.Package, async (firmwareBlobUri) =>
+            var success = await UploadFirmwareAsync(configurationHelper, opts.FirmwareLocation, opts.StationEui, opts.Package, async (firmwareBlobUri) =>
             {
-                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, ConfigurationHelper);
+                var twin = await IoTDeviceHelper.QueryDeviceTwin(opts.StationEui, configurationHelper);
 
                 if (twin is null)
                 {
@@ -490,16 +496,16 @@ namespace LoRaWan.Tools.CLI
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareKeyChecksum] = checksum;
                 twin.Properties.Desired[TwinProperty.Cups][TwinProperty.FirmwareSignature] = File.ReadAllText(opts.DigestLocation, Encoding.UTF8);
 
-                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, ConfigurationHelper, isNewDevice: false);
+                return await IoTDeviceHelper.WriteDeviceTwin(twin, opts.StationEui, configurationHelper, isNewDevice: false);
             });
 
             return success;
         }
 
-        private static async Task<bool> UploadFirmwareAsync(string firmwareLocation, string stationEui, string package, Func<Uri, Task<bool>> uploadSuccessActionAsync)
+        private static async Task<bool> UploadFirmwareAsync(ConfigurationHelper configurationHelper, string firmwareLocation, string stationEui, string package, Func<Uri, Task<bool>> uploadSuccessActionAsync)
         {
             var firmwareBlobName = $"{stationEui}-{package}";
-            var blobClient = ConfigurationHelper.FirmwareStorageContainerClient.GetBlobClient(firmwareBlobName);
+            var blobClient = configurationHelper.FirmwareStorageContainerClient.GetBlobClient(firmwareBlobName);
             var fileContent = File.ReadAllBytes(firmwareLocation);
 
             StatusConsole.WriteLogLine(MessageType.Info, $"Uploading firmware {firmwareBlobName} to storage account...");
@@ -533,9 +539,9 @@ namespace LoRaWan.Tools.CLI
             Task CleanupAsync() => blobClient.DeleteIfExistsAsync();
         }
 
-        private static async Task<bool> RunRemoveAndReturnExitCode(RemoveOptions opts)
+        private static async Task<bool> RunRemoveAndReturnExitCode(ConfigurationHelper configurationHelper, RemoveOptions opts)
         {
-            return await IoTDeviceHelper.RemoveDevice(opts.DevEui, ConfigurationHelper);
+            return await IoTDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper);
         }
 
         private static void WriteAzureLogo()

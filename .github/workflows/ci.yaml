@@ -80,6 +80,15 @@ jobs:
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
+    # Run cli tests
+    - name: Run cli unit tests
+      run: |
+        dotnet test --configuration ${{ env.buildConfiguration }} \
+          --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Cli.Unit \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
+          ./Tools/Cli-LoRa-Device-Provisioning/Tests/LoRaWan.Tools.CLI.Tests.Unit/LoRaWan.Tools.CLI.Tests.Unit.csproj
+
+
     # Upload test results as artifact
     - uses: actions/upload-artifact@v3
       if: success() || failure()
@@ -88,6 +97,7 @@ jobs:
         path: |
           ${{ env.TESTS_RESULTS_FOLDER }}/Unit
           ${{ env.TESTS_RESULTS_FOLDER }}/Integration
+          ${{ env.TESTS_RESULTS_FOLDER }}/Cli.Unit
 
     - name: Upload to Codecov test reports
       uses: codecov/codecov-action@v3
