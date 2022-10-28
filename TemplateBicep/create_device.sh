@@ -27,7 +27,7 @@ create_devices_with_lora_cli() {
 
 # Setting default values
 STATION_DEVICE_NAME=${STATION_DEVICE_NAME:-AA555A0000000101}
-REGION=${REGION:-eu}
+REGION=${REGION:-EU863}
 NETWORK=${NETWORK-quickstartnetwork}
 LNS_HOST_ADDRESS=${LNS_HOST_ADDRESS-ws://mylns:5000}
 SPI_DEV=${SPI_DEV-0}
