@@ -39,8 +39,6 @@ jobs:
           docker manifest push $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION
           docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
     env:
-      # If you are testing the workflow from a fork, you need to change this value to publish to another docker hub organization you have the rights to publish to.
-      # You will also need to setup a DOCKER_LOGIN and DOCKER_PASSWORD Github Action secret.
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}  
 
   CreateRelease:
