@@ -1,13 +1,3 @@
-resolve_lora_region() {
-    local inputRegion=$1
-    local result="EU863"
-    if [ "$inputRegion" = "us" ]; then
-        $result="US902"
-    fi
-
-    echo "$result"
-}
-
 create_devices_with_lora_cli() {
     echo "Downloading lora-cli from $LORA_CLI_URL..."
     curl -SsL "$LORA_CLI_URL" -o lora-cli.tar.gz
@@ -16,7 +6,6 @@ create_devices_with_lora_cli() {
     cd lora-cli
     chmod +x ./loradeviceprovisioning
 
-    local regionName=$(resolve_lora_region $REGION)
     local monitoringEnabled="false"
     if [ "${MONITORING_ENABLED}" = "1" ]; then
         monitoringEnabled="true"
@@ -25,8 +14,8 @@ create_devices_with_lora_cli() {
     echo "Creating gateway $EDGE_GATEWAY_NAME..."
     ./loradeviceprovisioning add-gateway --reset-pin "$RESET_PIN" --device-id "$EDGE_GATEWAY_NAME" --spi-dev "$SPI_DEV" --spi-speed "$SPI_SPEED" --api-url "$FACADE_SERVER_URL" --api-key "$FACADE_AUTH_CODE" --lns-host-address "$LNS_HOST_ADDRESS" --network "$NETWORK" --monitoring "$monitoringEnabled" --iothub-resource-id "$IOTHUB_RESOURCE_ID" --log-analytics-workspace-id "$LOG_ANALYTICS_WORKSPACE_ID" --log-analytics-shared-key "$LOG_ANALYTICS_SHARED_KEY" --lora-version "$LORA_VERSION"
 
-    echo "Creating concentrator $STATION_DEVICE_NAME for region $regionName..."
-    ./loradeviceprovisioning add --type concentrator --region "$regionName" --stationeui "$STATION_DEVICE_NAME" --no-cups --network "$NETWORK"
+    echo "Creating concentrator $STATION_DEVICE_NAME for region $REGION..."
+    ./loradeviceprovisioning add --type concentrator --region "$REGION" --stationeui "$STATION_DEVICE_NAME" --no-cups --network "$NETWORK"
 
     # add leaf devices
     if [ "${DEPLOY_DEVICE}" = "1" ]; then
@@ -38,7 +27,7 @@ create_devices_with_lora_cli() {
 
 # Setting default values
 STATION_DEVICE_NAME=${STATION_DEVICE_NAME:-AA555A0000000101}
-REGION=${REGION:-eu}
+REGION=${REGION:-EU863}
 NETWORK=${NETWORK-quickstartnetwork}
 LNS_HOST_ADDRESS=${LNS_HOST_ADDRESS-ws://mylns:5000}
 SPI_DEV=${SPI_DEV-0}
