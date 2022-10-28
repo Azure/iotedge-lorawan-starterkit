@@ -173,7 +173,7 @@ jobs:
     - uses: actions/checkout@v3
       name: Checkout current branch
 
-    - uses: actions/setup-dotnet@v3.0.1
+    - uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x'
 
@@ -592,7 +592,7 @@ jobs:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.1
+      uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -667,7 +667,7 @@ jobs:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.1
+      uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -756,7 +756,7 @@ jobs:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.1
+      uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
