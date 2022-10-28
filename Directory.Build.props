@@ -10,31 +10,32 @@
       <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
     <PropertyGroup>
+      <AzureStorageBlobVersion>12.14.1</AzureStorageBlobVersion>
       <DockerDotNetX509Version>3.125.12</DockerDotNetX509Version>
       <MicrosoftAzureDevicesVersion>1.38.1</MicrosoftAzureDevicesVersion>
       <MicrosoftAzureDevicesClientVersion>1.41.2</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.1</MicrosoftExtensionsCachingMemoryVersion>
       <MicrosoftAzureFunctionsExtensionsVersion>1.1.0</MicrosoftAzureFunctionsExtensionsVersion>
-      <MicrosoftExtensionsDependencyInjectionVersion>6.0.0</MicrosoftExtensionsDependencyInjectionVersion>
+      <MicrosoftExtensionsDependencyInjectionVersion>6.0.1</MicrosoftExtensionsDependencyInjectionVersion>
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
       <MicrosoftNETSdkFunctionsVersion>4.1.3</MicrosoftNETSdkFunctionsVersion>
       <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
-      <StackExchangeRedisVersion>2.6.66</StackExchangeRedisVersion>
+      <StackExchangeRedisVersion>2.6.70</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.21.0</ApplicationInsightsVersion>
-      <PrometheusNetVersion>6.0.0</PrometheusNetVersion>
-      <AzureIdentityVersion>1.6.1</AzureIdentityVersion>
+      <PrometheusNetVersion>7.0.0</PrometheusNetVersion>
+      <AzureIdentityVersion>1.7.0</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
-      <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
+      <DockerDotnetVersion>3.125.12</DockerDotnetVersion>
       <MicrosoftNETTestSdkVersion>17.3.2</MicrosoftNETTestSdkVersion>
       <MoqVersion>4.18.2</MoqVersion>
       <XUnitVersion>2.4.2</XUnitVersion>
-      <XunitCombinatorialVersion>1.4.1</XunitCombinatorialVersion>
+      <XunitCombinatorialVersion>1.5.25</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.1</MicrosoftExtensionsConfigurationVersion>
       <MicrosoftExtensionsConfigurationBinderVersion>6.0.0</MicrosoftExtensionsConfigurationBinderVersion>
       <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.1</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
@@ -47,7 +48,7 @@
       <BogusVersion>34.0.2</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
       <MicrosoftAspNetCoreMvcTestingVersion>6.0.10</MicrosoftAspNetCoreMvcTestingVersion>
-      <AzureMessagingEventHubsVersion>5.7.2</AzureMessagingEventHubsVersion>
+      <AzureMessagingEventHubsVersion>5.7.3</AzureMessagingEventHubsVersion>
     </PropertyGroup>
 
     <ItemGroup>
