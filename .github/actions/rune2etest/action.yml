@@ -19,6 +19,8 @@ runs:
   - run: |
       gh pr edit ${{ github.event.pull_request.number }} --add-label ${{ inputs.test_name }}
     name: Add ${{ inputs.test_name }} Test Label
+    shell: bash
+    id: edit_pr_label
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
