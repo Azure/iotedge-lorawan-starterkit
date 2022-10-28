@@ -23,16 +23,5 @@ namespace LoRaTools
         IRegistryPageResult<ILoRaDeviceTwin> FindDeviceByDevEUI(DevEui devEUI);
         Task<IDeviceTwin> UpdateTwinAsync(string deviceName, IDeviceTwin twin, string eTag);
         Task RemoveDeviceAsync(string deviceId);
-        Task DeployEdgeDeviceAsync(
-                string deviceId,
-                string resetPin,
-                string spiSpeed,
-                string spiDev,
-                string publishingUserName,
-                string publishingPassword,
-                string networkId = Constants.NetworkId,
-                string lnsHostAddress = "ws://mylns:5000");
-        Task DeployConcentratorAsync(string stationEuiString, string region, string networkId = Constants.NetworkId);
-        Task<bool> DeployEndDevicesAsync();
     }
 }

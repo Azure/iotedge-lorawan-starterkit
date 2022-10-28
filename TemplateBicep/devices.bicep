@@ -1,11 +1,11 @@
 param location string = resourceGroup().location
-param iothubName string = ''
-param edgeGatewayName string = ''
+param iothubName string
+param edgeGatewayName string
 param resetPin int
 param spiSpeed int
 param spiDev int
 param utcValue string = utcNow()
-param functionAppName string = ''
+param functionAppName string
 param region string
 param stationEui string
 param lnsHostAddress string = 'ws://mylns:5000'
@@ -13,6 +13,7 @@ param useAzureMonitorOnEdge bool = true
 param logAnalyticsName string
 param deployDevice bool
 param loraCliUrl string
+param version string
 
 resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' existing = {
   name: iothubName
@@ -105,6 +106,10 @@ resource createIothubDevices 'Microsoft.Resources/deploymentScripts@2020-10-01' 
       {
         name: 'LORA_CLI_URL'
         value: loraCliUrl
+      }
+      {
+        name: 'LORA_VERSION'
+        value: version
       }
     ]
     scriptContent: loadTextContent('./create_device.sh')

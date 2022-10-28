@@ -12,4 +12,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("LoRaWan.Tests.E2E")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Common")]
 [assembly: InternalsVisibleTo("LoRaWan.Tests.Simulation")]
+[assembly: InternalsVisibleTo("LoRaWan.Tools.CLI.Tests.Unit")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

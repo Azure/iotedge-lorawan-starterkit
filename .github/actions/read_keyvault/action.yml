@@ -1,0 +1,15 @@
+name: 'Read keyvault secrets'
+description: 'Read keyvault secrets and returns hash map of key value pairs'
+
+inputs:
+  KEY_ARRAY:
+    description: 'array of keys whose value we want to read'
+    required: true
+      
+runs:
+  using: "composite"
+  steps:
+    - name: 'Read Secrets from keyvault'
+      shell: pwsh
+      run: |
+        .\.github\scripts\keyvault.ps1 @${{ inputs.KEY_ARRAY }}

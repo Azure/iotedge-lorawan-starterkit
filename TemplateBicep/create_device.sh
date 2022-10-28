@@ -23,7 +23,7 @@ create_devices_with_lora_cli() {
     fi
 
     echo "Creating gateway $EDGE_GATEWAY_NAME..."
-    ./loradeviceprovisioning add-gateway --reset-pin "$RESET_PIN" --device-id "$EDGE_GATEWAY_NAME" --spi-dev "$SPI_DEV" --spi-speed "$SPI_SPEED" --api-url "$FACADE_SERVER_URL" --api-key "$FACADE_AUTH_CODE" --lns-host-address "$LNS_HOST_ADDRESS" --network "$NETWORK" --monitoring "$monitoringEnabled" --iothub-resource-id "$IOTHUB_RESOURCE_ID" --log-analytics-workspace-id "$LOG_ANALYTICS_WORKSPACE_ID" --log-analytics-shared-key "$LOG_ANALYTICS_SHARED_KEY"
+    ./loradeviceprovisioning add-gateway --reset-pin "$RESET_PIN" --device-id "$EDGE_GATEWAY_NAME" --spi-dev "$SPI_DEV" --spi-speed "$SPI_SPEED" --api-url "$FACADE_SERVER_URL" --api-key "$FACADE_AUTH_CODE" --lns-host-address "$LNS_HOST_ADDRESS" --network "$NETWORK" --monitoring "$monitoringEnabled" --iothub-resource-id "$IOTHUB_RESOURCE_ID" --log-analytics-workspace-id "$LOG_ANALYTICS_WORKSPACE_ID" --log-analytics-shared-key "$LOG_ANALYTICS_SHARED_KEY" --lora-version "$LORA_VERSION"
 
     echo "Creating concentrator $STATION_DEVICE_NAME for region $regionName..."
     ./loradeviceprovisioning add --type concentrator --region "$regionName" --stationeui "$STATION_DEVICE_NAME" --no-cups --network "$NETWORK"
