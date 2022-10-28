@@ -3,12 +3,12 @@ name: Prerelease
 on:
   workflow_dispatch:
     inputs:
-      releaseTag:
-        description: 'Release tag. The release tag should be a version, for example 2.0.0.'
+      releaseVersion:
+        description: 'The release version, for example 2.0.0.'
         required: true
 
 env:
-  VERSION: ${{ inputs.releaseTag }}
+  VERSION: ${{ inputs.releaseVersion }}
 
 jobs:
   BuildAndPushDockerImages:
