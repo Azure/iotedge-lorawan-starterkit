@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                      },
                                      flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations);
 
-        internal static string ValidRouterConfigMessage = JsonUtil.Strictify(@"{
+        internal static string ValidRouterConfigMessage = JsonUtil.Strictify(/*lang=json*/ @"{
             'msgtype': 'router_config',
             'NetID': [1],
             'JoinEui': [[0, 18446744073709551615]],
@@ -123,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         public void WriteRouterConfig_WithEmptyOrNullJoinEuiFilter(int? JoinEuiCount)
         {
             // arrange
-            var expected = JsonUtil.Strictify(@"{
+            var expected = JsonUtil.Strictify(/*lang=json*/ @"{
                     'msgtype': 'router_config',
                     'NetID': [1],
                     'JoinEui': [],
@@ -441,7 +441,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [Theory]
         [InlineData("null")]
         [InlineData("[]")]
-        [InlineData(@"[{ ""radio_0"": { ""enable"": true, ""freq"": 867500000 } }]")]
+        [InlineData(/*lang=json,strict*/ @"[{ ""radio_0"": { ""enable"": true, ""freq"": 867500000 } }]")]
         public void WriteRouterConfig_Throws_WhenInvalidSx1301Conf(string sx1301Conf)
         {
             // arrange
@@ -467,7 +467,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                                         bool includeBcning = false,
                                                         RouterConfigStationFlags flags = RouterConfigStationFlags.None)
         {
-            var defaultSx1301Conf = JsonUtil.Strictify(@"[{
+            var defaultSx1301Conf = JsonUtil.Strictify(/*lang=json*/ @"[{
                 'radio_0': {
                     'enable': true,
                     'freq': 867500000
@@ -530,7 +530,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                 }
             }]");
 
-            var defaultBcning = JsonUtil.Strictify(@"{
+            var defaultBcning = JsonUtil.Strictify(/*lang=json*/ @"{
                 'DR': 3,
                 'layout': [
                     2,
@@ -560,7 +560,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 
             static string Serialize(object obj) => JsonSerializer.Serialize(obj);
 
-           return string.Format(CultureInfo.InvariantCulture, Regex.Replace(template, "\\s+", string.Empty),
+            return string.Format(CultureInfo.InvariantCulture, Regex.Replace(template, "\\s+", string.Empty),
                                  Serialize(allowedNetIds.Select(nid => nid.NetworkId)),
                                  Serialize(joinEuiRanges?.Select(r => new[] { r.Min.ToString(), r.Max.ToString() })),
                                  Serialize(region), Serialize(hwspec),

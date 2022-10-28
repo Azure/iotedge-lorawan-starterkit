@@ -9,12 +9,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         public Beaconing(uint dR, uint[] layout, uint[] freqs)
         {
             DR = dR;
-            this.layout = layout;
-            this.freqs = freqs;
+            this.Layout = layout;
+            this.Freqs = freqs;
         }
 
         public uint DR { get; set; }
-        public uint[] layout { get; set; }
-        public uint[] freqs { get; set; }
+        public uint[] Layout { get; set; }
+        public uint[] Freqs { get; set; }
     }
 }

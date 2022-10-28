@@ -26,6 +26,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private static readonly Action<ILogger, string, string, Exception> LogReceivedMessage =
             LoggerMessage.Define<string, string>(LogLevel.Information, default, "Received '{Type}' message: '{Json}'.");
 
+        private static readonly DateTime GpsEpoch = new DateTime(1980, 1, 6, 0, 0, 0, DateTimeKind.Utc);
+
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IDownstreamMessageSender downstreamMessageSender;
@@ -199,9 +201,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 case LnsMessageType.TimeSync:
                     var timeSyncData = JsonSerializer.Deserialize<TimeSyncMessage>(json);
                     LogReceivedMessage(this.logger, "TimeSync", json, null);
-                    timeSyncData.gpstime = (ulong)DateTime.UtcNow.Subtract(
-                        new DateTime(1980, 1, 6, 0, 0, 0, DateTimeKind.Utc) // GPS Epoch
-                    ).TotalMilliseconds * 1000; // to microseconds
+                    timeSyncData.GpsTime = (ulong)DateTime.UtcNow.Subtract(GpsEpoch).TotalMilliseconds * 1000; // to microseconds
                     await socket.SendAsync(JsonSerializer.Serialize(timeSyncData), cancellationToken);
                     break;
                 case var messageType and (LnsMessageType.ProprietaryDataFrame

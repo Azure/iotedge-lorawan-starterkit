@@ -160,9 +160,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// </summary>
         private const SpreadingFactor FskSpreadingFactor = 0;
 
-        private static readonly IJsonReader<string> RouterConfigurationConverter = convertRouterConfiguration();
+        private static readonly IJsonReader<string> RouterConfigurationConverter = ConvertRouterConfiguration();
 
-        private static IJsonReader<string> convertRouterConfiguration()
+        private static IJsonReader<string> ConvertRouterConfiguration()
         {
             var netIdReader = JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
                                                                             select new NetId((int)id)));
@@ -359,14 +359,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteNumber("DR", bcning.DR);
                 writer.WritePropertyName("layout");
                 writer.WriteStartArray();
-                foreach (var layout in bcning.layout)
+                foreach (var layout in bcning.Layout)
                 {
                     writer.WriteNumberValue(layout);
                 }
                 writer.WriteEndArray();
                 writer.WritePropertyName("freqs");
                 writer.WriteStartArray();
-                foreach (var freq in bcning.freqs)
+                foreach (var freq in bcning.Freqs)
                 {
                     writer.WriteNumberValue(freq);
                 }
