@@ -41,6 +41,21 @@ jobs:
           docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
     env:
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}  
+  
+  CreatePRToUpdateDoc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: docs/main
+      - run: |
+          BRANCH_NAME="docs/release-${VERSION}"
+          sed -i '' "s/iotedge-lorawan-starterkit%2Fv[0-9\.]*/iotedge-lorawan-starterkit%2Fv${VERSION}/g" docs/quickstart.m
+          git add docs/quickstart.m
+          git commit -m "Update button URL."
+          git checkout -b $BRANCH_NAME
+          git push --set-upstream origin $BRANCH_NAME
+          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base docs/main --title "Update button URL with version $VERSION." --body "Update button URL with version $VERSION."
 
   CreateRelease:
     permissions:
