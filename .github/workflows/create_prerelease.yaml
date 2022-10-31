@@ -76,7 +76,6 @@ jobs:
         run: pwsh BuildForRelease.ps1
       - name: Create Prerelease
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net6.0
           gh release create v$VERSION TemplateBicep/$ARM_FILE $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
           $CLI_RELEASE_PATH/linux-x64/lora-cli.linux-x64.tar.gz \
