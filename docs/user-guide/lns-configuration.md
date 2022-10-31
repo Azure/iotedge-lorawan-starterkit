@@ -40,7 +40,7 @@ Server module twin in IoT Hub:
 | Property name                 | Description                                                                                                                                   | Mandatory               |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | FacadeServerUrl               | Azure Facade function url                                                                                                                     | Yes                     |
-| FacadeServerAuthCode          | Azure Facade function auth code                                                                                                               | Yes                     |
+| FacadeAuthCode          | Azure Facade function auth code                                                                                                               | Yes                     |
 | ProcessingDelayInMilliseconds | Processing delay (in milliseconds) to be used for the LNS not owning the connection for a device in a multi-gateway scenario; for more information see [Scalability](./scalability.md) | No (defaults to 400 ms) |
 
 ## Cloud-based Network Server configuration
