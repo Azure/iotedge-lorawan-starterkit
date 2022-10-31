@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="..\..\Tools\Cli-LoRa-Device-Provisioning\DefaultRouterConfig\EU863.json" Link="EU863.json">
+    <Content Include="..\..\Tools\Cli-LoRa-Device-Provisioning\LoRaWan.Tools.CLI\DefaultRouterConfig\EU863.json" Link="EU863.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

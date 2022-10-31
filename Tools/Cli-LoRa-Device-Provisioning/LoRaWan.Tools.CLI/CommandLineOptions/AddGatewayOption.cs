@@ -113,5 +113,12 @@ namespace LoRaWan.Tools.CLI.Options
             HelpText = "Indicates the Log Analytics shared key used to authenticate."
         )]
         public string LogAnalyticsSharedKey { get; set; }
+
+        [Option(
+            "lora-version",
+            Required = true,
+            HelpText = "LoRaWAN Starter Kit version"
+        )]
+        public string LoRaVersion { get; set; }
     }
 }

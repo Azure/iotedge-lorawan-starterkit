@@ -1,9 +1,12 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28701.123
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cli-LoRa-Device-Provisioning", "Cli-LoRa-Device-Provisioning.csproj", "{87A3F193-8161-466F-9157-CCBFE8936DDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tools.CLI", "LoRaWan.Tools.CLI\LoRaWan.Tools.CLI.csproj", "{87A3F193-8161-466F-9157-CCBFE8936DDE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tools.CLI.Tests.Unit", "Tests\LoRaWan.Tools.CLI.Tests.Unit\LoRaWan.Tools.CLI.Tests.Unit.csproj", "{D07D922B-478A-44FB-B126-7BCFBD38542A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C7B0937F-63F4-4356-997B-42F0535F5292}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +18,16 @@ Global
 		{87A3F193-8161-466F-9157-CCBFE8936DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87A3F193-8161-466F-9157-CCBFE8936DDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87A3F193-8161-466F-9157-CCBFE8936DDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D07D922B-478A-44FB-B126-7BCFBD38542A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D07D922B-478A-44FB-B126-7BCFBD38542A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D07D922B-478A-44FB-B126-7BCFBD38542A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D07D922B-478A-44FB-B126-7BCFBD38542A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D07D922B-478A-44FB-B126-7BCFBD38542A} = {C7B0937F-63F4-4356-997B-42F0535F5292}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {00860FFA-EA04-4309-9923-180B16973CE7}
