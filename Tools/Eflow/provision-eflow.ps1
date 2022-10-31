@@ -65,6 +65,8 @@ if(Get-NetNat -Name "$switchName" -ErrorAction SilentlyContinue)
 New-NetNat -Name "$switchName" -InternalIPInterfaceAddressPrefix "$natIp/24"
 
 # Install Eflow
+Write-Host "Installing Eflow"
+
 Set-ExecutionPolicy -ExecutionPolicy AllSigned -Force
 $msiPath = $([io.Path]::Combine($env:TEMP, 'AzureIoTEdge.msi'))
 $ProgressPreference = 'SilentlyContinue'
