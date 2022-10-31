@@ -8,11 +8,11 @@ The LoRaWAN network server (`LoraWanNetworkSrvModule`) doesn't need any special 
 
 ## Basic Station / Concentrator
 
+> **Note**: The following steps are not comprehensive and assume some previous knowledge of running the basic station, such as creating the `tc.uri` file, running in "NO-CUPS" mode, etc.
+
 For this setup, we use a concentrator with a GPS antenna attached.
 
 > **Note**: The GPS data can be faked by the concentrator in the case when no GPS antenna is available. **This has not yet been tested**. See [Class B Beaconing Settings](https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=conf.html), [Creating a FIFO](https://tldp.org/LDP/lpg/node17.html) and [GPS NMEA data](https://www.gpsworld.com/what-exactly-is-gps-nmea-data/#:~:text=Today%20in%20the%20world%20of,and%20match%20hardware%20and%20software.) for more information.
-
-> **Note**: The following steps are not comprehensive and assume some previous knowledge of running the basic station, such as creating the `tc.uri` file, running in "NO-CUPS" mode, etc.
 
 Clone the [basic station repository](https://github.com/lorabasics/basicstation) code onto the Raspberry Pi.
 
@@ -43,28 +43,28 @@ When the example is run, we expect a things to happen (`XDEBUG` logs of the basi
 
 1. Beaconing starts and is immediately suspended awaiting synchronization from the network server.
 
-```bash
-[S2E:INFO] Beaconing every 2m8s on 869.525MHz(1) @ DR3 (frame layout 2/8/17)
-[S2E:INFO] Beaconing suspend - missing GPS data: time
-```
+   ```bash
+   [S2E:INFO] Beaconing every 2m8s on 869.525MHz(1) @ DR3 (frame layout 2/8/17)
+   [S2E:INFO] Beaconing suspend - missing GPS data: time
+   ```
 
-2. A `timesync` message is sent from the basic station to the network server.
+1. A `timesync` message is sent from the basic station to the network server.
 
-```bash
-[AIO:XDEB] [3|WS] > {"msgtype":"timesync","txtime":1023024197}
-```
+   ```bash
+   [AIO:XDEB] [3|WS] > {"msgtype":"timesync","txtime":1023024197}
+   ```
 
-3. A `timesync` response message is received from the network server.
+1. A `timesync` response message is received from the network server.
 
-```bash
-[AIO:XDEB] [3|WS] < {"txtime":1023024197,"gpstime":1350820883268000,"msgtype":"timesync"}
-```
+   ```bash
+   [AIO:XDEB] [3|WS] < {"txtime":1023024197,"gpstime":1350820883268000,"msgtype":"timesync"}
+   ```
 
-4. Beaconing resumes:
+1. Beaconing resumes:
 
-```bash
-[S2E:INFO] Beaconing resumed - recovered GPS data: time
-```
+   ```bash
+   [S2E:INFO] Beaconing resumed - recovered GPS data: time
+   ```
 
 Multiple things may go wrong during this process. We recommend using `"log_level": "XDEBUG"` in the `station.conf` file for better logs. And check [this page](gateway-troubleshooting.md) for some common issues and troubleshooting tips.
 
