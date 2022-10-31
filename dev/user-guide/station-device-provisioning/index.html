@@ -2250,6 +2250,166 @@ Please adjust <code>radio_0</code> and <code>radio_1</code> freq fields accordin
 </div>
 </div>
 </div>
+<p>"AU915RP1 Example Configuration"</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">     </span><span class="nt">&quot;routerConfig&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;NetID&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">             </span><span class="mi">1</span><span class="w"></span>
+<span class="w">         </span><span class="p">],</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;JoinEui&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="s2">&quot;0000000000000000&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="s2">&quot;FFFFFFFFFFFFFFFF&quot;</span><span class="w"></span>
+<span class="w">             </span><span class="p">]</span><span class="w"></span>
+<span class="w">         </span><span class="p">],</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;region&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AU915&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;hwspec&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sx1301/1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;freq_range&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">             </span><span class="mi">915000000</span><span class="p">,</span><span class="w"></span>
+<span class="w">             </span><span class="mi">928000000</span><span class="w"></span>
+<span class="w">         </span><span class="p">],</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;DRs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">12</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">125</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">11</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">125</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">10</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">125</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">9</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">125</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">125</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">7</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">125</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">12</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">11</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">10</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">9</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">],</span><span class="w"></span>
+<span class="w">             </span><span class="p">[</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">7</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">500</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">             </span><span class="p">]</span><span class="w"></span>
+<span class="w">         </span><span class="p">],</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;sx1301_conf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">             </span><span class="p">{</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;radio_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;freq&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">915600000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;radio_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;freq&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">916600000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_FSK&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_Lora_std&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-200000</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;bandwidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">250000</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;spread_factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-400000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-200000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_3&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-400000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_4&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-200000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_5&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_6&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">},</span><span class="w"></span>
+<span class="w">                 </span><span class="nt">&quot;chan_multiSF_7&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;radio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">400000</span><span class="w"></span>
+<span class="w">                 </span><span class="p">}</span><span class="w"></span>
+<span class="w">             </span><span class="p">}</span><span class="w"></span>
+<span class="w">         </span><span class="p">],</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;nocca&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;nodc&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="nt">&quot;nodwell&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
+<span class="w">     </span><span class="p">}</span><span class="w"></span>
+<span class="w"> </span><span class="p">}</span><span class="w"></span>
+</code></pre></div>
 </li>
 </ul>
 <ul>
@@ -2289,7 +2449,7 @@ Please adjust <code>radio_0</code> and <code>radio_1</code> freq fields accordin
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-10-27T08:59:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-10-27</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-10-31T12:58:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-10-31</span>
       
         <br>
         Created:
