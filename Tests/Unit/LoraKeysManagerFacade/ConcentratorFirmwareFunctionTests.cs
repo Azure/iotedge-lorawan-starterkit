@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
             var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(/*lang=json*/ @"{'cups': {
                 'package': '1.0.1',
                 'fwUrl': 'https://storage.blob.core.windows.net/container/blob',
                 'fwKeyChecksum': 123456,
@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             var blobBytes = Encoding.UTF8.GetBytes(BlobContent);
             using var blobContentStream = new MemoryStream(blobBytes);
             using var streamingResult = BlobsModelFactory.BlobDownloadStreamingResult(blobContentStream);
-            this.blobClient.Setup(m => m.DownloadStreamingAsync(default, null, false, null, It.IsAny<CancellationToken>()))
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<BlobDownloadOptions>(), It.IsAny<CancellationToken>()))
                            .Returns(Task.FromResult(Response.FromValue(streamingResult, new Mock<Response>().Object)));
 
             this.blobClient.Setup(m => m.GetPropertiesAsync(null, It.IsAny<CancellationToken>()))
@@ -109,7 +109,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
             var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(/*lang=json*/ @"{'cups': {
                 'package': '1.0.1',
                 'fwUrl': 'https://storage.blob.core.windows.net/container/blob',
                 'fwKeyChecksum': 123456,
@@ -149,7 +149,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
             var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'a': 'b'}"));
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(/*lang=json*/ @"{'a': 'b'}"));
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
@@ -171,7 +171,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
             var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(/*lang=json*/ @"{'cups': {
                 'package': '1.0.1',
                 'fwKeyChecksum': 123456,
                 'fwSignature': '123'
@@ -197,7 +197,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             httpRequest.SetupGet(x => x.Query).Returns(queryCollection);
 
             var twin = new Twin();
-            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(@"{'cups': {
+            twin.Properties.Desired = new TwinCollection(JsonUtil.Strictify(/*lang=json*/ @"{'cups': {
                 'package': '1.0.1',
                 'fwUrl': 'https://storage.blob.core.windows.net/container/blob',
                 'fwKeyChecksum': 123456,
@@ -206,10 +206,7 @@ namespace LoRaWan.Tests.Unit.LoraKeysManagerFacade
             this.registryManager.Setup(m => m.GetTwinAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                 .Returns(Task.FromResult<IDeviceTwin>(new IoTHubDeviceTwin(twin)));
 
-            this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<HttpRange>(),
-                                                                It.IsAny<BlobRequestConditions>(),
-                                                                It.IsAny<bool>(),
-                                                                It.IsAny<IProgress<long>>(),
+            this.blobClient.Setup(m => m.DownloadStreamingAsync(It.IsAny<BlobDownloadOptions>(),
                                                                 It.IsAny<CancellationToken>()))
                            .ThrowsAsync(new RequestFailedException("download failed"));
 
