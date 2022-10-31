@@ -1,0 +1,107 @@
+{
+  "modulesContent": {
+    "$edgeAgent": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "runtime": {
+          "type": "docker",
+          "settings": {
+            "loggingOptions": "",
+            "minDockerVersion": "v1.25"
+          }
+        },
+        "systemModules": {
+          "edgeAgent": {
+            "type": "docker",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-agent:[$az_edge_version]",
+              "createOptions": "{}"
+            }
+          },
+          "edgeHub": {
+            "type": "docker",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-hub:[$az_edge_version]",
+              "createOptions": "{ \"HostConfig\": {   \"PortBindings\": {\"8883/tcp\": [  {\"HostPort\": \"8883\" }  ], \"443/tcp\": [ { \"HostPort\": \"443\" } ], \"5671/tcp\": [ { \"HostPort\": \"5671\"  }] } }}"
+            },
+            "env": {
+              "OptimizeForPerformance": {
+                "value": "false"
+              },
+              "mqttSettings__enabled": {
+                "value": "false"
+              },
+              "AuthenticationMode": {
+                "value": "CloudAndScope"
+              },
+              "NestedEdgeEnabled": {
+                "value": "false"
+              }
+            },
+            "status": "running",
+            "restartPolicy": "always"
+          }
+        },
+        "modules": {
+          "LoRaWanNetworkSrvModule": {
+            "type": "docker",
+            "settings": {
+              "image": "loraedge/lorawannetworksrvmodule:[$lora_version]",
+              "createOptions": "{\"ExposedPorts\": { \"5000/tcp\": {}}, \"HostConfig\": {  \"PortBindings\": {\"5000/tcp\": [  { \"HostPort\": \"5000\", \"HostIp\":\"172.17.0.1\" } ]}}}"
+            },
+            "version": "1.0",
+            "env": {
+              "ENABLE_GATEWAY": {
+                "value": "true"
+              },
+              "LOG_LEVEL": {
+                "value": "2"
+              }
+            },
+            "status": "running",
+            "restartPolicy": "always"
+          },
+          "LoRaBasicsStationModule": {
+            "type": "docker",
+            "settings": {
+              "image": "loraedge/lorabasicsstationmodule:[$lora_version]",
+              "createOptions": "  {\"HostConfig\": {\"NetworkMode\": \"host\", \"Privileged\": true },  \"NetworkingConfig\": {\"EndpointsConfig\": {\"host\": {} }}}"
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "[$reset_pin]"
+              },
+              "TC_URI": {
+                "value": "ws://172.17.0.1:5000"
+              }
+              ["$spi_dev"]
+              ["$spi_speed"]
+            },
+            "version": "1.0",
+            "status": "running",
+            "restartPolicy": "always"
+          }
+        }
+      }
+    },
+    "$edgeHub": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "routes": {
+          "route": "FROM /* INTO $upstream"
+        },
+        "storeAndForwardConfiguration": {
+          "timeToLiveSecs": 7200
+        }
+      }
+    },
+    "LoRaWanNetworkSrvModule": {
+      "properties.desired": {
+        "FacadeServerUrl": "[$TWIN_FACADE_SERVER_URL]",
+        "FacadeAuthCode": "[$TWIN_FACADE_AUTH_CODE]",
+        "hostAddress": "[$TWIN_HOST_ADDRESS]",
+        "network": "[$TWIN_NETWORK]"
+      }
+    }
+  }
+}

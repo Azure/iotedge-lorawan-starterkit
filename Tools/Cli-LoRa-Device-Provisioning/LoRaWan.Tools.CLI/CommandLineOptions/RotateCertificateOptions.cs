@@ -6,7 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using CommandLine;
 
     [Verb("rotate-certificate", HelpText = "Rotates the certificates for a station.")]
-    public class RotateCertificateOptions : OptionsBase
+    public class RotateCertificateOptions
     {
         [Option("storage-connection-string",
                 Required = true,

@@ -24,25 +24,31 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             string iotHubConnectionString, netId, storageConnectionString;
 
-            Console.WriteLine("Reading configuration from command line and \"appsettings.json\" file...");
-
             // Read configuration file appsettings.json
             try
             {
-                var configurationBuilder = new ConfigurationBuilder()
+                var configuration = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                     .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
                     .AddCommandLine(args)
+                    .AddEnvironmentVariables()
                     .Build();
 
-                iotHubConnectionString = configurationBuilder["iothub-connection-string"];
-                storageConnectionString = configurationBuilder["storage-connection-string"];
-                netId = configurationBuilder["NetId"];
+                iotHubConnectionString = configuration["iothub-connection-string"] ?? configuration["IOTHUB_CONNECTION_STRING"];
+                storageConnectionString = configuration["storage-connection-string"] ?? configuration["STORAGE_CONNECTION_STRING"];
+                netId = configuration["NetId"] ?? configuration["NETID"];
 
-                if (iotHubConnectionString is null || netId is null)
+
+                if (string.IsNullOrEmpty(iotHubConnectionString))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "IoT Hub connection string and NetId are required.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "IoT Hub connection string is required.");
+                    return false;
+                }
+
+                if (netId is null)
+                {
+                    StatusConsole.WriteLogLine(MessageType.Error, "NetId is required.");
                     return false;
                 }
             }
@@ -52,24 +58,15 @@ namespace LoRaWan.Tools.CLI.Helpers
                 return false;
             }
 
-            // Validate connection setting
-            if (string.IsNullOrEmpty(iotHubConnectionString))
+            // Just show IoT Hub Hostname
+            if (GetHostFromConnectionString(iotHubConnectionString, out var hostName))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, "IoT Hub connection string may not be empty.");
-                return false;
+                StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
             }
             else
             {
-                // Just show IoT Hub Hostname
-                if (GetHostFromConnectionString(iotHubConnectionString, out var hostName))
-                {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
-                }
-                else
-                {
-                    StatusConsole.WriteLogLine(MessageType.Error, "Invalid connection string in appsettings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
-                    return false;
-                }
+                StatusConsole.WriteLogLine(MessageType.Error, "Invalid connection string in appsettings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                return false;
             }
 
             // Validate NetId setting
@@ -84,13 +81,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 if (ValidationHelper.ValidateHexStringTwinProperty(netId, 3, out var customError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"Using NetId {netId} from settings file.");
+                    StatusConsole.WriteLogLine(MessageType.Info, $"Using NetId {netId}.");
                 }
                 else
                 {
                     var netIdBad = netId;
                     netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString(CultureInfo.InvariantCulture));
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"NetId {netIdBad} in settings file is invalid. {customError}.");
+                    StatusConsole.WriteLogLine(MessageType.Warning, $"NetId {netIdBad} in configuration is invalid. {customError}.");
                     StatusConsole.WriteLogLine(MessageType.Warning, $"Using default NetId {netId} instead.");
                 }
             }

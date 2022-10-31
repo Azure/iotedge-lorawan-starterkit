@@ -39,12 +39,13 @@ For device creation debugging, there are alternatives other than deploying the w
 Option 1: Run bash script locally
 
 ```plain
-FACADE_SERVER_URL="myapp.com/api" IOTHUB_NAME="<iothub-name>" RESOURCE_GROUP="<resource-group-name>" EDGE_GATEWAY_NAME="<iotedge-device-name>" STATION_DEVICE_NAME="<concentrator-device-name>" DEPLOY_DEVICE=1 ./create_device.sh
+FACADE_SERVER_URL="https://myapp.com/api" IOTHUB_CONNECTION_STRING="<iothub-connection-string>" LORA_CLI_URL="https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v<current-version>/lora-cli.linux-x64.tar.gz" EDGE_GATEWAY_NAME="<iotedge-device-name>" STATION_DEVICE_NAME="<concentrator-device-name>" DEPLOY_DEVICE=1 RESET_PIN=<concentrator-reset-pin> LORA_VERSION="<lora-starter-kit-release-version>" ./create_device.sh
 ```
 
 Option 2: Run the device provisioning Bicep
 
 ```plain
 az deployment group create --resource-group <resource-group-name> --template-file ./devices.bicep --parameters iothubName="<unique-name>" 
-resetPin=<based-on-your-setup> edgeGatewayName="<gateway-device-name>" spiSpeed=<based-on-your-setup> spiDev=<based-on-your-setup> functionAppName="<function-name>" region="<lora-region>" stationEui="<concentrator-device-name>" logAnalyticsName="<log-analytics-name>" deployDevice=true
+resetPin=<based-on-your-setup> edgeGatewayName="<gateway-device-name>" spiSpeed=<based-on-your-setup> spiDev=<based-on-your-setup> functionAppName="<function-name>" region="<lora-region>" stationEui="<concentrator-device-name>" logAnalyticsName="<log-analytics-name>" 
+loraCliUrl="<lora-cli-linux-musl-version-download-url>" version="<lora-starter-kit-release-version>" deployDevice=true
 ```

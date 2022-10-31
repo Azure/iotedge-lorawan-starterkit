@@ -5,8 +5,8 @@ namespace LoRaWan.Tools.CLI.Options
 {
     using CommandLine;
 
-    [Verb("query", HelpText = "Query a device twin.")]
-    public class QueryOptions : OptionsBase
+    [Verb("remove", HelpText = "Remove an existing device from IoT Hub.")]
+    public class RemoveOptions
     {
         [Option(
             "deveui",

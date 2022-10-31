@@ -13,8 +13,8 @@ param deployDevice bool
 param resetPin int 
 
 @description('In what region is your gateway deployed?')
-@allowed(['EU','US'])
-param region string = 'EU'
+@allowed(['EU863', 'US902', 'AS923-1', 'AS923-2', 'AS923-3', 'CN470RP1', 'CN470RP2', 'AU915'])
+param region string = 'EU863'
 
 @description('The StationEUI of the sample concentrator device')
 param stationEui string = 'AA555A0000000101'
@@ -36,8 +36,11 @@ param useDiscoveryService bool = false
 @description('The Git Username. Default is Azure.')
 param gitUsername string = 'Azure'
 
-@description('The Git version to use. Default is 2.2.0.')
+@description('The LoRaWAN Starter Kit version to use.')
 param version string = '2.2.0'
+
+@description('The location of the cli tool to be used for device provisioning.')
+param loraCliUrl string = 'https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v${version}/lora-cli.linux-musl-x64.tar.gz'
 
 module iotHub './iothub.bicep' = {
   name: 'iotHub'
@@ -69,7 +72,6 @@ module function './function.bicep' = {
   params: {
     appInsightName: observability.outputs.appInsightName
     logAnalyticsName: observability.outputs.logAnalyticsName
-    deployDevice: deployDevice
     uniqueSolutionPrefix: uniqueSolutionPrefix
     useAzureMonitorOnEdge: useAzureMonitorOnEdge
     hostingPlanLocation: location
@@ -117,6 +119,7 @@ module createDevices 'devices.bicep' = {
     stationEui: stationEui
     spiSpeed: spiSpeed
     spiDev: spiDev
+    loraCliUrl: loraCliUrl
+    version: version
   }
 }
-

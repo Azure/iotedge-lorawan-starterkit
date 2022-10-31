@@ -41,7 +41,8 @@ runs:
 
   # Replacement need to occur to be compliant with the IoT Edge tool, we should remove in the future.
   - run: |
-      $LBS_IMAGE_TAG=$(az acr repository show-tags --username ${{ env.CONTAINER_REGISTRY_USERNAME }} --password "${{ env.CONTAINER_REGISTRY_PASSWORD }}" --name ${{ env.CONTAINER_REGISTRY_ADDRESS }} --repository lorabasicsstation --orderby time_desc -o json | ConvertFrom-Json)[0]
+      $LBS_IMAGE_TAG_ARRAY=$(az acr repository show-tags --username "${{ env.CONTAINER_REGISTRY_USERNAME }}" --password "${{ env.CONTAINER_REGISTRY_PASSWORD }}" --name "${{ env.CONTAINER_REGISTRY_ADDRESS }}" --repository lorabasicsstation --orderby time_desc -o json | ConvertFrom-Json)
+      $LBS_IMAGE_TAG = $LBS_IMAGE_TAG_ARRAY[0]
       echo $LBS_IMAGE_TAG
       $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-arm32v7",'')
       $LBS_IMAGE_TAG=$LBS_IMAGE_TAG.replace("-arm64v8",'')
@@ -51,6 +52,7 @@ runs:
     name: Compute latest LBS build
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      POWERSHELL_TELEMETRY_OPTOUT: true
 
   - name: Iot Edge Deploy
     uses: ./.github/actions/iotedgedev

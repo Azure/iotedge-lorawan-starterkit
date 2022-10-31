@@ -1,0 +1,31 @@
+[*.cs]
+
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1303: Console.WriteLine should get strings from resource table
+dotnet_diagnostic.CA1303.severity = none
+
+# Expression value is never used
+dotnet_diagnostic.IDE0058.severity=suggestion
+
+# CA5394: Do not use insecure randomness
+dotnet_diagnostic.CA5394.severity = none
+
+# CA5399: Definitely disable HttpClient certificate revocation list check
+dotnet_diagnostic.CA5399.severity = none
+
+# CA1062: Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = suggestion
+
+# xUnit1004: Do not skip tests
+dotnet_diagnostic.xUnit1004.severity=suggestion
+
+# CA1034: Do not nest types
+dotnet_diagnostic.CA1034.severity = none
+
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity=suggestion
+
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity=suggestion
