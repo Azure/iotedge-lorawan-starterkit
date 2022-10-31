@@ -96,7 +96,8 @@ jobs:
       - name: Create pull request
         run: |
           gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base dev --title "$DESCRIPTION" --body "$DESCRIPTION"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateRelease:
     permissions:
