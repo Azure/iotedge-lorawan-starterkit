@@ -50,7 +50,7 @@ jobs:
         with:
           ref: docs/main
       - name: Update doc URL with new version
-        run: sed -i "s/iotedge-lorawan-starterkit%2Fv[0-9\.]*/iotedge-lorawan-starterkit%2Fv${VERSION}/g" docs/quickstart.md
+        run: sed -r -i "s/iotedge-lorawan-starterkit%2Fv[0-9\.]+/iotedge-lorawan-starterkit%2Fv${VERSION}/g" docs/quickstart.md
       - name: Set up git user using the built-in token
         run: |
           git config user.name github-actions
@@ -79,7 +79,7 @@ jobs:
         with:
           ref: dev
       - name: Update the default LoRaWAN Starter Kit version to use in Bicep.
-        run: sed -i "s/param version string = '[0-9/.]*'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
+        run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Set up git user using the built-in token
         run: |
           git config user.name github-actions
@@ -126,7 +126,7 @@ jobs:
           # Define DISCOVERY_SERVICE_ZIP env var for next steps.
           echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
       - name: Update the default LoRaWAN Starter Kit version to use in Bicep. 
-        run: sed -i "s/param version string = '[0-9/.]*'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
+        run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Generate ARM file
         working-directory: TemplateBicep
         run: az bicep build --file main.bicep --outfile $ARM_FILE
