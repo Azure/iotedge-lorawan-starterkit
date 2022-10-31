@@ -2,7 +2,7 @@ name: LoRa E2E CI
 concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
-    - cron: '59 23 * * 1,2,3,4,5'
+    - cron: '59 11 * * 1'
   pull_request:
     types: [labeled]
   workflow_dispatch:
@@ -26,6 +26,7 @@ on: # rebuild any PRs and main branch changes
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 env:
   BUILD_CONFIGURATION: 'Release'
   TESTS_FOLDER: Tests
@@ -173,7 +174,7 @@ jobs:
     - uses: actions/checkout@v3
       name: Checkout current branch
 
-    - uses: actions/setup-dotnet@v3.0.1
+    - uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x'
 
@@ -592,7 +593,7 @@ jobs:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.1
+      uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -667,7 +668,7 @@ jobs:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.1
+      uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
@@ -756,7 +757,7 @@ jobs:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.1
+      uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x' # SDK Version to use.
 
