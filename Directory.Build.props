@@ -42,7 +42,7 @@
       <MicrosoftExtensionsConfigurationJsonVersion>6.0.0</MicrosoftExtensionsConfigurationJsonVersion>
       <SystemIOPortsVersion>6.0.0</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.5</XUnitRunnerVisualStudio>
-      <CoverletMSBuild>3.1.2</CoverletMSBuild>
+      <CoverletMSBuild>3.2.0</CoverletMSBuild>
       <MicrosoftExtensionsLogging>6.0.0</MicrosoftExtensionsLogging>
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>34.0.2</BogusVersion>
