@@ -12,13 +12,11 @@ ral_config failed with status 0x08
 Closing connection to muxs - error in s2e_onMsg
 ```
 
-It could be because SPI is enabled on the reset pin, then the reset pin cannot be used.
-You can disable SPI on this pin and enable it on another pin to fix the issue. For that, you need to add a dtoverlay
-entry to your `/boot/config.txt`file.  
+It could be that your reset pin is already used. To fix the problem, you can give the functionality of your reset pin to another pin.
+For that, you need to add a dtoverlay entry to your `/boot/config.txt`file.  
 
 Example:
-Your reset pin is 7. spi0 is enabled on this pin. You can change the default pins for Chip Select 1 to the GPIO pin 25
-by adding this line to the `/boot/config.txt` file:
+Let's say your reset pin is 7. We can see in this [documentation](https://pinout.xyz/pinout/spi) that by default, GPIO 7 is the `Chip select 1` pin for SPI0. With [dtoverlay](https://docs.kernel.org/devicetree/overlay-notes.html), you can change the chip select 1 pin to be GPIO 25 by adding this line to the `/boot/config.txt` file:
 
 `dtoverlay=spi0-cs,cs1_pin=25`
 
