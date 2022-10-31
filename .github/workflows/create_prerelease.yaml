@@ -67,7 +67,8 @@ jobs:
           git push --set-upstream origin $BRANCH_NAME
       - name: Create pull request
         run: |
-          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" --title "Update button URL with version $VERSION." --body "Update button URL with version $VERSION."
+          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" \
+          --title "Update button URL with version $VERSION." --body "Update button URL with version $VERSION."
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -95,7 +96,8 @@ jobs:
           git push --set-upstream origin $BRANCH_NAME
       - name: Create pull request
         run: |
-          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base dev --title "$DESCRIPTION" --body "$DESCRIPTION"
+          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base dev --title "$DESCRIPTION" \
+          --body "$DESCRIPTION"
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
