@@ -64,7 +64,7 @@ to our release notes for more details on what is available.
 
 - Current supported Specification: *1.0.2*.
 - Support of Class A and C devices.
-- Support of **EU868**, **US915**, **AS923** and **CN470** channel frequencies.
+- Support of **EU868**, **US915**, **AS923**, **CN470** and **AU915** channel frequencies.
 - Activation through ABP and OTAA.
 - Confirmed and unconfirmed upstream messages.
 - Confirmed and unconfirmed downstream messages.
