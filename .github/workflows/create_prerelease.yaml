@@ -49,20 +49,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3.0.1
+      - uses: actions/setup-dotnet@v3.0.3
         with: 
           dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Package Azure Function
         run: |
           dotnet publish LoRaEngine/LoraKeysManagerFacade -c Release
           FUNCTION_ZIP=function-${VERSION}.zip
-          zip -r $FUNCTION_ZIP LoRaEngine/LoraKeysManagerFacade/bin/Release/net6.0
+          zip -r $FUNCTION_ZIP LoRaEngine/LoraKeysManagerFacade/bin/Release/net${DOTNET_VERSION%??}
           # Define FUNCTION_ZIP env var for next steps.
           echo "FUNCTION_ZIP=$FUNCTION_ZIP" >> $GITHUB_ENV
       - name: Package Discovery Service
         run: |
           dotnet publish LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj -c Release
-          PUBLISH_FOLDER=LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/bin/Release/net6.0/publish
+          PUBLISH_FOLDER=LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/bin/Release/net${DOTNET_VERSION%??}/publish
           DISCOVERY_SERVICE_ZIP=discoveryservice-${VERSION}.beta1.zip
           zip -r $DISCOVERY_SERVICE_ZIP $PUBLISH_FOLDER
           # Define DISCOVERY_SERVICE_ZIP env var for next steps.
@@ -77,7 +77,7 @@ jobs:
         run: pwsh BuildForRelease.ps1
       - name: Create Prerelease
         run: |
-          CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net6.0
+          CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net${DOTNET_VERSION%??}
           gh release create v$VERSION TemplateBicep/$ARM_FILE $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
           $CLI_RELEASE_PATH/linux-x64/lora-cli.linux-x64.tar.gz \
           $CLI_RELEASE_PATH/linux-musl-x64/lora-cli.linux-musl-x64.tar.gz \
