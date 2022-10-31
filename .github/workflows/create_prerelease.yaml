@@ -85,7 +85,7 @@ jobs:
           $CLI_RELEASE_PATH/osx-x64/lora-cli.osx-x64.zip \
             --title "Release v$VERSION" --prerelease --repo ${{ github.repository }} --notes ""
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     needs: BuildAndPushDockerImages
     env:
       ARM_FILE: azuredeploy.json
