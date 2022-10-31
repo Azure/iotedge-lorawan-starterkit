@@ -13,8 +13,8 @@ param deployDevice bool
 param resetPin int 
 
 @description('In what region is your gateway deployed?')
-@allowed(['EU','US'])
-param region string = 'EU'
+@allowed(['EU863', 'US902', 'AS923-1', 'AS923-2', 'AS923-3', 'CN470RP1', 'CN470RP2', 'AU915'])
+param region string = 'EU863'
 
 @description('The StationEUI of the sample concentrator device')
 param stationEui string = 'AA555A0000000101'
