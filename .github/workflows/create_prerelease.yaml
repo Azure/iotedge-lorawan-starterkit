@@ -58,17 +58,17 @@ jobs:
       - name: Create branch
         run: |
           BRANCH_NAME="docs/release-${VERSION}-${{ github.run_id }}"
-          DESCRIPTION="Update the default LoRaWAN Starter Kit version to use in Bicep with version $VERSION."
+          DESCRIPTION="Update button URL with version $VERSION."
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
           git checkout -b $BRANCH_NAME
           git add docs/quickstart.md
-          git commit -m $DESCRIPTION
+          git commit -m "$DESCRIPTION"
           git push --set-upstream origin $BRANCH_NAME
       - name: Create pull request
         run: |
-          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" \
-          --title "Update button URL with version $VERSION." --body "Update button URL with version $VERSION."
+          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" --title "$DESCRIPTION" \
+          --body "$DESCRIPTION"
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
