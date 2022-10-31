@@ -2,7 +2,7 @@ name: LoRa E2E CI
 concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
-    - cron: '59 23 * * 1,2,3,4,5'
+    - cron: '59 11 * * 1'
   pull_request:
     types: [labeled]
   workflow_dispatch:
@@ -26,6 +26,7 @@ on: # rebuild any PRs and main branch changes
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 env:
   BUILD_CONFIGURATION: 'Release'
   TESTS_FOLDER: Tests
