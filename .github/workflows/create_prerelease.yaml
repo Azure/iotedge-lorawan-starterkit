@@ -125,6 +125,8 @@ jobs:
           zip -r $DISCOVERY_SERVICE_ZIP $PUBLISH_FOLDER
           # Define DISCOVERY_SERVICE_ZIP env var for next steps.
           echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
+      - name: Update the default LoRaWAN Starter Kit version to use in Bicep. 
+          run: sed -i "s/param version string = '[0-9/.]*'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Generate ARM file
         working-directory: TemplateBicep
         run: |
