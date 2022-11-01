@@ -6,7 +6,6 @@ COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
 COPY global.json ./
 COPY LICENSE ./
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
 
 WORKDIR /build/LoRaEngine/modules
 COPY ["LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj", "LoRaWan.NetworkServerDiscovery/"]
