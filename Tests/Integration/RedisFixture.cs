@@ -45,7 +45,6 @@ namespace LoRaWan.Tests.Integration
 
             try
             {
-
                 Console.WriteLine("On Premise execution detected");
                 Console.WriteLine("Starting container...");
                 containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
@@ -126,7 +125,7 @@ namespace LoRaWan.Tests.Integration
 
             var redisConnectionString = $"localhost:{RedisPort}";
             var isRedisReady = false;
-            var maxNumberOfRetries = 10;
+            var maxNumberOfRetries = 5;
             var tryRun = 0;
             while (!isRedisReady && tryRun < maxNumberOfRetries)
             {
@@ -136,13 +135,12 @@ namespace LoRaWan.Tests.Integration
                     Database = this.Redis.GetDatabase();
                     isRedisReady = true;
                 }
-                catch (Exception ex)
+                catch (RedisConnectionException ex)
                 {
-                    await Task.Delay(1000);
+                    await Task.Delay(2000);
+                    tryRun++;
                     Console.WriteLine($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.", ex);
                 }
-
-                tryRun++;
             }
 
             if (tryRun >= maxNumberOfRetries)
