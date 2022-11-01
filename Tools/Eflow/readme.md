@@ -20,7 +20,6 @@
    - Open Properties.
    - Select the Sharing tab.
    - Check the box for "Allow other network users to connect through this computer’s Internet connection.”
-
 1. Provision Eflow
    ```
    .\provision-eflow -iotEdgeDeviceConnectionString "HostName=****" -switchName $env:switchName
