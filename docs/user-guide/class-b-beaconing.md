@@ -8,38 +8,17 @@ The LoRaWAN network server (`LoraWanNetworkSrvModule`) doesn't need any special 
 
 ## Basic Station / Concentrator
 
-> **Note**: The following steps are not comprehensive and assume some previous knowledge of running the basic station, such as creating the `tc.uri` file, running in "NO-CUPS" mode, etc.
-
 For this setup, we use a concentrator with a GPS antenna attached.
 
 > **Note**: The GPS data can be faked by the concentrator in the case when no GPS antenna is available. **This has not yet been tested**. See [Class B Beaconing Settings](https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=conf.html), [Creating a FIFO](https://tldp.org/LDP/lpg/node17.html) and [GPS NMEA data](https://www.gpsworld.com/what-exactly-is-gps-nmea-data/#:~:text=Today%20in%20the%20world%20of,and%20match%20hardware%20and%20software.) for more information.
 
-Clone the [basic station repository](https://github.com/lorabasics/basicstation) code onto the Raspberry Pi.
-
-```bash
-git clone https://github.com/lorabasics/basicstation.git
-```
-
-Build the code:
-
-```bash
-cd basicstation
-make platform=rpi variant=std
-```
-
 Modify `station.conf` (see this [GH issue](https://github.com/lorabasics/basicstation/issues/98#issuecomment-831204980) for more context about the following settings):
 
-1. Add `"pps": true` under `SX1301_conf`.
-2. Add `"pps": "fuzzy"` under `station_conf`.
+  1. Add `"pps": true` under `SX1301_conf`.
+  2. Add `"pps": "fuzzy"` under `station_conf`.
+  3. [Optional] Set `"log_level": "XDEBUG"` for extra detailed logs.
 
-Run the `live-s2` example:
-
-```bash
-cd examples/live-s2.sm.tc/
-../../build-rpi-std/bin/station
-```
-
-When the example is run, we expect a things to happen (`XDEBUG` logs of the basic station are included for illustration pruposes):
+When the basic station is run, we expect a few things to happen:
 
 1. Beaconing starts and is immediately suspended awaiting synchronization from the network server.
 
@@ -66,7 +45,7 @@ When the example is run, we expect a things to happen (`XDEBUG` logs of the basi
    [S2E:INFO] Beaconing resumed - recovered GPS data: time
    ```
 
-Multiple things may go wrong during this process. We recommend using `"log_level": "XDEBUG"` in the `station.conf` file for better logs. And check [this page](gateway-troubleshooting.md) for some common issues and troubleshooting tips.
+Multiple things may go wrong during this process. Check [this page](gateway-troubleshooting.md) for some common issues and troubleshooting tips.
 
 ## Arduino
 

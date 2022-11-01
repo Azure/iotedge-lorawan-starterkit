@@ -21,8 +21,7 @@ We list some of the the issues we have encountered running the basics station; a
    This could be due to the SPI speed being too high. By default it is 8000000; 2000000 or 1000000 might be more suitable. This can be changed by setting the `LORAGW_SPI_SPEED` env var.
 
    ```bash
-   cd basicstation/examples/live-s2.sm.tc/
-   LORAGW_SPI_SPEED=2000000 ../../build-rpi-std/bin/station
+   LORAGW_SPI_SPEED=2000000 ../path/to/bin/station
    ```
 
 1. Beaconing is suspended but doesn't resume/takes a long time to resume. This is typically characterized by many messages in the `XDEBUG` logs rejecting the PPS:
@@ -33,7 +32,7 @@ We list some of the the issues we have encountered running the basics station; a
    [SYN:XDEB] PPS: Rejecting PPS (xtime/pps_xtime spread): curr->xtime=0x9A00000049BEE0   curr->pps_xtime=0x9A00000029B207   diff=2100441 (>1010000)
    ```
 
-   This issue can sometimes be resolved by rebooting the raspberry pi. If that does not work, the section of the code rejecting the PPS can be disabled in the code.
+   This issue can sometimes be resolved by rebooting the gateway. If that does not work, the section of the code rejecting the PPS can be disabled in the code.
 
    > **Note**: The following instructions on how to diable PPS rejection could have unintended side-effects. Proceed with caution.
 
