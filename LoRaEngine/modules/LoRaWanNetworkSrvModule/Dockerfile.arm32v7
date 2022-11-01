@@ -5,6 +5,7 @@ COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
 COPY global.json ./
+
 COPY LICENSE ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
 
@@ -32,6 +33,7 @@ RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-resto
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim-arm32v7
 WORKDIR /app
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/appsettings.json ./
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
 RUN chmod +x ./start.sh
