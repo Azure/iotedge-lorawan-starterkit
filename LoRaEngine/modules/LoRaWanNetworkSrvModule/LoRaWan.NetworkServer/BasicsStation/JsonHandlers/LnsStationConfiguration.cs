@@ -160,54 +160,47 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// </summary>
         private const SpreadingFactor FskSpreadingFactor = 0;
 
-        private static readonly IJsonReader<string> RouterConfigurationConverter = ConvertRouterConfiguration();
-
-        private static IJsonReader<string> ConvertRouterConfiguration()
-        {
-            var netIdReader = JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
-                                                                            select new NetId((int)id)));
-            var joinEuiReader = JsonReader.Property("JoinEui",
-                JsonReader.Either(
-                    JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
-                                                                  select JoinEui.Parse(eui))
-                                     select (arr[0], arr[1])),
-                    JsonReader.Null<(JoinEui, JoinEui)[]>()),
-                (true, Array.Empty<(JoinEui, JoinEui)>()));
-            var regionReader = JsonReader.Property("region", JsonReader.String());
-            var hwspecReader = JsonReader.Property("hwspec", JsonReader.String());
-            var freqRangeReader = JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
-                                                                    select (new Hertz(r[0]), new Hertz(r[1])));
-            var drsReader = JsonReader.Property("DRs",
-                JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.UInt32().Validate(n => n == 0)
-                                                                              select FskSpreadingFactor,
-                                                                              JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
+        private static readonly IJsonReader<string> RouterConfigurationConverter =
+            JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
+                                                                            select new NetId((int)id))),
+                              JsonReader.Property("JoinEui",
+                                                  JsonReader.Either(JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
+                                                                                                                  select JoinEui.Parse(eui))
+                                                                                     select (arr[0], arr[1])),
+                                                                    JsonReader.Null<(JoinEui, JoinEui)[]>()),
+                                                  (true, Array.Empty<(JoinEui, JoinEui)>())),
+                              JsonReader.Property("region", JsonReader.String()),
+                              JsonReader.Property("hwspec", JsonReader.String()),
+                              JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
+                                                                select (new Hertz(r[0]), new Hertz(r[1]))),
+                              JsonReader.Property("DRs",
+                                  JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.UInt32().Validate(n => n == 0)
+                                                                                                select FskSpreadingFactor,
+                                                                                                JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
                                                                               from n in JsonReader.UInt32()
                                                                               select unchecked((Bandwidth)n),
                                                                               from n in JsonReader.UInt32()
                                                                               select n > 0)
-                                 select (SpreadingFactor: e.Item1, Bandwidth: e.Item2, DownloadOnly: e.Item3)
-                                 into e
-                                 select e.SpreadingFactor is FskSpreadingFactor ? (FskSpreadingFactor, 0, e.DownloadOnly)
-                                     : Enum.IsDefined(e.Bandwidth) ? (e.SpreadingFactor, e.Bandwidth, e.DownloadOnly)
-                                     : throw new JsonException($"Invalid bandwidth: {e.Bandwidth}")));
-            var sx1301Reader = JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader));
-            var noccaReader = JsonReader.Property("nocca", JsonReader.Boolean());
-            var nodcReader = JsonReader.Property("nodc", JsonReader.Boolean());
-            var nodwellReader = JsonReader.Property("nodwell", JsonReader.Boolean());
-            var bcningReader =
-                JsonReader.Property("bcning",
-                    JsonReader.Object(
-                        JsonReader.Property("DR", JsonReader.UInt32()),
-                        JsonReader.Property("layout", JsonReader.Array(JsonReader.UInt32())),
-                        JsonReader.Property("freqs", JsonReader.Array(JsonReader.UInt32())),
-                        (dRs, layout, freqs) => new Beaconing(dRs, layout, freqs)),
-                    (true, null));
+                                                   select (SpreadingFactor: e.Item1, Bandwidth: e.Item2, DownloadOnly: e.Item3)
+                                                   into e
+                                                   select e.SpreadingFactor is FskSpreadingFactor ? (FskSpreadingFactor, 0, e.DownloadOnly)
+                                                        : Enum.IsDefined(e.Bandwidth) ? (e.SpreadingFactor, e.Bandwidth, e.DownloadOnly)
+                                                        : throw new JsonException($"Invalid bandwidth: {e.Bandwidth}"))),
+                              JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
+                              JsonReader.Property("nocca", JsonReader.Boolean()),
+                              JsonReader.Property("nodc", JsonReader.Boolean()),
+                              JsonReader.Property("nodwell", JsonReader.Boolean()),
+                              JsonReader.Property("bcning",
+                                  JsonReader.Object(
+                                      JsonReader.Property("DR", JsonReader.UInt32()),
+                                      JsonReader.Property("layout", JsonReader.Array(JsonReader.UInt32())),
+                                      JsonReader.Property("freqs", JsonReader.Array(JsonReader.UInt32())),
+                                      (dRs, layout, freqs) => new Beaconing(dRs, layout, freqs)),
+                                  (true, null)),
+                              (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning) =>
+                                    WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs,
+                                                      sx1301conf, nocca, nodc, nodwell, bcning));
 
-            return JsonReader.Object(netIdReader, joinEuiReader, regionReader, hwspecReader, freqRangeReader, drsReader,
-                                  sx1301Reader, noccaReader, nodcReader, nodwellReader, bcningReader,
-                                  (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning) =>
-                                  WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning));
-        }
 
         private static readonly IJsonReader<Region> RegionConfigurationConverter =
             JsonReader.Object(JsonReader.Property("region", from s in JsonReader.String()
