@@ -192,6 +192,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer
                                                                        CancellationToken.None);
 
             // assert
+            Assert.NotNull(sentType);
+            Assert.NotNull(sentEnd);
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
             Assert.Equal(WebSocketMessageType.Text, sentType.Value);
             Assert.True(sentEnd.Value);

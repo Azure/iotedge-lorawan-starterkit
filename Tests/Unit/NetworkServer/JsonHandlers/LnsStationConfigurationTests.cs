@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 
     public class LnsStationConfigurationTests
     {
-        internal static string ValidStationConfiguration =
+        internal static readonly string ValidStationConfiguration =
             GetTwinConfigurationJson(new[] { new NetId(1) },
                                      new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
                                      "EU863",
@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                      },
                                      flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations);
 
-        internal static string ValidRouterConfigMessage = JsonUtil.Strictify(/*lang=json*/ @"{
+        internal static readonly string ValidRouterConfigMessage = JsonUtil.Strictify(/*lang=json*/ @"{
             'msgtype': 'router_config',
             'NetID': [1],
             'JoinEui': [[0, 18446744073709551615]],
