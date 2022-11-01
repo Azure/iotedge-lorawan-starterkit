@@ -14,12 +14,12 @@ tar -czf $LinuxMuslDestinationRelativePath -C "$ProjectFolder/bin/Release/$DotNe
 
 Write-Host "📦 Build and package Win x64 version..." -ForegroundColor DarkYellow
 $WindowsDestinationRelativePath="$ProjectFolder/bin/Release/$DotNetVersion/win-x64/lora-cli.win-x64.zip"
-dotnet publish -r win-x64 /p:PublishSingleFile=true --self-contained -c Release --verbosity quiet
+dotnet publish $ProjectFolder -r win-x64 /p:PublishSingleFile=true --self-contained -c Release --verbosity quiet
 Compress-Archive -Force -Path "$ProjectFolder/bin/Release/$DotNetVersion/win-x64/publish" -DestinationPath $WindowsDestinationRelativePath
 
 Write-Host "📦 Build and package OSX x64 version..." -ForegroundColor DarkYellow
 $OsxDestinationRelativePath="$ProjectFolder/bin/Release/$DotNetVersion/osx-x64/lora-cli.osx-x64.zip"
-dotnet publish -r osx-x64 /p:PublishSingleFile=true --self-contained -c Release --verbosity quiet
+dotnet publish $ProjectFolder -r osx-x64 /p:PublishSingleFile=true --self-contained -c Release --verbosity quiet
 Compress-Archive -Force -Path "$ProjectFolder/bin/Release/$DotNetVersion/osx-x64/publish" -DestinationPath $OsxDestinationRelativePath
 
 Write-Host "🥳 Build complete!" -ForegroundColor Green
