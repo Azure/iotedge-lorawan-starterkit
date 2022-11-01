@@ -41,7 +41,65 @@ jobs:
           docker manifest push $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION
           docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
     env:
-      DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}  
+      DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}
+      
+  CreatePRToUpdateDoc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: docs/main
+      - name: Update doc URL with new version
+        run: sed -r -i "s/iotedge-lorawan-starterkit%2Fv[0-9\.]+/iotedge-lorawan-starterkit%2Fv${VERSION}/g" docs/quickstart.md
+      - name: Set up git user using the built-in token
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - name: Create branch
+        run: |
+          BRANCH_NAME="docs/release-${VERSION}-${{ github.run_id }}"
+          DESCRIPTION="Update button URL with version $VERSION."
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+          git add docs/quickstart.md
+          git commit -m "$DESCRIPTION"
+          git push --set-upstream origin $BRANCH_NAME
+      - name: Create pull request
+        run: |
+          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" --title "$DESCRIPTION" \
+          --body "$DESCRIPTION"
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  CreatePRToUpdateBicep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: dev
+      - name: Update the default LoRaWAN Starter Kit version to use in Bicep.
+        run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
+      - name: Set up git user using the built-in token
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - name: Create branch
+        run: |
+          BRANCH_NAME="feature/update-version-${VERSION}-${{ github.run_id }}"
+          DESCRIPTION="Update the default LoRaWAN Starter Kit version to use in Bicep with version $VERSION."
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+          git add TemplateBicep/main.bicep
+          git commit -m "$DESCRIPTION"
+          git push --set-upstream origin $BRANCH_NAME
+      - name: Create pull request
+        run: |
+          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base dev --title "$DESCRIPTION" \
+          --body "$DESCRIPTION"
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateRelease:
     permissions:
@@ -67,10 +125,11 @@ jobs:
           zip -r $DISCOVERY_SERVICE_ZIP $PUBLISH_FOLDER
           # Define DISCOVERY_SERVICE_ZIP env var for next steps.
           echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
+      - name: Update the default LoRaWAN Starter Kit version to use in Bicep. 
+        run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Generate ARM file
         working-directory: TemplateBicep
-        run: |
-          az bicep build --file main.bicep --outfile $ARM_FILE
+        run: az bicep build --file main.bicep --outfile $ARM_FILE
       - name: Compile provisioning CLI for different platform
         working-directory: Tools/Cli-LoRa-Device-Provisioning
         shell: pwsh 
@@ -86,6 +145,6 @@ jobs:
             --title "Release v$VERSION" --prerelease --repo ${{ github.repository }} --notes ""
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    needs: BuildAndPushDockerImages
+    needs: [BuildAndPushDockerImages, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
     env:
       ARM_FILE: azuredeploy.json
