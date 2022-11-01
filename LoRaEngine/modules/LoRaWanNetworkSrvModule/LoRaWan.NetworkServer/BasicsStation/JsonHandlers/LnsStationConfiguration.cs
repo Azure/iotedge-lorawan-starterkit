@@ -194,22 +194,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             var noccaReader = JsonReader.Property("nocca", JsonReader.Boolean());
             var nodcReader = JsonReader.Property("nodc", JsonReader.Boolean());
             var nodwellReader = JsonReader.Property("nodwell", JsonReader.Boolean());
-            var bcningReader = JsonReader.Property("bcning",
+            var bcningReader =
+                JsonReader.Property("bcning",
                     JsonReader.Object(
                         JsonReader.Property("DR", JsonReader.UInt32()),
                         JsonReader.Property("layout", JsonReader.Array(JsonReader.UInt32())),
                         JsonReader.Property("freqs", JsonReader.Array(JsonReader.UInt32())),
-                        (dRs, layout, freqs) => new Beaconing(dRs, layout, freqs)));
+                        (dRs, layout, freqs) => new Beaconing(dRs, layout, freqs)),
+                    (true, null));
 
-            return JsonReader.Either(
-                JsonReader.Object(netIdReader, joinEuiReader, regionReader, hwspecReader, freqRangeReader, drsReader,
+            return JsonReader.Object(netIdReader, joinEuiReader, regionReader, hwspecReader, freqRangeReader, drsReader,
                                   sx1301Reader, noccaReader, nodcReader, nodwellReader, bcningReader,
                                   (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning) =>
-                                  WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning)),
-                JsonReader.Object(netIdReader, joinEuiReader, regionReader, hwspecReader, freqRangeReader, drsReader,
-                                  sx1301Reader, noccaReader, nodcReader, nodwellReader,
-                                  (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell) =>
-                                  WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, null)));
+                                  WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning));
         }
 
         private static readonly IJsonReader<Region> RegionConfigurationConverter =
