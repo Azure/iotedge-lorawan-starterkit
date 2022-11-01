@@ -13,6 +13,7 @@
      Author     :
         Mikhail Chatillon       - chmikhai@microsoft.com
         Daniele Antonio Maggio  - daniele.maggio@microsoft.com
+        Nora Abi Akar           - noraabiakar@microsoft.com
 #>
 
 param
@@ -24,6 +25,7 @@ param
     [int]$externalPort=5000
 )
 
+# Verify dependencies
 if (!$iotEdgeDeviceConnectionString)
 {
     throw "IoT Edge Device Connection String not provided."
@@ -35,16 +37,25 @@ if ((Get-WindowsFeature -Name "Hyper-V").Installed -eq $false)
 }
 
 # Create the networking
+Write-Host "Creating VM switch"
+
 if(Get-VMSwitch -Name $switchName -ErrorAction SilentlyContinue)
 {
     throw "Switch already existing";
 }
-
 New-VMSwitch -Name $switchName -SwitchType internal
 
-Write-Host "Sleeping for 30sec before continuing for propagating the VMSwitch"
-Start-Sleep -Seconds 30
-Write-Host "Finished waiting for propagating the VMSwitch"
+# Enable network sharing on host VM
+Write-Host "Enabling Internet connection sharing on host VM"
+
+regsvr32 hnetcfg.dll # Register the HNetCfg library
+$m = New-Object -ComObject HNetCfg.HNetShare
+$c = $m.EnumEveryConnection |? { $m.NetConnectionProps.Invoke($_).Name -eq "Ethernet" }
+$config = $m.INetSharingConfigurationForINetConnection.Invoke($c)
+$config.EnableSharing(0)
+
+# Create Nat
+Write-Host "Creating Nat"
 
 $netAdapterIfIndex=(Get-NetAdapter -Name "*$switchName*").ifIndex
 $netAdapterIpAddress=Get-NetIPAddress -AddressFamily IPv4  -InterfaceIndex $netAdapterIfIndex
@@ -53,13 +64,6 @@ $ipAddressFamily=$netAdapterIp.Substring(0, $netAdapterIp.lastIndexOf('.')+1)
 $gwIp=$ipAddressFamily+1
 $natIp=$ipAddressFamily+0
 $startIp=$ipAddressFamily+$startEflowIpRange
-
-New-NetIPAddress -IPAddress $gwIp -PrefixLength 24 -InterfaceIndex $netAdapterIfIndex
-
-if(Get-NetNat -Name "$switchName" -ErrorAction SilentlyContinue)
-{
-    throw "Net Nat with name $switchName already existing";
-}
 
 New-NetNat -Name "$switchName" -InternalIPInterfaceAddressPrefix "$natIp/24"
 
@@ -75,9 +79,15 @@ Start-Process -Wait msiexec -ArgumentList "/i","$([io.Path]::Combine($env:TEMP, 
 Deploy-Eflow  -acceptEula 'yes' -acceptOptionalTelemetry 'yes' -vswitchName $switchName -ip4Address $startIp -ip4GatewayAddress $gwIp -vswitchType 'Internal' -ip4PrefixLength 24
 Provision-EflowVm -provisioningType ManualConnectionString -devConnString "$iotEdgeDeviceConnectionString"
 
+# Add static mapping
+Write-Host "Creating static mapping"
+
 if(!(Get-NetNatStaticMapping -NatName "$switchName" -ErrorAction SilentlyContinue))
 {
     Add-NetNatStaticMapping -ExternalIPAddress "0.0.0.0/0" -ExternalPort $externalPort -Protocol TCP -InternalIPAddress "$startip" -InternalPort $internalPort -NatName $switchName
 }
+
+# Set DNS server
+Write-Host "Set DNS server"
 
 Set-EflowVmDNSServers -dnsServers 168.63.129.16
