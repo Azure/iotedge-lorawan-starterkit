@@ -50,7 +50,6 @@ $netAdapterIfIndex=(Get-NetAdapter -Name "*$switchName*").ifIndex
 $netAdapterIpAddress=Get-NetIPAddress -AddressFamily IPv4  -InterfaceIndex $netAdapterIfIndex
 $netAdapterIp=$netAdapterIpAddress.IPAddress
 $ipAddressFamily=$netAdapterIp.Substring(0, $netAdapterIp.lastIndexOf('.')+1)
-
 $gwIp=$ipAddressFamily+1
 $natIp=$ipAddressFamily+0
 $startIp=$ipAddressFamily+$startEflowIpRange
