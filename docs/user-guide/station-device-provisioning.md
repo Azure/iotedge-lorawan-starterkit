@@ -866,4 +866,26 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
 
+### Class B beaconing
+
+A Basic station device can be instructed to send class B beaconing signals (disabled by default). In order to enable the feature, add the a JSON to the routerConfig object following the specs described for the bcning field [in the basics station documentation](https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=tcproto.html).
+
+
+example for EU863:
+``` json
+"bcning": {
+            "DR": 3,
+            "layout": [
+                2,
+                8,
+                17
+            ],
+            "freqs": [
+                869525000
+            ]
+          }
+```
+
+for more information refer to the [class B docs](./class-b-beaconing.md).
+
 --8<-- "includes/abbreviations.md"
