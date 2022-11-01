@@ -36,5 +36,7 @@ WORKDIR /app
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/appsettings.json ./
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
+
 RUN chmod +x ./start.sh
 ENTRYPOINT ["./start.sh"]
