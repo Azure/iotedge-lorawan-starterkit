@@ -62,7 +62,6 @@ namespace LoraKeysManagerFacade
                                                                               deviceCacheStore,
                                                                               sp.GetRequiredService<ILoggerFactory>(),
                                                                               sp.GetRequiredService<ILogger<LoRaADRServerManager>>()))
-                .AddSingleton<CreateEdgeDevice>()
                 .AddSingleton<IChannelPublisher>(sp => new RedisChannelPublisher(redis, sp.GetRequiredService<ILogger<RedisChannelPublisher>>()))
                 .AddSingleton<DeviceGetter>()
                 .AddSingleton<IEdgeDeviceGetter, EdgeDeviceGetter>()

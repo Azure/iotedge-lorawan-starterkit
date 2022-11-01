@@ -18,7 +18,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
     internal class IoTDeviceHelper
     {
-        private const string DefaultRouterConfigFolder = "DefaultRouterConfig";
+        internal const string DefaultRouterConfigFolder = "DefaultRouterConfig";
         private static readonly string[] ClassTypes = { "A", "C" };
         private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };
 
@@ -974,7 +974,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             twin.Tags[DeviceTags.DeviceTypeTagName] = new string[] { DeviceTags.DeviceTypes.Concentrator };
             twin.Tags[DeviceTags.RegionTagName] = opts.Region.ToLowerInvariant();
-            if (string.IsNullOrEmpty(opts.Network))
+            if (!string.IsNullOrEmpty(opts.Network))
             {
                 twin.Tags[DeviceTags.NetworkTagName] = opts.Network;
             }

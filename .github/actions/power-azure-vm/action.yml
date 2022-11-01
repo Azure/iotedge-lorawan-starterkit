@@ -12,24 +12,10 @@ inputs:
   AZURE_RG_NAME:
     description: 'Resource Group where the VM lives'
     required: true
-  AZURE_SP_CLIENTID:
-    description: 'Service Principal ClientID'
-    required: true
-  AZURE_SP_SECRET:
-    description: 'Service Principal Secret'
-    required: true
-  AZURE_TENANTID:
-    description: 'Service Principal TenantID'
-    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: "Login with az CLI"
-      shell: bash
-      run: |
-        az login --service-principal -u ${{ inputs.AZURE_SP_CLIENTID }} -p ${{ inputs.AZURE_SP_SECRET }} --tenant ${{ inputs.AZURE_TENANTID }}
-    
     - name: "Deallocate VM"
       shell: bash
       if: ${{ !inputs.POWER_SWITCH }}

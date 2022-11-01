@@ -190,9 +190,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("nocca", JsonReader.Boolean()),
                               JsonReader.Property("nodc", JsonReader.Boolean()),
                               JsonReader.Property("nodwell", JsonReader.Boolean()),
-                              (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell) =>
+                              JsonReader.Property("bcning",
+                                  JsonReader.Object(
+                                      JsonReader.Property("DR", JsonReader.UInt32()),
+                                      JsonReader.Property("layout", JsonReader.Array(JsonReader.UInt32())),
+                                      JsonReader.Property("freqs", JsonReader.Array(JsonReader.UInt32())),
+                                      (dRs, layout, freqs) => new Beaconing(dRs, layout, freqs)),
+                                  (true, null)),
+                              (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell, bcning) =>
                                     WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs,
-                                                      sx1301conf, nocca, nodc, nodwell));
+                                                      sx1301conf, nocca, nodc, nodwell, bcning));
+
 
         private static readonly IJsonReader<Region> RegionConfigurationConverter =
             JsonReader.Object(JsonReader.Property("region", from s in JsonReader.String()
@@ -230,6 +238,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
               "nocca"      : BOOL
               "nodc"       : BOOL
               "nodwell"    : BOOL
+              "bcning"     : { "DR": INT, "layout": [INT,INT, ..], "freqs": [INT,INT,..] }
             }
         */
 
@@ -244,7 +253,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                 (Hertz Min, Hertz Max) freqRange,
                                                 IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
                                                 Sx1301Config[] sx1301Config,
-                                                bool nocca, bool nodc, bool nodwell)
+                                                bool nocca, bool nodc, bool nodwell, Beaconing bcning)
         {
             if (string.IsNullOrEmpty(region)) throw new JsonException("Region must not be null.");
             if (string.IsNullOrEmpty(hwspec)) throw new JsonException("hwspec must not be null.");
@@ -332,6 +341,28 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WriteBoolean("nodc", nodc);
             writer.WriteBoolean("nodwell", nodwell);
 
+            if (bcning != null)
+            {
+                writer.WritePropertyName("bcning"); // start beaconing
+
+                writer.WriteStartObject();
+                writer.WriteNumber("DR", bcning.DR);
+                writer.WritePropertyName("layout");
+                writer.WriteStartArray();
+                foreach (var layout in bcning.Layout)
+                {
+                    writer.WriteNumberValue(layout);
+                }
+                writer.WriteEndArray();
+                writer.WritePropertyName("freqs");
+                writer.WriteStartArray();
+                foreach (var freq in bcning.Freqs)
+                {
+                    writer.WriteNumberValue(freq);
+                }
+                writer.WriteEndArray();
+                writer.WriteEndObject(); // end beaconing
+            }
             writer.WriteEndObject();
 
             writer.Flush();

@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
     {
         private static readonly Region Region = RegionManager.US915;
 
-        public static readonly TheoryData<Region, Hertz, DataRateIndex, Hertz> TestRegionFrequencyDataDR1To3 =
+        public static readonly TheoryData<Region, Hertz, DataRateIndex, Hertz> TestRegionFrequencyDataDR0To3 =
             TheoryDataFactory.From(from dr in new[] { DR0, DR1, DR2, DR3 }
                                    from freq in new (double Input, double Output)[]
                                    {
@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Unit.LoRaTools.Regions
                                    }
                                    select (Region, freq.Input, /* data rate */ DR4, freq.Output));
 
-        public static TheoryData<Region, DataRateIndex, DataRateIndex> TestRegionDataRateDataDR1To3() =>
+        public static TheoryData<Region, DataRateIndex, DataRateIndex> TestRegionDataRateDataDR0To3() =>
              TheoryDataFactory.From(new[]
              {
                  (Region, DR0, DR10),
