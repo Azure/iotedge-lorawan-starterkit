@@ -6,8 +6,6 @@ COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
 COPY global.json ./
 
-COPY LICENSE ./
-
 WORKDIR /build/LoRaEngine/modules
 COPY ["LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj", "LoRaWan.NetworkServerDiscovery/"]
 
@@ -36,5 +34,6 @@ COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanN
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/appsettings.json ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
+COPY LICENSE ./
 RUN chmod +x ./start.sh
 ENTRYPOINT ["./start.sh"]
