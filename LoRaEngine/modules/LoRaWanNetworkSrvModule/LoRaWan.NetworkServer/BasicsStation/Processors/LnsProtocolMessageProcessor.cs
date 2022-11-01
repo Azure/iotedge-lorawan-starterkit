@@ -37,6 +37,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         private readonly Counter<int> uplinkMessageCounter;
         private readonly Counter<int> unhandledExceptionCount;
 
+        public static readonly DateTime GpsEpoch = new DateTime(1980, 1, 6, 0, 0, 0, DateTimeKind.Utc);
+
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            IDownstreamMessageSender downstreamMessageSender,
@@ -196,9 +198,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     break;
                 case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
+                case LnsMessageType.TimeSync:
+                    var timeSyncData = JsonSerializer.Deserialize<TimeSyncMessage>(json);
+                    LogReceivedMessage(this.logger, "TimeSync", json, null);
+                    timeSyncData.GpsTime = (ulong)DateTime.UtcNow.Subtract(GpsEpoch).TotalMilliseconds * 1000; // to microseconds
+                    await socket.SendAsync(JsonSerializer.Serialize(timeSyncData), cancellationToken);
+                    break;
                 case var messageType and (LnsMessageType.ProprietaryDataFrame
                                           or LnsMessageType.MulticastSchedule
-                                          or LnsMessageType.TimeSync
                                           or LnsMessageType.RunCommand
                                           or LnsMessageType.RemoteShell):
                     this.logger.LogWarning("'{MessageType}' ({MessageTypeBasicStationString}) is not handled in current LoRaWan Network Server implementation.", messageType, messageType.ToBasicStationString());
