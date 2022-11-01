@@ -70,7 +70,7 @@ jobs:
 
     # Pull Redis Cache docker image
     - name: Pulling Redis Cache image
-      run: docker pull redis:5.0.4-alpine
+      run: docker pull redis:6.0-alpine
 
     # Run integration tests
     - name: Run integration tests

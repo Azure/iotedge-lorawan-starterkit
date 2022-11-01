@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Integration
     using System.Globalization;
     using System.Linq;
     using System.Net;
+    using System.Net.Sockets;
     using System.Threading.Tasks;
     using Docker.DotNet;
     using Docker.DotNet.Models;
@@ -23,7 +24,7 @@ namespace LoRaWan.Tests.Integration
         public const string CollectionName = "rediscollection";
         private const string ContainerName = "redis";
         private const string ImageName = "redis";
-        private const string ImageTag = "5.0.4-alpine";
+        private const string ImageTag = "6.0-alpine";
         private const int RedisPort = 6001;
         private static readonly string TestContainerName = ContainerName + RedisPort;
 
@@ -44,7 +45,6 @@ namespace LoRaWan.Tests.Integration
 
             try
             {
-                
                 Console.WriteLine("On Premise execution detected");
                 Console.WriteLine("Starting container...");
                 containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
@@ -124,17 +124,31 @@ namespace LoRaWan.Tests.Integration
             await StartRedisContainer();
 
             var redisConnectionString = $"localhost:{RedisPort}";
-            try
+            var isRedisReady = false;
+            var maxNumberOfRetries = 5;
+            var tryRun = 0;
+            while (!isRedisReady && tryRun < maxNumberOfRetries)
             {
-                this.Redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
-                Database = this.Redis.GetDatabase();
+                try
+                {
+                    Redis = await ConnectionMultiplexer.ConnectAsync(redisConnectionString);
+                    Database = this.Redis.GetDatabase();
+                    isRedisReady = true;
+                }
+                catch (RedisConnectionException ex)
+                {
+                    await Task.Delay(2000);
+                    tryRun++;
+                    Console.WriteLine($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.", ex);
+                }
             }
-            catch (Exception ex)
+
+            if (tryRun >= maxNumberOfRetries)
             {
-                throw new InvalidOperationException($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.", ex);
+                throw new InvalidOperationException($"Failed to connect to redis at '{redisConnectionString}'. If running locally with docker: run 'docker run -d -p 6379:6379 redis'. If running in Azure DevOps: run redis in docker.");
             }
         }
-        
+
 
         public async Task DisposeAsync()
         {
