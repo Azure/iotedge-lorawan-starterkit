@@ -5,8 +5,6 @@ COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
 COPY global.json ./
-COPY LICENSE ./
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
 
 WORKDIR /build/LoRaEngine/modules
 COPY ["LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj", "LoRaWan.NetworkServerDiscovery/"]
@@ -34,5 +32,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/start.sh ./
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/NOTICE.txt ./
+COPY LICENSE ./
+
 RUN chmod +x ./start.sh
 ENTRYPOINT ["./start.sh"]
