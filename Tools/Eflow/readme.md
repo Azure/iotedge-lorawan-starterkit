@@ -9,9 +9,21 @@
    .\install-hyperv.ps1
    ```
 1. Restart the VM and reconnect
+1. Create VM Switch 
+   ```
+   $env:switchNAme = "EFLOW Switch"
+   New-VMSwitch -Name $env:switchName -SwitchType internal
+   ```
+1. Enable Internet Connection Sharing
+   - Open the Network Connections window.
+   - Find the host VM's network that needs to be shared with EFLOW.
+   - Open Properties.
+   - Select the Sharing tab.
+   - Check the box for "Allow other network users to connect through this computer’s Internet connection.”
+
 1. Provision Eflow
    ```
-   .\provision-eflow -iotEdgeDeviceConnectionString "HostName=****"
+   .\provision-eflow -iotEdgeDeviceConnectionString "HostName=****" -switchName $env:switchName
    ```
 
 ## Verify Eflow installation

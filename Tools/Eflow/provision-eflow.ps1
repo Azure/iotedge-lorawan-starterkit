@@ -19,7 +19,7 @@
 param
 (
     [string]$iotEdgeDeviceConnectionString,
-    [string]$switchName="EFLOW Switch",
+    [string]$switchName,
     [string]$startEflowIpRange=100,
     [int]$internalPort=5000,
     [int]$externalPort=5000
@@ -31,28 +31,20 @@ if (!$iotEdgeDeviceConnectionString)
     throw "IoT Edge Device Connection String not provided."
 }
 
+if (!$switchName)
+{
+    throw "Switch Name not provided."
+}
+
 if ((Get-WindowsFeature -Name "Hyper-V").Installed -eq $false)
 {
     throw "Hyper-V not correctly installed."
 }
 
-# Create the networking
-Write-Host "Creating VM switch"
-
-if(Get-VMSwitch -Name $switchName -ErrorAction SilentlyContinue)
+if(!(Get-VMSwitch -Name $switchName -ErrorAction SilentlyContinue))
 {
-    throw "Switch already existing";
+    throw "Switch $switchName not found";
 }
-New-VMSwitch -Name $switchName -SwitchType internal
-
-# Enable network sharing on host VM
-Write-Host "Enabling Internet connection sharing on host VM"
-
-regsvr32 hnetcfg.dll # Register the HNetCfg library
-$m = New-Object -ComObject HNetCfg.HNetShare
-$c = $m.EnumEveryConnection |? { $m.NetConnectionProps.Invoke($_).Name -eq "Ethernet" }
-$config = $m.INetSharingConfigurationForINetConnection.Invoke($c)
-$config.EnableSharing(0)
 
 # Create Nat
 Write-Host "Creating Nat"
