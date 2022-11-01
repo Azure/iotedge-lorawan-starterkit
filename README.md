@@ -128,3 +128,4 @@ You can create a prerelease with the following steps:
   The Prerelease workflow will create 2 PRs, one PR to update the Starter Kit version in Bicep and one PR to update the Button URL. Merge these 2 PRs.
 - Add a release description and set as the latest
   In Github, select the release created by the workflow, add a description and uncheck the `Set as a pre-release` box.
+  
