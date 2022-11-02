@@ -134,7 +134,7 @@ jobs:
         working-directory: Tools/Cli-LoRa-Device-Provisioning
         shell: pwsh 
         run: pwsh BuildForRelease.ps1
-      - name: Create Prerelease
+      - name: Create Draft release
         run: |
           CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net${DOTNET_VERSION%??}
           gh release create v$VERSION TemplateBicep/$ARM_FILE $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
@@ -142,7 +142,7 @@ jobs:
           $CLI_RELEASE_PATH/linux-musl-x64/lora-cli.linux-musl-x64.tar.gz \
           $CLI_RELEASE_PATH/win-x64/lora-cli.win-x64.zip \
           $CLI_RELEASE_PATH/osx-x64/lora-cli.osx-x64.zip \
-            --title "Release v$VERSION" --prerelease --repo ${{ github.repository }} --notes ""
+            --title "Release v$VERSION" --draft --repo ${{ github.repository }} --notes ""
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     needs: [BuildAndPushDockerImages, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
