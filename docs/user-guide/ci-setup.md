@@ -47,6 +47,7 @@ Keyvault. The only environment secrets needed at the time of writing are :
 - AZURE_TENANT_ID : Required to set up the OIDC connection
 - AZURE_SUBSCRIPTION_ID : Required to set up the OIDC connection
 - AZURE_FUNCTIONAPP_PUBLISH_PROFILE : Required as the [Azure Function step doesn't support OIDC auth](https://github.com/Azure/functions-action/issues/153)
+- KEYVAULT_NAME : Required to indicate to which keyvault the pipeline should point
 
 The OIDC connection is made using a service principal which has the following permissions:
 
