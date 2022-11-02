@@ -120,9 +120,9 @@ Refer to the [Dev Guide][devguide] for development and debugging instructions.
 
 ## Create a release
 
-You can create a prerelease with the following steps:
+You can create a release with the following steps:
 
-### Run the Prerelease workflow
+### Run the Release workflow to create a draft release
 
 Go to the [Create draft release workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
 
@@ -134,6 +134,6 @@ The Prerelease workflow will create 2 PRs, one PR to update the Starter Kit vers
 
 Push dev branch to master
 
-### Add a release description and set as the latest
+### Add a release description and publish the release
 
 In Github, select the release created by the workflow, add a good description, and publish the release.
