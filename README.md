@@ -123,14 +123,17 @@ Refer to the [Dev Guide][devguide] for development and debugging instructions.
 You can create a prerelease with the following steps:
 
 ### Run the Prerelease workflow
+
 Go to the [Prerelease workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
 
 ### Merge 2 PRs
+
 The Prerelease workflow will create 2 PRs, one PR to update the Starter Kit version in Bicep and one PR to update the Button URL. Merge these 2 PRs.
 
 ### Merge dev to master
+
 Create a pull request to merge dev to master.
 
 ### Add a release description and set as the latest
+
 In Github, select the release created by the workflow, add a good description, and publish the release.
-  
