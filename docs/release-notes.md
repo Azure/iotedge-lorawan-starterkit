@@ -2,6 +2,34 @@
 title: Release Notes
 ---
 
+## v2.2.1
+
+## New features
+
+- Class B Beaconing support (#1906)
+- AU915 frequency support (#1907)
+- Release workflow (#1942)
+
+## Bugfixes
+
+- Fix EU868 concentrator twin documentation (#1919)
+- Changed verbosity of the HTTP communication in logs (#1916)
+
+## Misc
+
+- From now on the ARM template and the LoRaWan device provisioning CLI will be provided in the Starterkit releases
+- The infrastructure generation part has been fully updated to up-to-date services and product versions.
+
+## Assets
+
+- LoRaWaN Network Server image: [loraedge/lorawannetworksrvmodule:2.2.1](https://hub.docker.com/r/loraedge/lorawannetworksrvmodule/tags)
+- BasicsStation Module image: [loraedge/lorabasicsstationmodule:2.2.1](https://hub.docker.com/r/loraedge/lorabasicsstationmodule/tags)
+- Azure Functions zip file can be downloaded from the [release](https://github.com/Azure/iotedge-lorawan-starterkit/releases/tag/v2.2.1)
+- Discovery service zip file can be downloaded from the [release](https://github.com/Azure/iotedge-lorawan-starterkit/releases/tag/v2.2.1)
+- LoRaWan CLI provision tool can be downloaded from the [release](https://github.com/Azure/iotedge-lorawan-starterkit/releases/tag/v2.2.1)
+- Azure ARM template can be downloaded from the [release](https://github.com/Azure/iotedge-lorawan-starterkit/releases/tag/v2.2.1)
+
+
 ## v2.2.0
 
 ### New features
