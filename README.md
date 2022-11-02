@@ -130,9 +130,9 @@ Go to the [Create draft release workflow](https://github.com/Azure/iotedge-loraw
 
 The Prerelease workflow will create 2 PRs, one PR to update the Starter Kit version in Bicep and one PR to update the Button URL. Merge these 2 PRs.
 
-### Merge dev to master
+### Update master
 
-Create a pull request to merge dev to master.
+Push dev branch to master
 
 ### Add a release description and set as the latest
 
