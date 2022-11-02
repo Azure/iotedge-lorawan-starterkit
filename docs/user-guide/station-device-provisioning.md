@@ -870,8 +870,8 @@ By saving the configuration per LBS in its device twin, the LBS will be able to 
 
 A Basic station device can be instructed to send class B beaconing signals (disabled by default). In order to enable the feature, add the following JSON to the routerConfig object (described above) following the specs described for the bcning field [in the basics station documentation](https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=tcproto.html).
 
-
 example for EU863:
+
 ``` json
 "bcning": {
             "DR": 3,
