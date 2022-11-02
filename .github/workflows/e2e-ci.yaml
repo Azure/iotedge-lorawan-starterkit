@@ -139,6 +139,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('REDIS-HOSTNAME', 'REDIS-PASSWORD')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       - name: Flush the database
         shell: bash
@@ -189,6 +190,7 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('FUNCTION-FACADE-APP-NAME', 'AZURE-FUNCTIONAPP-PUBLISH-PROFILE', 'AZURE-RG')
+        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
     - name: 'Run Azure Functions Action'
       uses: Azure/functions-action@v1
@@ -226,6 +228,7 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
     - id: image_tag_definition
       run: |
@@ -300,6 +303,7 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('AZURE-ENV-SERVER-PFX-PASSWORD', 'AZURE-ENV-SSH-PRIVATE-KEY-PATH', 'AZURE-ENV-RPI-USERNAME', 'AZURE-ENV-RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
+        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
     - id: generate_step
       shell: bash
@@ -376,6 +380,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID', 'AZURE-RG', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REDIS-HOSTNAME', 'REDIS-PASSWORD', 'IOTHUB-HOSTNAME', 'AZURE-SUBNET-NAME', 'AZURE-VNET-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       - name: "Deploy container instance"
         id: "deploycloudlns"
@@ -427,6 +432,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('AIO-LBS-FIXED-STATION-EUI', 'IOTHUB-OWNER-CONNECTION-STRING', 'AIO-DEVICE-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'AIO-SERVER-PFX-PASSWORD', 'AIO-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -487,6 +493,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-VM-DEVICE-ID', 'EFLOW-VM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'IOT-HUB-RESOURCE-ID', 'FUNCTION-FACADE-SERVER-URL', 'FUNCTION-FACADE-AUTH-CODE')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -536,6 +543,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'EFLOW-ARM-DEVICE-ID', 'EFLOW-ARM-LBS-FIXED-STATION-EUI', 'IOT-HUB-RESOURCE-ID', 'LOG-ANALYTICS-WORKSPACE-ID', 'LOG-ANALYTICS-SHARED-KEY', 'APPLICATIONINSIGHTS-CONNECTION-STRING', 'EFLOW-ARM-DEPLOYMENT-FILE-NAME', 'CI-ACR-NAME', 'CI-ACR-CREDENTIALS', 'EFLOW-VM-TC-URI-ENDPOINT')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       - name: Iot Edge Push Solution
         uses: ./.github/actions/deployedge
@@ -591,6 +599,7 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
+        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.3
@@ -666,6 +675,7 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
+        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.3
@@ -755,6 +765,7 @@ jobs:
       uses: ./.github/actions/read_keyvault
       with:
         KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
+        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.3
@@ -915,6 +926,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       - name: Power OFF Azure VM
         uses: ./.github/actions/power-azure-vm
@@ -945,6 +957,7 @@ jobs:
         uses: ./.github/actions/read_keyvault
         with:
           KEY_ARRAY: ('AZURE-SP-CLIENTID', 'AZURE-SP-SECRET', 'AZURE-TENANTID', 'AZURE-RG')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
       # we don't want to error if the container instance is not present.
       - name: "Delete azure container instance for cloudlns"
