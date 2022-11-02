@@ -96,18 +96,18 @@ CI operators can use an Azure VPN to [connect to the local CI using P2S](https:/
 
 In addition of running the Bicep scripts, the following action needs to be manually executed:
 
-1 Create a service principal with permissions as described [above](#pipeline-authentication-setup)
-1 Create a new Github Environment (Or update the existing one) to reflect the client id of the new service principal
-1 Follow the [documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure) to create trust between Azure and the Github Environment
-1 Create an Azure Keyvault and Migrate the secrets from the previous Keyvault
-1 Create an Azure VPN Gateway
-  - Create a certificate chain to authenticate following [this doc](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)
-  - Update the local CI Devices with the new certificate
-  - Save the certificates and Key to the new Keyvault
-1 Create a Windows Server 2022 VM to Host the Eflow VM
-  - Installation instructions can be found [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/Eflow/)
-1 Create a new Azure Container Registry and import the required docker image (Convenience script [below](#docker-import-convenience-script)). Alternatively, rebuild it from [the sample folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample).
-1 Grant permissions to the newly created service principal to the new Azure resources as described [previously](#pipeline-authentication-setup)
+1. Create a service principal with permissions as described [above](#pipeline-authentication-setup)
+1. Create a new Github Environment (Or update the existing one) to reflect the client id of the new service principal
+1. Follow the [documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure) to create trust between Azure and the Github Environment
+1. Create an Azure Keyvault and Migrate the secrets from the previous Keyvault
+1. Create an Azure VPN Gateway
+    - Create a certificate chain to authenticate following [this doc](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)
+    - Update the local CI Devices with the new certificate
+    - Save the certificates and Key to the new Keyvault
+1. Create a Windows Server 2022 VM to Host the Eflow VM
+    - Installation instructions can be found [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/Eflow/)
+1. Create a new Azure Container Registry and import the required docker image (Convenience script [below](#docker-import-convenience-script)). Alternatively, rebuild it from [the sample folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample).
+1. Grant permissions to the newly created service principal to the new Azure resources as described [previously](#pipeline-authentication-setup)
 
 #### Docker import convenience script
 
