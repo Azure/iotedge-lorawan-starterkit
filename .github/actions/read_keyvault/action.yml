@@ -12,4 +12,6 @@ runs:
     - name: 'Read Secrets from keyvault'
       shell: pwsh
       run: |
-        .\.github\scripts\keyvault.ps1 -array @${{ inputs.KEY_ARRAY }} -vaultName ${{ secrets.KEYVAULT_NAME }}
+        .\.github\scripts\keyvault.ps1 -array @${{ inputs.KEY_ARRAY }} -vaultName $keyvaultName
+      env:
+        keyvaultName: ${{ secrets.KEYVAULT_NAME }}
