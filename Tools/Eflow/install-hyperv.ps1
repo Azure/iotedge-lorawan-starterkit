@@ -7,6 +7,7 @@
      Author     :
         Mikhail Chatillon       - chmikhai@microsoft.com
         Daniele Antonio Maggio  - daniele.maggio@microsoft.com
+        Nora Abi Akar           - noraabiakar@microsoft.com
 #>
 
 # Install Hyper-V

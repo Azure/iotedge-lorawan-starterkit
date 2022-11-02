@@ -11,7 +11,7 @@
 1. Restart the VM and reconnect
 1. Create VM Switch 
    ```
-   $env:switchNAme = "EFLOW Switch"
+   $env:switchName = "EFLOW Switch"
    New-VMSwitch -Name $env:switchName -SwitchType internal
    ```
 1. Enable Internet Connection Sharing
