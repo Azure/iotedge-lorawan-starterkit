@@ -619,6 +619,19 @@
     Manual configuration
   </a>
   
+    <nav class="md-nav" aria-label="Manual configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#class-b-beaconing" class="md-nav__link">
+    Class B beaconing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1550,6 +1563,19 @@
   <a href="#manual-configuration" class="md-nav__link">
     Manual configuration
   </a>
+  
+    <nav class="md-nav" aria-label="Manual configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#class-b-beaconing" class="md-nav__link">
+    Class B beaconing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2485,13 +2511,29 @@ Please adjust <code>radio_0</code> and <code>radio_1</code> freq fields accordin
 <!-- markdownlint-disable MD029 -->
 
 <p>By saving the configuration per <abbr title="LoRa Basics™ Station">LBS</abbr> in its device twin, the <abbr title="LoRa Basics™ Station">LBS</abbr> will be able to successfully connect to the <abbr title="LoRaWAN Network Server">LNS</abbr> and it can start sending frames.</p>
+<h3 id="class-b-beaconing">Class B beaconing</h3>
+<p>A Basic station device can be instructed to send class B beaconing signals (disabled by default). In order to enable the feature, add the following JSON to the routerConfig object (described above) following the specs described for the bcning field <a href="https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=tcproto.html">in the basics station documentation</a>.</p>
+<p>example for EU863:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;bcning&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;DR&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">                </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="mi">17</span><span class="w"></span>
+<span class="w">            </span><span class="p">],</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;freqs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">                </span><span class="mi">869525000</span><span class="w"></span>
+<span class="w">            </span><span class="p">]</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p>for more information refer to the <a href="../class-b-beaconing/">class B docs</a>.</p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-10-31T12:58:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-10-31</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2022-11-02T12:32:27+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2022-11-02</span>
       
         <br>
         Created:
