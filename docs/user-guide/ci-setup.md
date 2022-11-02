@@ -37,7 +37,6 @@ The pipeline runs the following tasks:
 - Deploys IoT Edge solution to a standalone concentrator
 - Runs E2E tests on a dedicated agent
 
-
 ### Pipeline authentication setup
 
 The pipeline uses the Github environment named *CI* and [OIDC tokens](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) to authenticate to Azure. OIDC auth is enabled ONLY for this environement. All pipeline secrets are taken from a
@@ -53,7 +52,7 @@ The OIDC connection is made using a service principal which has the following pe
 
 - Desktop Virtualization Power On Off Contributor on the Eflow vm
 - Contributor on the subscription
-- Key Vault Secrets User on the Keyvault 
+- Key Vault Secrets User on the Keyvault
 
 ### Pipeline settings
 
@@ -98,7 +97,7 @@ CI operators can use an Azure VPN to [connect to the local CI using P2S](https:/
 In addition of running the Bicep scripts, the following action needs to be manually executed:
 
 1. Create a service principal with permissions as described [above](#pipeline-authentication-setup)
-1. Create a new Github Environment (Or update the existing one) to reflect the client id of the new service principal
+1. Create a new Github Environment (or update the existing one) to reflect the new service principal (AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID)
 1. Follow the [documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure) to create trust between Azure and the Github Environment
 1. Create an Azure Keyvault and Migrate the secrets from the previous Keyvault
 1. Create an Azure VPN Gateway
