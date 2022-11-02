@@ -5,6 +5,9 @@ inputs:
   KEY_ARRAY:
     description: 'array of keys whose value we want to read'
     required: true
+  KEYVAULT_NAME:
+    description: 'the keyvault name to use'
+    required: true
       
 runs:
   using: "composite"
@@ -12,6 +15,4 @@ runs:
     - name: 'Read Secrets from keyvault'
       shell: pwsh
       run: |
-        .\.github\scripts\keyvault.ps1 -array @${{ inputs.KEY_ARRAY }} -vaultName $keyvaultName
-      env:
-        keyvaultName: ${{ secrets.KEYVAULT_NAME }}
+        .\.github\scripts\keyvault.ps1 -array @${{ inputs.KEY_ARRAY }} -vaultName ${{ inputs.KEYVAULT_NAME }}
