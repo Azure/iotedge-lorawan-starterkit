@@ -14,3 +14,5 @@
 Install-WindowsFeature -Name Hyper-V
 Install-WindowsFeature -Name Hyper-V-PowerShell
 Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All -NoRestart
+
+Write-Host "Please reboot to finalize installation."
