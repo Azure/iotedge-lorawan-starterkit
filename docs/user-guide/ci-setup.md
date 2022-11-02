@@ -19,7 +19,7 @@ The [Build & Test CI pipeline][build-and-test-ci] runs the following tasks:
 
 The [E2E CI pipeline][e2e-ci] is used to run end-to-end tests (implemented in
 the `LoRaWan.Tests.E2E` project). The pipeline runs tests using real LoRaWan hardware,
-it therefore require a VPN tunnel between the local hardware deployment and Azure. you
+it therefore requires a VPN tunnel between the local hardware deployment and Azure. you
 can find more information [on this blog post](https://devblogs.microsoft.com/cse/2022/03/15/e2e-tests-for-lorawan-starter-kit-with-real-hardware/).
 
 The pipeline runs the following tasks:
@@ -47,7 +47,7 @@ Keyvault. The only environment secrets needed at the time of writing are :
 - AZURE_TENANT_ID : Required to set up the OIDC connection
 - AZURE_SUBSCRIPTION_ID : Required to set up the OIDC connection
 - AZURE_FUNCTIONAPP_PUBLISH_PROFILE : Required as the [Azure Function step doesn't support OIDC auth](https://github.com/Azure/functions-action/issues/153)
-- KEYVAULT_NAME : Required to indicate to which keyvault the pipeline should point
+- KEYVAULT_NAME : Required to indicate which keyvault the pipeline should point to
 
 The OIDC connection is made using a service principal which has the following permissions:
 
@@ -95,7 +95,7 @@ CI operators can use an Azure VPN to [connect to the local CI using P2S](https:/
 
 ### Manual steps to recreate the environment
 
-In addition of running the Bicep scripts, the following action needs to be manually executed:
+In addition to running the Bicep scripts, the following action needs to be manually executed:
 
 1. Create a service principal with permissions as described [above](#pipeline-authentication-setup)
 1. Create a new Github Environment (Or update the existing one) to reflect the client id of the new service principal
