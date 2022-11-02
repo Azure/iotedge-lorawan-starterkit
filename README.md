@@ -124,7 +124,7 @@ You can create a prerelease with the following steps:
 
 ### Run the Prerelease workflow
 
-Go to the [Prerelease workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
+Go to the [Create draft release workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
 
 ### Merge 2 PRs
 
