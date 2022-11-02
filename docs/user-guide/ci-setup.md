@@ -18,7 +18,11 @@ The [Build & Test CI pipeline][build-and-test-ci] runs the following tasks:
 ## LoRa E2E CI
 
 The [E2E CI pipeline][e2e-ci] is used to run end-to-end tests (implemented in
-the `LoRaWan.Tests.E2E` project). The pipeline runs the following tasks:
+the `LoRaWan.Tests.E2E` project). The pipeline runs tests using real LoRaWan hardware,
+it therefore require a VPN tunnel between the local hardware deployment and Azure. you
+can find more information [on this blog post](https://devblogs.microsoft.com/cse/2022/03/15/e2e-tests-for-lorawan-starter-kit-with-real-hardware/).
+
+The pipeline runs the following tasks:
 
 - Prepares the required environment variables
 - Builds and deploys Facade Azure Function
@@ -32,6 +36,23 @@ the `LoRaWan.Tests.E2E` project). The pipeline runs the following tasks:
 - Deploys IoT Edge solution to EFLOW gateway
 - Deploys IoT Edge solution to a standalone concentrator
 - Runs E2E tests on a dedicated agent
+
+
+### Pipeline authentication setup
+
+The pipeline uses the Github environment named *CI* and [OIDC tokens](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) to authenticate to Azure. OIDC auth is enabled ONLY for this environement. All pipeline secrets are taken from a
+Keyvault. The only environment secrets needed at the time of writing are :
+
+- AZURE_CLIENT_ID : Required to set up the OIDC connection
+- AZURE_TENANT_ID : Required to set up the OIDC connection
+- AZURE_SUBSCRIPTION_ID : Required to set up the OIDC connection
+- AZURE_FUNCTIONAPP_PUBLISH_PROFILE : Required as the [Azure Function step doesn't support OIDC auth](https://github.com/Azure/functions-action/issues/153)
+
+The OIDC connection is made using a service principal which has the following permissions:
+
+- Desktop Virtualization Power On Off Contributor on the Eflow vm
+- Contributor on the subscription
+- Key Vault Secrets User on the Keyvault 
 
 ### Pipeline settings
 
@@ -66,6 +87,52 @@ The workflow will be re-executed on new changes being pushed, as long as the
 run previously failing tests, additional label must be added to the PR (e.g.
 label `1`). In this case the test labels already added to the PR will prevent
 those tests from being re-executed.
+
+### Connecting to the Environment
+
+CI operators can use an Azure VPN to [connect to the local CI using P2S](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal#connect), certificates and secrets are in the Keyvault
+
+### Manual steps to recreate the environment
+
+In addition of running the Bicep scripts, the following action needs to be manually executed:
+
+1 Create a service principal with permissions as described [above](#pipeline-authentication-setup)
+1 Create a new Github Environment (Or update the existing one) to reflect the client id of the new service principal
+1 Follow the [documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure) to create trust between Azure and the Github Environment
+1 Create an Azure Keyvault and Migrate the secrets from the previous Keyvault
+1 Create an Azure VPN Gateway
+  - Create a certificate chain to authenticate following [this doc](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)
+  - Update the local CI Devices with the new certificate
+  - Save the certificates and Key to the new Keyvault
+1 Create a Windows Server 2022 VM to Host the Eflow VM
+  - Installation instructions can be found [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Tools/Eflow/)
+1 Create a new Azure Container Registry and import the required docker image (Convenience script [below](#docker-import-convenience-script)). Alternatively, rebuild it from [the sample folder](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Samples/DecoderSample).
+1 Grant permissions to the newly created service principal to the new Azure resources as described [previously](#pipeline-authentication-setup)
+
+#### Docker import convenience script
+
+```powershell
+$newRegistry=<your registry>
+$previousRegistry=<the previous azure registry>
+$previousRegistryLogin=<previous registry login>
+$previousRegistryPW=<previous registry password>
+$debianRelease=bullseye
+az acr import --name $newRegistry --source docker.io/amd64/debian:$debianRelease --image amd64/debian:$debianRelease
+az acr import --name $newRegistry --source docker.io/amd64/debian:$debianRelease-slim --image amd64/debian:$debianRelease-slim
+az acr import --name $newRegistry --source docker.io/arm32v7/debian:$debianRelease --image arm32v7/debian:$debianRelease
+az acr import --name $newRegistry --source docker.io/arm32v7/debian:$debianRelease-slim --image arm32v7/debian:$debianRelease-slim
+az acr import --name $newRegistry --source docker.io/arm64v8/debian:$debianRelease --image arm64v8/debian:$debianRelease
+az acr import --name $newRegistry --source docker.io/arm64v8/debian:$debianRelease-slim --image arm64v8/debian:$debianRelease-slim
+az acr import --name $newRegistry --source docker.io/amd64/node:$debianRelease --image amd64/node:$debianRelease
+az acr import --name $newRegistry --source docker.io/amd64/node:$debianRelease-slim --image amd64/node:$debianRelease-slim
+az acr import --name $newRegistry --source docker.io/arm32v7/node:$debianRelease --image arm32v7/node:$debianRelease
+az acr import --name $newRegistry --source docker.io/arm32v7/node:$debianRelease-slim --image arm32v7/node:$debianRelease-slim
+az acr import --name $newRegistry --source docker.io/arm64v8/node:$debianRelease --image arm64v8/node:$debianRelease
+az acr import --name $newRegistry --source docker.io/arm64v8/node:$debianRelease-slim --image arm64v8/node:$debianRelease-slim
+az acr import --name $newRegistry --source $previousRegistry.azurecr.io/decodersample:2.0-arm32v7 --image decodersample:2.0-arm32v7 --username $previousRegistryLogin --password $previousRegistryPW
+az acr import --name $newRegistry --source $previousRegistry.azurecr.io/decodersample:2.0-amd64 --image decodersample:2.0-amd64 --username $previousRegistryLogin --password $previousRegistryPW
+az acr import --name $newRegistry --source $previousRegistry.azurecr.io/decodersample:2.0 --image decodersample:2.0 --username $previousRegistryLogin --password $previousRegistryPW
+```
 
 ## Universal Decoder CI
 
