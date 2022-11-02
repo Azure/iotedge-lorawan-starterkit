@@ -1,10 +1,7 @@
 using namespace System.Collections.Concurrent
 
 param(
-  [array]$array
-)
-
-param(
+  [array]$array,
   [string]$vaultName
 )
 
