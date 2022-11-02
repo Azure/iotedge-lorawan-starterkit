@@ -1,14 +1,16 @@
 using namespace System.Collections.Concurrent
 
 param(
-  [array]$array
+  [Parameter(Mandatory)]
+  [array]$array,
+  [Parameter(Mandatory)]
+  [string]$vaultName
 )
 
 $map = [ConcurrentDictionary[string, object]]::new()
-
 $array | ForEach-Object -Parallel {
   $key = $_
-  $val = az keyvault secret show --name $key --vault-name "lorae2etestkeyvault" --query value -o tsv 
+  $val = az keyvault secret show --name $key --vault-name $using:vaultName --query value -o tsv 
   $collector = $using:map
   $res = $collector.TryAdd($key, $val)
 } -ThrottleLimit 10
