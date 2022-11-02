@@ -117,3 +117,23 @@ Refer to the [Dev Guide][devguide] for development and debugging instructions.
 [knownissues]:          https://azure.github.io/iotedge-lorawan-starterkit/dev/issues/
 [partnerinstructions]:  https://azure.github.io/iotedge-lorawan-starterkit/dev/user-guide/partner/
 [specificationsupport]: https://azure.github.io/iotedge-lorawan-starterkit/dev/#lorawan-specification-support
+
+## Create a release
+
+You can create a release with the following steps:
+
+### Run the Release workflow to create a draft release
+
+Go to the [Create draft release workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
+
+### Merge 2 PRs
+
+The Prerelease workflow will create 2 PRs, one PR to update the Starter Kit version in Bicep and one PR to update the Button URL. Merge these 2 PRs.
+
+### Update master
+
+Push dev branch to master
+
+### Add a release description and publish the release
+
+In Github, select the release created by the workflow, add a good description, and publish the release.
