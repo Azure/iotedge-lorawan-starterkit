@@ -29,7 +29,6 @@ title: Release Notes
 - LoRaWan CLI provision tool can be downloaded from the [release](https://github.com/Azure/iotedge-lorawan-starterkit/releases/tag/v2.2.1)
 - Azure ARM template can be downloaded from the [release](https://github.com/Azure/iotedge-lorawan-starterkit/releases/tag/v2.2.1)
 
-
 ## v2.2.0
 
 ### New features
