@@ -122,6 +122,10 @@ Refer to the [Dev Guide][devguide] for development and debugging instructions.
 
 You can create a release with the following steps:
 
+### Write release notes
+
+Write release notes to the [release notes documentation](https://github.com/Azure/iotedge-lorawan-starterkit/blob/docs/main/docs/release-notes.md).
+
 ### Run the Release workflow to create a draft release
 
 Go to the [Create draft release workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
