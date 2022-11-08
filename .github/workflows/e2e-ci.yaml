@@ -149,10 +149,6 @@ jobs:
           chmod +x redli
           ./redli --tls -h $REDIS_HOSTNAME.redis.cache.windows.net -p 6380 -a $REDIS_PASSWORD FLUSHALL
 
-  # Build and deploy Facade Azure Function
-  # Ideally, use OIDC authentication to deploy the function
-  # but this is not yet supported.
-  # See: https://github.com/Azure/functions-action/issues/153
   deploy_facade_function:
     environment:
       name: CI
