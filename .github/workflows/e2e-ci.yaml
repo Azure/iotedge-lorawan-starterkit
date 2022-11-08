@@ -2,33 +2,33 @@ name: LoRa E2E CI
 concurrency: e2e
 on: # rebuild any PRs and main branch changes
   schedule:
-    - cron: '59 11 * * 1'
+    - cron: "59 11 * * 1"
   pull_request:
     types: [labeled]
   workflow_dispatch:
     inputs:
       RunE2ETestsOnly:
-        description: 'Run E2E tests only'
-        default: 'false'
+        description: "Run E2E tests only"
+        default: "false"
         required: false
       RunLoadTests:
-        description: 'Include Load Tests in current run'
-        default: 'false'
+        description: "Include Load Tests in current run"
+        default: "false"
         required: false
       TestsToRun:
-        default: '[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]'
-        description: 'tests to run'
+        default: "[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]"
+        description: "tests to run"
         required: false
       TxPower:
-        description: 'TXPower value to use in E2E tests'
-        default: '6'
+        description: "TXPower value to use in E2E tests"
+        default: "6"
         required: false
 permissions:
   id-token: write
   contents: read
   pull-requests: write
 env:
-  BUILD_CONFIGURATION: 'Release'
+  BUILD_CONFIGURATION: "Release"
   TESTS_FOLDER: Tests
   TESTS_RESULTS_FOLDER: Tests/TestResults
   IOT_EDGE_DEPLOYMENT_ID: ""
@@ -53,39 +53,39 @@ jobs:
     name: Set environment variables
     runs-on: ubuntu-latest
     steps:
-    - id: e2e_list_step
-      shell: bash
-      name: Set E2E tests to run
-      run: |
-        if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
-          echo "Set up for workflow dispatch"
-          echo "E2ETestsToRun=${{ github.event.inputs.TestsToRun }}" >> $GITHUB_OUTPUT
-        elif [ ${{ github.event_name }} == 'pull_request' ]; then
-          echo "Set up for pull request"
-          echo "E2ETestsToRun=[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]" >> $GITHUB_OUTPUT
-        else
-          echo "Set up for cron trigger"
-          echo "E2ETestsToRun=[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]" >> $GITHUB_OUTPUT
-        fi
+      - id: e2e_list_step
+        shell: bash
+        name: Set E2E tests to run
+        run: |
+          if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+            echo "Set up for workflow dispatch"
+            echo "E2ETestsToRun=${{ github.event.inputs.TestsToRun }}" >> $GITHUB_OUTPUT
+          elif [ ${{ github.event_name }} == 'pull_request' ]; then
+            echo "Set up for pull request"
+            echo "E2ETestsToRun=[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]" >> $GITHUB_OUTPUT
+          else
+            echo "Set up for cron trigger"
+            echo "E2ETestsToRun=[SensorDecodingTest,OTAAJoinTest,ABPTest,OTAATest,MacTest,ClassCTest,C2DMessageTest,MultiGatewayTest,MultiConcentratorTest,CupsTest,LnsDiscoveryTest,CloudDeploymentTest]" >> $GITHUB_OUTPUT
+          fi
 
-    - id: check-if-run
-      name: Check if deploy on local ci
-      shell: bash
-      if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true
-      run: |
-        echo "StopFullCi=true" >> $GITHUB_OUTPUT
+      - id: check-if-run
+        name: Check if deploy on local ci
+        shell: bash
+        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true
+        run: |
+          echo "StopFullCi=true" >> $GITHUB_OUTPUT
 
-    - id: set_txpower
-      name: Set TXPower value
-      shell: bash
-      run: |
-        if [ ${{ github.event.inputs.TxPower }} -ge 1 ] && [ ${{ github.event.inputs.TxPower }} -le 14 ]; then
-          txPower=${{ github.event.inputs.TxPower }}
-        else
-          txPower=14
-        fi
-        echo "Setting TxPower to $txPower"
-        echo "TxPower=$txPower" >> $GITHUB_OUTPUT
+      - id: set_txpower
+        name: Set TXPower value
+        shell: bash
+        run: |
+          if [ ${{ github.event.inputs.TxPower }} -ge 1 ] && [ ${{ github.event.inputs.TxPower }} -le 14 ]; then
+            txPower=${{ github.event.inputs.TxPower }}
+          else
+            txPower=14
+          fi
+          echo "Setting TxPower to $txPower"
+          echo "TxPower=$txPower" >> $GITHUB_OUTPUT
 
     outputs:
       RunE2ETestsOnly: ${{ github.event.inputs.RunE2ETestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunE2ETestsOnly') == true}}
@@ -119,7 +119,7 @@ jobs:
           POWER_SWITCH: true
 
   reset_redis_cache:
-    environment: 
+    environment:
       name: CI
     name: Reset the Redis Cache
     if: needs.env_var.outputs.StopFullCi != 'true'
@@ -157,54 +157,53 @@ jobs:
     environment:
       name: CI
     needs:
-    - env_var
+      - env_var
     name: Build and Deploy Facade Azure Function
     runs-on: ubuntu-latest
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     env:
-      AZURE_FUNCTIONAPP_PACKAGE_PATH: 'LoRaEngine/LoraKeysManagerFacade/'
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: "LoRaEngine/LoraKeysManagerFacade/"
 
     steps:
-    - name: Az CLI login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
-      name: Checkout current branch
+      - uses: actions/checkout@v3
+        name: Checkout current branch
 
-    - uses: actions/setup-dotnet@v3.0.3
-      with:
-        dotnet-version: '6.0.x'
+      - uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: "6.0.x"
 
-    - name: 'Resolve Project Dependencies Using Dotnet'
-      shell: bash
-      run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --output ./output
-        popd
+      - name: "Resolve Project Dependencies Using Dotnet"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --output ./output
+          popd
 
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('FUNCTION-FACADE-APP-NAME', 'AZURE-FUNCTIONAPP-PUBLISH-PROFILE', 'AZURE-RG')
-        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+      - name: Read Secrets from keyvault
+        uses: ./.github/actions/read_keyvault
+        with:
+          KEY_ARRAY: ('FUNCTION-FACADE-APP-NAME', 'AZURE-RG')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: $FUNCTION_FACADE_APP_NAME
-        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+      - name: "Run Azure Functions Action"
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: $FUNCTION_FACADE_APP_NAME
+          package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output"
 
   build_push_docker_images:
     environment:
       name: CI
     needs:
-    - env_var
+      - env_var
     name: Build and Push Docker images
     runs-on: ubuntu-latest
     env:
@@ -212,73 +211,73 @@ jobs:
       MASTER_IMAGE_TAG: master
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     steps:
-    - name: Az CLI login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
-      name: Checkout current branch
-      with:
-        fetch-depth: '2'
+      - uses: actions/checkout@v3
+        name: Checkout current branch
+        with:
+          fetch-depth: "2"
 
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
-        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+      - name: Read Secrets from keyvault
+        uses: ./.github/actions/read_keyvault
+        with:
+          KEY_ARRAY: ('CI-ACR-NAME', 'CI-ACR-CREDENTIALS')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
-    - id: image_tag_definition
-      run: |
-        if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
-        echo "dev"
-        IMAGE_TAG="$DEV_IMAGE_TAG"
-        elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
-        echo "master"
-        IMAGE_TAG="$MASTER_IMAGE_TAG"
-        elif [ ${{ github.event_name }} == "pull_request" ]; then
-        echo "pull request"
-        IMAGE_TAG="pr-${{ github.event.number}}"
-        else
-        echo "all others"
-        IMAGE_TAG="custom-${GITHUB_REF##*/}"
-        fi
-        echo "Using image tag prefix $IMAGE_TAG"
-        IMAGE_TAG="$MAJOR_VERSION.${{ github.run_number }}.$IMAGE_TAG-${{ github.run_attempt }}"
-        echo "Using image tag $IMAGE_TAG"
-        echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
-        echo "::set-env name=LBS_VERSION::$IMAGE_TAG"
-        echo "imagetag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      - id: image_tag_definition
+        run: |
+          if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
+          echo "dev"
+          IMAGE_TAG="$DEV_IMAGE_TAG"
+          elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
+          echo "master"
+          IMAGE_TAG="$MASTER_IMAGE_TAG"
+          elif [ ${{ github.event_name }} == "pull_request" ]; then
+          echo "pull request"
+          IMAGE_TAG="pr-${{ github.event.number}}"
+          else
+          echo "all others"
+          IMAGE_TAG="custom-${GITHUB_REF##*/}"
+          fi
+          echo "Using image tag prefix $IMAGE_TAG"
+          IMAGE_TAG="$MAJOR_VERSION.${{ github.run_number }}.$IMAGE_TAG-${{ github.run_attempt }}"
+          echo "Using image tag $IMAGE_TAG"
+          echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
+          echo "::set-env name=LBS_VERSION::$IMAGE_TAG"
+          echo "imagetag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
-    - uses: docker/setup-buildx-action@v2
-      id: buildx
-      with:
-         install: true
+      - uses: docker/setup-buildx-action@v2
+        id: buildx
+        with:
+          install: true
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-    - name: Build Docker LoRaWanNetworkServer images
-      run: |
-        echo $CI_ACR_CREDENTIALS | docker login "$CI_ACR_NAME.azurecr.io" --username  "$CI_ACR_NAME" --password-stdin
-        CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
-      working-directory: LoRaEngine
+      - name: Build Docker LoRaWanNetworkServer images
+        run: |
+          echo $CI_ACR_CREDENTIALS | docker login "$CI_ACR_NAME.azurecr.io" --username  "$CI_ACR_NAME" --password-stdin
+          CONTAINER_REGISTRY_ADDRESS=$CI_ACR_NAME.azurecr.io docker buildx bake --push LoRaWanNetworkServerarm32 LoRaWanNetworkServerarm64v8 LoRaWanNetworkServerx64
+        working-directory: LoRaEngine
 
-    # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
-    - name: Build Docker LoRaWanBasicsStation images
-      run: |
-        git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || CONTAINER_REGISTRY_ADDRESS="${{ env.CI_ACR_NAME }}.azurecr.io" docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.CONTAINER_REGISTRY_ADDRESS=${{ env.CI_ACR_NAME }}.azurecr.io
-      working-directory: LoRaEngine
+      # This image is very costly to rebuild and we rebuild it only when something change in the folders since last commit.
+      - name: Build Docker LoRaWanBasicsStation images
+        run: |
+          git diff --quiet HEAD HEAD~1 -- modules/LoRaBasicsStationModule/ || CONTAINER_REGISTRY_ADDRESS="${{ env.CI_ACR_NAME }}.azurecr.io" docker buildx bake --push LoraBasicsStationarm32v7 LoraBasicsStationarm64v8 --set *.args.CONTAINER_REGISTRY_ADDRESS=${{ env.CI_ACR_NAME }}.azurecr.io
+        working-directory: LoRaEngine
 
     outputs:
       imagetag: ${{ steps.image_tag_definition.outputs.imagetag }}
 
   # Generate root and server certificates and copy required files to RPi
-  certificates_job :
+  certificates_job:
     timeout-minutes: 5
     name: Generate and copy certificates
     environment:
@@ -286,66 +285,66 @@ jobs:
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     needs:
       - env_var
-    runs-on: [ self-hosted, x64 ]
+    runs-on: [self-hosted, x64]
 
     steps:
-    - name: Az CLI login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
-      name: Checkout current branch
+      - uses: actions/checkout@v3
+        name: Checkout current branch
 
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('AZURE-ENV-SERVER-PFX-PASSWORD', 'AZURE-ENV-SSH-PRIVATE-KEY-PATH', 'AZURE-ENV-RPI-USERNAME', 'AZURE-ENV-RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
-        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+      - name: Read Secrets from keyvault
+        uses: ./.github/actions/read_keyvault
+        with:
+          KEY_ARRAY: ('AZURE-ENV-SERVER-PFX-PASSWORD', 'AZURE-ENV-SSH-PRIVATE-KEY-PATH', 'AZURE-ENV-RPI-USERNAME', 'AZURE-ENV-RPI-HOST', 'DEFAULTCUPSSTATIONEUI', 'CUPSCREDENTIALSBLOBURL', 'CUPSFIRMWAREBLOBURL')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
-    - id: generate_step
-      shell: bash
-      name: Generate server and client certificates
-      env:
-        CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
-      run: |
-        # -- Credential generation section --
-        chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
-        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $AZURE_ENV_RPI_HOST $AZURE_ENV_SERVER_PFX_PASSWORD
-        ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $DEFAULTCUPSSTATIONEUI
-        # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
-        cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
-        cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
-        cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.crt $CERT_REMOTE_PATH/cups.crt
-        cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.key $CERT_REMOTE_PATH/cups.key
-        curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSCREDENTIALSBLOBURL"
-        echo "clientbundlecrc=$(cat ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)" >> $GITHUB_OUTPUT 
-        echo "clientthumbprint=$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')" >> $GITHUB_OUTPUT
-        # -- Firmware upgrade generation section --
-        chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
-        NEW_FW_VERSION=$(date -u +%s)
-        sed -i "s/1.0.1-e2e/$NEW_FW_VERSION/g" ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
-        ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $DEFAULTCUPSSTATIONEUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
-        cp ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
-        echo "clientsigkeycrc=$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.crc)" >> $GITHUB_OUTPUT
-        echo "clientfwdigest=$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/fwUpdate.digest)" >> $GITHUB_OUTPUT
-        echo "clientfwversion=$NEW_FW_VERSION" >> $GITHUB_OUTPUT
-        curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSFIRMWAREBLOBURL"
-        # following commands are copying to remote "aio" device the required server and trust certificates
-        ssh -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
-        scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/tc.trust
-        scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$AZURE_ENV_RPI_HOST.pfx $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/server.pfx
-        # following is needed for the proper setup of trusted ca certificate
-        openssl x509 -in ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt -inform DER -out ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem -outform PEM
-        scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
+      - id: generate_step
+        shell: bash
+        name: Generate server and client certificates
+        env:
+          CERT_REMOTE_PATH: ${{ needs.env_var.outputs.CertRemotePath }}
+        run: |
+          # -- Credential generation section --
+          chmod +x ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh
+          ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh server $AZURE_ENV_RPI_HOST $AZURE_ENV_SERVER_PFX_PASSWORD
+          ./Tools/BasicStation-Certificates-Generation/certificate-generate.sh client $DEFAULTCUPSSTATIONEUI
+          # following copy commands are copying trust certificate to a pre-created $CERT_REMOTE_PATH location in local ci
+          cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/tc.trust
+          cp ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $CERT_REMOTE_PATH/cups.trust
+          cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.crt $CERT_REMOTE_PATH/cups.crt
+          cp ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.key $CERT_REMOTE_PATH/cups.key
+          curl -X PUT -T ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSCREDENTIALSBLOBURL"
+          echo "clientbundlecrc=$(cat ./Tools/BasicStation-Certificates-Generation/client/$DEFAULTCUPSSTATIONEUI.bundle | gzip -1 | tail -c 8 | od -t ${1:-u}4 -N 4 -An --endian=little | xargs echo)" >> $GITHUB_OUTPUT 
+          echo "clientthumbprint=$(sha1sum $CERT_REMOTE_PATH/cups.crt | awk '{print $1;}')" >> $GITHUB_OUTPUT
+          # -- Firmware upgrade generation section --
+          chmod +x ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh
+          NEW_FW_VERSION=$(date -u +%s)
+          sed -i "s/1.0.1-e2e/$NEW_FW_VERSION/g" ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh
+          ./Tools/Cups-Firmware-Upgrade/firmwarePrep.sh $DEFAULTCUPSSTATIONEUI "$(realpath ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh)"
+          cp ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.key $CERT_REMOTE_PATH/sig-0.key
+          echo "clientsigkeycrc=$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/sig-0.crc)" >> $GITHUB_OUTPUT
+          echo "clientfwdigest=$(cat ./Tools/Cups-Firmware-Upgrade/$DEFAULTCUPSSTATIONEUI/fwUpdate.digest)" >> $GITHUB_OUTPUT
+          echo "clientfwversion=$NEW_FW_VERSION" >> $GITHUB_OUTPUT
+          curl -X PUT -T ./Tools/Cups-Firmware-Upgrade/fwUpdateSample.sh -H "x-ms-date: $(date -u)" -H "x-ms-blob-type: BlockBlob" "$CUPSFIRMWAREBLOBURL"
+          # following commands are copying to remote "aio" device the required server and trust certificates
+          ssh -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST "sudo rm -rf $CERT_REMOTE_PATH && sudo mkdir -p $CERT_REMOTE_PATH && sudo chown -R "'$(whoami)'" $CERT_REMOTE_PATH"
+          scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/tc.trust
+          scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/server/$AZURE_ENV_RPI_HOST.pfx $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/server.pfx
+          # following is needed for the proper setup of trusted ca certificate
+          openssl x509 -in ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt -inform DER -out ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem -outform PEM
+          scp -i $AZURE_ENV_SSH_PRIVATE_KEY_PATH ./Tools/BasicStation-Certificates-Generation/ca/root-ca.crt.pem $AZURE_ENV_RPI_USERNAME@$AZURE_ENV_RPI_HOST:$CERT_REMOTE_PATH/client.ca.crt
 
-    - id: get_self_hosted_runner_ip_address
-      shell: bash
-      name: Get internal Ip address of the itestup device
-      run: |
-        echo "itestupip=$(ip address list tun0 | grep -Po 'inet \K[\d.]+')" >> $GITHUB_OUTPUT
+      - id: get_self_hosted_runner_ip_address
+        shell: bash
+        name: Get internal Ip address of the itestup device
+        run: |
+          echo "itestupip=$(ip address list tun0 | grep -Po 'inet \K[\d.]+')" >> $GITHUB_OUTPUT
     outputs:
       itestupip: ${{ steps.get_self_hosted_runner_ip_address.outputs.itestupip }}
       clientthumbprint: ${{ steps.generate_step.outputs.clientthumbprint }}
@@ -359,9 +358,9 @@ jobs:
     environment:
       name: CI
     needs:
-    - env_var
-    - build_push_docker_images
-    - certificates_job
+      - env_var
+      - build_push_docker_images
+      - certificates_job
     runs-on: ubuntu-latest
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     name: Deploy Cloud based LNS
@@ -407,9 +406,9 @@ jobs:
     environment:
       name: CI
     needs:
-    - env_var
-    - build_push_docker_images
-    - certificates_job
+      - env_var
+      - build_push_docker_images
+      - certificates_job
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on All-In-One ARM gateway
@@ -457,19 +456,19 @@ jobs:
           LBS_SPI_DEV: "0"
           LBS_SPI_SPEED: "8"
         with:
-          deployment_file_name: '${{ env.AIO_DEPLOYMENT_FILE_NAME }}'
+          deployment_file_name: "${{ env.AIO_DEPLOYMENT_FILE_NAME }}"
           architecture: arm32v7
-          iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
+          iot_edge_deployment_id: "${{ env.IOT_EDGE_DEPLOYMENT_ID }}"
 
-# Deploy IoT Edge solution to EFLOW gateway
+  # Deploy IoT Edge solution to EFLOW gateway
   deploy_eflow_gw_iot_edge:
     timeout-minutes: 20
     environment:
       name: CI
     needs:
-    - env_var
-    - build_push_docker_images
-    - certificates_job
+      - env_var
+      - build_push_docker_images
+      - certificates_job
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
     runs-on: ubuntu-latest
     name: Deploy IoT Edge on EFLOW VM gateway
@@ -509,16 +508,16 @@ jobs:
           FACADE_AUTH_CODE: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
           IOT_HUB_RESOURCE_ID: ${{ env.IOT_HUB_RESOURCE_ID }}
         with:
-          deployment_file_name: '${{ env.EFLOW_VM_DEPLOYMENT_FILE_NAME }}'
+          deployment_file_name: "${{ env.EFLOW_VM_DEPLOYMENT_FILE_NAME }}"
           architecture: amd64
-          iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
+          iot_edge_deployment_id: "${{ env.IOT_EDGE_DEPLOYMENT_ID }}"
 
   # Deploy IoT Edge solution to standalone Concentrator
   deploy_eflow_concentrator_iot_edge:
     timeout-minutes: 20
     needs:
-    - env_var
-    - build_push_docker_images
+      - env_var
+      - build_push_docker_images
     environment:
       name: CI
     if: needs.env_var.outputs.RunE2ETestsOnly != 'true' && needs.env_var.outputs.StopFullCi != 'true'
@@ -564,9 +563,9 @@ jobs:
           LBS_SPI_SPEED: "8"
           LBS_TC_URI: "${{ env.EFLOW_VM_TC_URI_ENDPOINT }}"
         with:
-          deployment_file_name: '${{ env.EFLOW_ARM_DEPLOYMENT_FILE_NAME }}'
+          deployment_file_name: "${{ env.EFLOW_ARM_DEPLOYMENT_FILE_NAME }}"
           architecture: arm32v7
-          iot_edge_deployment_id: '${{ env.IOT_EDGE_DEPLOYMENT_ID }}'
+          iot_edge_deployment_id: "${{ env.IOT_EDGE_DEPLOYMENT_ID }}"
           waitForLnsDeployment: false
 
   load_test_job:
@@ -583,68 +582,67 @@ jobs:
       - deploy_eflow_concentrator_iot_edge
       - env_var
       - certificates_job
-    runs-on: [ self-hosted, x64 ]
+    runs-on: [self-hosted, x64]
     steps:
-    - name: Az CLI login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
-      name: Checkout current branch
+      - uses: actions/checkout@v3
+        name: Checkout current branch
 
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
-        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+      - name: Read Secrets from keyvault
+        uses: ./.github/actions/read_keyvault
+        with:
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.3
-      with:
-        dotnet-version: '6.0.x' # SDK Version to use.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: "6.0.x" # SDK Version to use.
 
-    - name: .NET SDK Information
-      run:
-        dotnet --info
+      - name: .NET SDK Information
+        run: dotnet --info
 
-    - name: Configuration for load tests
-      uses: cschleiden/replace-tokens@v1
-      with:
-        files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
-      env:
-        INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ci
-        INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
-        INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
-        INTEGRATIONTEST_DevicePrefix: '03'
-        INTEGRATIONTEST_RunningInCI: true
-        INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ env.LOAD_TEST_LNS_ENDPOINTS }}
-        INTEGRATIONTEST_NumberOfLoadTestDevices: 10
-        INTEGRATIONTEST_NumberOfLoadTestConcentrators: 4
-        INTEGRATIONTEST_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
-        INTEGRATIONTEST_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
-        INTEGRATIONTEST_TcpLogPort: 6000
+      - name: Configuration for load tests
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: "${{ env.TESTS_FOLDER }}/Simulation/appsettings.json"
+        env:
+          INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+          INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ci
+          INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
+          INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
+          INTEGRATIONTEST_DevicePrefix: "03"
+          INTEGRATIONTEST_RunningInCI: true
+          INTEGRATIONTEST_LoadTestLnsEndpoints: ${{ env.LOAD_TEST_LNS_ENDPOINTS }}
+          INTEGRATIONTEST_NumberOfLoadTestDevices: 10
+          INTEGRATIONTEST_NumberOfLoadTestConcentrators: 4
+          INTEGRATIONTEST_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
+          INTEGRATIONTEST_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+          INTEGRATIONTEST_TcpLogPort: 6000
 
-    - name: Build load tests
-      run: |
-        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+      - name: Build load tests
+        run: |
+          dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
-    - name: Runs load tests
-      shell: bash
-      run: |
-        dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
-        -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ --filter "SimulatedLoadTests" \
-        ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+      - name: Runs load tests
+        shell: bash
+        run: |
+          dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
+          -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ --filter "SimulatedLoadTests" \
+          ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
-    # Upload test results as artifact
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: load-test-results
-        path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
+      # Upload test results as artifact
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: load-test-results
+          path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
 
   cloud_test_job:
     timeout-minutes: 150
@@ -658,77 +656,76 @@ jobs:
       - deploy_cloud_lns
       - env_var
       - certificates_job
-    runs-on: [ self-hosted, x64 ]
+    runs-on: [self-hosted, x64]
 
     steps:
-    - name: Az CLI login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
-      name: Checkout current branch
+      - uses: actions/checkout@v3
+        name: Checkout current branch
 
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
-        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+      - name: Read Secrets from keyvault
+        uses: ./.github/actions/read_keyvault
+        with:
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'LOAD-TEST-LNS-ENDPOINTS', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.3
-      with:
-        dotnet-version: '6.0.x' # SDK Version to use.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: "6.0.x" # SDK Version to use.
 
-    - name: .NET SDK Information
-      run:
-        dotnet --info
+      - name: .NET SDK Information
+        run: dotnet --info
 
-    - name: Configuration for simulated cloud tests
-      uses: cschleiden/replace-tokens@v1
-      with:
-        files: '${{ env.TESTS_FOLDER }}/Simulation/appsettings.json'
-      env:
-        INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-        INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ci
-        INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
-        INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
-        INTEGRATIONTEST_DevicePrefix: '12'
-        INTEGRATIONTEST_RunningInCI: true
-        INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \\\"1\\\": \\\"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\\\" }"
-        INTEGRATIONTEST_NumberOfLoadTestDevices: 1
-        INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
-        INTEGRATIONTEST_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
-        INTEGRATIONTEST_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
-        INTEGRATIONTEST_TcpLogPort: 6100
+      - name: Configuration for simulated cloud tests
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: "${{ env.TESTS_FOLDER }}/Simulation/appsettings.json"
+        env:
+          INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+          INTEGRATIONTEST_IoTHubEventHubConsumerGroup: ci
+          INTEGRATIONTEST_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
+          INTEGRATIONTEST_LeafDeviceGatewayID: itestarm1
+          INTEGRATIONTEST_DevicePrefix: "12"
+          INTEGRATIONTEST_RunningInCI: true
+          INTEGRATIONTEST_LoadTestLnsEndpoints: "{ \\\"1\\\": \\\"ws://${{ needs.deploy_cloud_lns.outputs.cloudlnsprivateip }}:5000\\\" }"
+          INTEGRATIONTEST_NumberOfLoadTestDevices: 1
+          INTEGRATIONTEST_NumberOfLoadTestConcentrators: 2
+          INTEGRATIONTEST_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
+          INTEGRATIONTEST_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+          INTEGRATIONTEST_TcpLogPort: 6100
 
-    - name: Build simulated cloud tests
-      run: |
-        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+      - name: Build simulated cloud tests
+        run: |
+          dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
-    - name: Runs simulated cloud tests
-      shell: bash
-      run: |
-        dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
-        -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ --filter "SimulatedCloudTests" \
-        ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
+      - name: Runs simulated cloud tests
+        shell: bash
+        run: |
+          dotnet test --logger trx --no-build --configuration ${{ env.BUILD_CONFIGURATION }} \
+          -r ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/ --filter "SimulatedCloudTests" \
+          ${{ env.TESTS_FOLDER }}/Simulation/LoRaWan.Tests.Simulation.csproj
 
-    - name: Add CloudDeploymentTest Test Label
-      uses: buildsville/add-remove-label@v1
-      if: github.event_name == 'pull_request' && success()
-      with:
-        token: ${{ github.token }}
-        label: 'CloudDeploymentTest'
-        type: add
+      - name: Add CloudDeploymentTest Test Label
+        uses: buildsville/add-remove-label@v1
+        if: github.event_name == 'pull_request' && success()
+        with:
+          token: ${{ github.token }}
+          label: "CloudDeploymentTest"
+          type: add
 
-    # Upload simulated cloud results as artifact
-    - uses: actions/upload-artifact@v1
-      if: always()
-      with:
-        name: simulated-cloud-test-results
-        path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
+      # Upload simulated cloud results as artifact
+      - uses: actions/upload-artifact@v1
+        if: always()
+        with:
+          name: simulated-cloud-test-results
+          path: ${{ env.TESTS_RESULTS_FOLDER }}/LoadTest/
 
   # Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
   e2e_tests_job:
@@ -746,163 +743,162 @@ jobs:
       - env_var
       - certificates_job
       - load_test_job
-    runs-on: [ self-hosted, x64 ]
+    runs-on: [self-hosted, x64]
     env:
       TestsToRun: ${{ needs.env_var.outputs.E2ETestsToRun }}
 
     steps:
-    - name: Az CLI login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
-      name: Checkout current branch
+      - uses: actions/checkout@v3
+        name: Checkout current branch
 
-    - name: Read Secrets from keyvault
-      uses: ./.github/actions/read_keyvault
-      with:
-        KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
-        KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+      - name: Read Secrets from keyvault
+        uses: ./.github/actions/read_keyvault
+        with:
+          KEY_ARRAY: ('IOTHUB-OWNER-CONNECTION-STRING', 'IOTHUB-EVENT-HUB-CONNECTION-STRING', 'FUNCTION-FACADE-AUTH-CODE', 'FUNCTION-FACADE-SERVER-URL', 'REMOTECONCENTRATORCONNECTION', 'BASICSTATIONEXECUTABLEPATH', 'SSHPRIVATEKEYPATH', 'SHAREDLNSENDPOINT', 'SHAREDCUPSENDPOINT', 'DEFAULTCISTATIONEUI', 'CIBASICSTATIONRADIODEV', 'DEFAULTCUPSSTATIONEUI', 'CUPSFIRMWAREBLOBURL')
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.3
-      with:
-        dotnet-version: '6.0.x' # SDK Version to use.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: "6.0.x" # SDK Version to use.
 
-    - name: .NET SDK Information
-      run:
-        dotnet --info
+      - name: .NET SDK Information
+        run: dotnet --info
 
-    - name: Configuration for E2E tests
-      uses: cschleiden/replace-tokens@v1
-      with:
-        files: '${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
-      env:
-        E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
-        E2ETESTS_IoTHubEventHubConsumerGroup: ci
-        E2ETESTS_LeafDeviceGatewayID: itestarm1
-        E2ETESTS_DevicePrefix: '01'
-        E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
-        E2ETESTS_EnsureHasEventMaximumTries: 5
-        E2ETESTS_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
-        E2ETESTS_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-        E2ETESTS_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
-        E2ETESTS_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
-        E2ETESTS_RunningInCI: true
-        E2ETESTS_RemoteConcentratorConnection: ${{ env.REMOTECONCENTRATORCONNECTION }}
-        E2ETESTS_BasicStationExecutablePath: ${{ env.BASICSTATIONEXECUTABLEPATH }}
-        E2ETESTS_SshPrivateKeyPath: ${{ env.SSHPRIVATEKEYPATH }}
-        E2ETESTS_SharedLnsEndpoint: ${{ env.SHAREDLNSENDPOINT }}
-        E2ETESTS_SharedCupsEndpoint: ${{ env.SHAREDCUPSENDPOINT }}
-        E2ETESTS_DefaultBasicStationEui: ${{ env.DEFAULTCISTATIONEUI }}
-        E2ETESTS_RadioDev: ${{ env.CIBASICSTATIONRADIODEV }}
-        E2ETESTS_CupsBasicStationEui: ${{ env.DEFAULTCUPSSTATIONEUI }}
-        E2ETESTS_IsCorecellBasicStation: false
-        E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
-        E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
-        E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
-        E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
-        E2ETESTS_CupsBasicStationVersion: "2.0.6(rak833x64/std)"
-        E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
-        E2ETESTS_CupsFwUrl: ${{ env.CUPSFIRMWAREBLOBURL }}
-        E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
+      - name: Configuration for E2E tests
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: "${{ env.TESTS_FOLDER }}/E2E/appsettings.json"
+        env:
+          E2ETESTS_LeafDeviceSerialPort: "/dev/ttyACM0"
+          E2ETESTS_IoTHubEventHubConsumerGroup: ci
+          E2ETESTS_LeafDeviceGatewayID: itestarm1
+          E2ETESTS_DevicePrefix: "01"
+          E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
+          E2ETESTS_EnsureHasEventMaximumTries: 5
+          E2ETESTS_IoTHubConnectionString: ${{ env.IOTHUB_OWNER_CONNECTION_STRING }}
+          E2ETESTS_IoTHubEventHubConnectionString: ${{ env.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+          E2ETESTS_FunctionAppCode: ${{ env.FUNCTION_FACADE_AUTH_CODE }}
+          E2ETESTS_FunctionAppBaseUrl: ${{ env.FUNCTION_FACADE_SERVER_URL }}
+          E2ETESTS_RunningInCI: true
+          E2ETESTS_RemoteConcentratorConnection: ${{ env.REMOTECONCENTRATORCONNECTION }}
+          E2ETESTS_BasicStationExecutablePath: ${{ env.BASICSTATIONEXECUTABLEPATH }}
+          E2ETESTS_SshPrivateKeyPath: ${{ env.SSHPRIVATEKEYPATH }}
+          E2ETESTS_SharedLnsEndpoint: ${{ env.SHAREDLNSENDPOINT }}
+          E2ETESTS_SharedCupsEndpoint: ${{ env.SHAREDCUPSENDPOINT }}
+          E2ETESTS_DefaultBasicStationEui: ${{ env.DEFAULTCISTATIONEUI }}
+          E2ETESTS_RadioDev: ${{ env.CIBASICSTATIONRADIODEV }}
+          E2ETESTS_CupsBasicStationEui: ${{ env.DEFAULTCUPSSTATIONEUI }}
+          E2ETESTS_IsCorecellBasicStation: false
+          E2ETESTS_ClientThumbprint: ${{ needs.certificates_job.outputs.clientthumbprint }}
+          E2ETESTS_ClientBundleCrc: ${{ needs.certificates_job.outputs.clientbundlecrc }}
+          E2ETESTS_CupsSigKeyChecksum: ${{ needs.certificates_job.outputs.clientsigkeycrc }}
+          E2ETESTS_CupsFwDigest: ${{ needs.certificates_job.outputs.clientfwdigest }}
+          E2ETESTS_CupsBasicStationVersion: "2.0.6(rak833x64/std)"
+          E2ETESTS_CupsBasicStationPackage: ${{ needs.certificates_job.outputs.clientfwversion }}
+          E2ETESTS_CupsFwUrl: ${{ env.CUPSFIRMWAREBLOBURL }}
+          E2ETESTS_TxPower: ${{ needs.env_var.outputs.TxPower }}
 
-    # Builds and runs E2E tests
-    - name: Build E2E tests
-      run: |
-        echo "killing process listening on TCP 6000"
-        sudo lsof -i:6000 -t | xargs -r sudo kill
-        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
+      # Builds and runs E2E tests
+      - name: Build E2E tests
+        run: |
+          echo "killing process listening on TCP 6000"
+          sudo lsof -i:6000 -t | xargs -r sudo kill
+          dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
-    # The tests need to run if:
-    # - In PRs, when DON'T have the matchin test label
-    # - In other runs, all the tests present in env.TestsToRun
-    - name:  Runs SensorDecoding E2E tests
-      if: always() && contains(env.TestsToRun, 'SensorDecodingTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'SensorDecodingTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_sensordecoding
-      with:
-        test_name: 'SensorDecodingTest'
+      # The tests need to run if:
+      # - In PRs, when DON'T have the matchin test label
+      # - In other runs, all the tests present in env.TestsToRun
+      - name: Runs SensorDecoding E2E tests
+        if: always() && contains(env.TestsToRun, 'SensorDecodingTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'SensorDecodingTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_sensordecoding
+        with:
+          test_name: "SensorDecodingTest"
 
-    - name:  Runs OTAAJoin E2E tests
-      if: always() && contains(env.TestsToRun, 'OTAAJoinTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'OTAAJoinTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_otaajointest
-      with:
-        test_name: 'OTAAJoinTest'
+      - name: Runs OTAAJoin E2E tests
+        if: always() && contains(env.TestsToRun, 'OTAAJoinTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'OTAAJoinTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_otaajointest
+        with:
+          test_name: "OTAAJoinTest"
 
-    - name:  Runs ABP E2E tests
-      if: always() && contains(env.TestsToRun, 'ABPTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ABPTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_abptest
-      with:
-        test_name: 'ABPTest'
+      - name: Runs ABP E2E tests
+        if: always() && contains(env.TestsToRun, 'ABPTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ABPTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_abptest
+        with:
+          test_name: "ABPTest"
 
-    - name:  Runs OTAA E2E tests
-      if: always() && contains(env.TestsToRun, 'OTAATest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'OTAATest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_otaatest
-      with:
-        test_name: 'OTAATest'
+      - name: Runs OTAA E2E tests
+        if: always() && contains(env.TestsToRun, 'OTAATest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'OTAATest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_otaatest
+        with:
+          test_name: "OTAATest"
 
-    - name:  Runs MacTest E2E tests
-      if: always() && contains(env.TestsToRun, 'MacTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MacTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_mactest
-      with:
-        test_name: 'MacTest'
+      - name: Runs MacTest E2E tests
+        if: always() && contains(env.TestsToRun, 'MacTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MacTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_mactest
+        with:
+          test_name: "MacTest"
 
-    - name:  Runs ClassC E2E tests
-      if: always() && contains(env.TestsToRun, 'ClassCTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ClassCTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_classctest
-      with:
-        test_name: 'ClassCTest'
+      - name: Runs ClassC E2E tests
+        if: always() && contains(env.TestsToRun, 'ClassCTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ClassCTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_classctest
+        with:
+          test_name: "ClassCTest"
 
-    - name:  Runs C2D E2E tests
-      if: always() && contains(env.TestsToRun, 'C2DMessageTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'C2DMessageTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_c2dctest
-      with:
-        test_name: 'C2DMessageTest'
+      - name: Runs C2D E2E tests
+        if: always() && contains(env.TestsToRun, 'C2DMessageTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'C2DMessageTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_c2dctest
+        with:
+          test_name: "C2DMessageTest"
 
-    - name:  Runs MultiGatewayTest E2E tests
-      if: always() && contains(env.TestsToRun, 'MultiGatewayTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MultiGatewayTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_multigwtest
-      with:
-        test_name: 'MultiGatewayTest'
+      - name: Runs MultiGatewayTest E2E tests
+        if: always() && contains(env.TestsToRun, 'MultiGatewayTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MultiGatewayTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_multigwtest
+        with:
+          test_name: "MultiGatewayTest"
 
-    - name:  Runs MultiConcentrator E2E tests
-      if: always() && contains(env.TestsToRun, 'MultiConcentratorTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MultiConcentratorTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_multiconctest
-      with:
-        test_name: 'MultiConcentratorTest'
+      - name: Runs MultiConcentrator E2E tests
+        if: always() && contains(env.TestsToRun, 'MultiConcentratorTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MultiConcentratorTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_multiconctest
+        with:
+          test_name: "MultiConcentratorTest"
 
-    - name:  Runs CUPS E2E tests
-      if: always() && contains(env.TestsToRun, 'CupsTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'CupsTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_cupstest
-      with:
-        test_name: 'CupsTest'
+      - name: Runs CUPS E2E tests
+        if: always() && contains(env.TestsToRun, 'CupsTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'CupsTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_cupstest
+        with:
+          test_name: "CupsTest"
 
-    - name:  Runs LNS discovery E2E tests
-      if: always() && contains(env.TestsToRun, 'LnsDiscoveryTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'LnsDiscoveryTest'))
-      uses: ./.github/actions/rune2etest
-      id: e2e_tests_lnsdiscoverytest
-      with:
-        test_name: 'LnsDiscoveryTest'
+      - name: Runs LNS discovery E2E tests
+        if: always() && contains(env.TestsToRun, 'LnsDiscoveryTest') && !(github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'LnsDiscoveryTest'))
+        uses: ./.github/actions/rune2etest
+        id: e2e_tests_lnsdiscoverytest
+        with:
+          test_name: "LnsDiscoveryTest"
 
-    # Upload test results as artifact
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: e2e-test-results
-        path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
+      # Upload test results as artifact
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
 
   power_off_azure_vm:
     name: Power OFF EFLOW
