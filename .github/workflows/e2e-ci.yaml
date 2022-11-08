@@ -196,7 +196,7 @@ jobs:
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: $FUNCTION_FACADE_APP_NAME
+          app-name: ${{ env.FUNCTION_FACADE_APP_NAME }}
           package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}output"
 
   build_push_docker_images:
