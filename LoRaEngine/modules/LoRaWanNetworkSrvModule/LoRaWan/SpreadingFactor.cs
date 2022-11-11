@@ -13,6 +13,7 @@ namespace LoRaWan
     /// </summary>
     public enum SpreadingFactor
     {
+        UNDEFINED = -1, // This is the value to be used in Basics Station configuration for skipping a DataRate setting
         SF7 = 7,
         SF8 = 8,
         SF9 = 9,

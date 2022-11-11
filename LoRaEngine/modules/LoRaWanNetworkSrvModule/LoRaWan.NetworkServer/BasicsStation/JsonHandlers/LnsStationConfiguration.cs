@@ -174,9 +174,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
                                                                 select (new Hertz(r[0]), new Hertz(r[1]))),
                               JsonReader.Property("DRs",
-                                  JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.UInt32().Validate(n => n == 0)
+                                  JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.Int32().Validate(n => n == 0)
                                                                                                 select FskSpreadingFactor,
-                                                                                                JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
+                                                                                                JsonReader.Int32().AsEnum(n => unchecked((SpreadingFactor)n))),
                                                                               from n in JsonReader.UInt32()
                                                                               select unchecked((Bandwidth)n),
                                                                               from n in JsonReader.UInt32()
@@ -184,6 +184,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                    select (SpreadingFactor: e.Item1, Bandwidth: e.Item2, DownloadOnly: e.Item3)
                                                    into e
                                                    select e.SpreadingFactor is FskSpreadingFactor ? (FskSpreadingFactor, 0, e.DownloadOnly)
+                                                        : e.SpreadingFactor is SpreadingFactor.UNDEFINED ? (SpreadingFactor.UNDEFINED, 0, e.DownloadOnly)
                                                         : Enum.IsDefined(e.Bandwidth) ? (e.SpreadingFactor, e.Bandwidth, e.DownloadOnly)
                                                         : throw new JsonException($"Invalid bandwidth: {e.Bandwidth}"))),
                               JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
