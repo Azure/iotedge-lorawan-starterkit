@@ -14,7 +14,6 @@ namespace LoRaWan.Tests.Unit
     {
         private static IEnumerable<T> LoRaDataRates<T>(Func<SpreadingFactor, Bandwidth, T> selector) =>
             from sf in Enum.GetValues<SpreadingFactor>()
-            where sf is not SpreadingFactor.UNDEFINED
             from bw in Enum.GetValues<Bandwidth>()
             select selector(sf, bw);
 

@@ -160,6 +160,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// </summary>
         private const SpreadingFactor FskSpreadingFactor = 0;
 
+        /// <summary>
+        /// In the router configuration, you can skip a DataRate setting by specifying a spreading factor of -1.
+        /// </summary>
+        private const SpreadingFactor SkipSpreadingFactor = (SpreadingFactor)(-1);
+
         private static readonly IJsonReader<string> RouterConfigurationConverter =
             JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
                                                                             select new NetId((int)id))),
@@ -174,19 +179,22 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
                                                                 select (new Hertz(r[0]), new Hertz(r[1]))),
                               JsonReader.Property("DRs",
-                                  JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.Int32().Validate(n => n == 0)
-                                                                                                select FskSpreadingFactor,
-                                                                                                JsonReader.Int32().AsEnum(n => unchecked((SpreadingFactor)n))),
+                                  JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.Int32().Validate(n => n is 0 or -1)
+                                                                                                select (SpreadingFactor)n,
+                                                                                                JsonReader.UInt32().AsEnum(n => unchecked((SpreadingFactor)n))),
                                                                               from n in JsonReader.UInt32()
                                                                               select unchecked((Bandwidth)n),
                                                                               from n in JsonReader.UInt32()
                                                                               select n > 0)
                                                    select (SpreadingFactor: e.Item1, Bandwidth: e.Item2, DownloadOnly: e.Item3)
                                                    into e
-                                                   select e.SpreadingFactor is FskSpreadingFactor ? (FskSpreadingFactor, 0, e.DownloadOnly)
-                                                        : e.SpreadingFactor is SpreadingFactor.UNDEFINED ? (SpreadingFactor.UNDEFINED, 0, e.DownloadOnly)
-                                                        : Enum.IsDefined(e.Bandwidth) ? (e.SpreadingFactor, e.Bandwidth, e.DownloadOnly)
-                                                        : throw new JsonException($"Invalid bandwidth: {e.Bandwidth}"))),
+                                                   select e switch
+                                                   {
+                                                       { SpreadingFactor: FskSpreadingFactor } => (e.SpreadingFactor, (Bandwidth)0, e.DownloadOnly),
+                                                       { SpreadingFactor: SkipSpreadingFactor } => (e.SpreadingFactor, (Bandwidth)0, false),
+                                                       _ when Enum.IsDefined(e.Bandwidth) => (e.SpreadingFactor, e.Bandwidth, e.DownloadOnly),
+                                                       _ => throw new JsonException($"Invalid bandwidth: {e.Bandwidth}")
+                                                   })),
                               JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
                               JsonReader.Property("nocca", JsonReader.Boolean()),
                               JsonReader.Property("nodc", JsonReader.Boolean()),
