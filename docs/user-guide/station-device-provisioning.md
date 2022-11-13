@@ -725,7 +725,7 @@ If you don't want to use the LoRa Device Provisioning CLI, in the following sect
                         0
                     ],
                     [
-                        0,
+                        -1,
                         0,
                         0
                     ],
