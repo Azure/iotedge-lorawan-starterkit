@@ -117,6 +117,182 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             'nodc': true,
             'nodwell': true}");
 
+        internal static readonly string ValidUSStationConfiguration =
+            GetTwinConfigurationJson(new[] { new NetId(1) },
+                                     new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                                     "US902",
+                                     "sx1301/1",
+                                     (new Hertz(902000000), new Hertz(928000000)),
+                                     new[]
+                                     {
+                                         (SF10                            , BW125                  , false),
+                                         (SF9                             , BW125                  , false),
+                                         (SF8                             , BW125                  , false),
+                                         (SF7                             , BW125                  , false),
+                                         (SF8                             , BW500                  , false),
+                                         (unchecked((SpreadingFactor)(-1)), unchecked((Bandwidth)0), false),
+                                         (unchecked((SpreadingFactor)(-1)), unchecked((Bandwidth)0), false),
+                                         (unchecked((SpreadingFactor)(-1)), unchecked((Bandwidth)0), false),
+                                         (SF12                            , BW500                  , false),
+                                         (SF11                            , BW500                  , false),
+                                         (SF10                            , BW500                  , false),
+                                         (SF9                             , BW500                  , false),
+                                         (SF8                             , BW500                  , false),
+                                         (SF7                             , BW500                  , false),
+                                     },
+                                     sx1301Conf: JsonUtil.Strictify(/*lang=json*/ @"[{
+                                         'radio_0': {
+                                             'enable': true,
+                                             'freq': 904300000
+                                         },
+                                         'radio_1': {
+                                             'enable': true,
+                                             'freq': 905000000
+                                         },
+                                         'chan_FSK': {
+                                             'enable': true,
+                                             'radio': 1,
+                                             'if': 300000
+                                         },
+                                         'chan_Lora_std': {
+                                             'enable': true,
+                                             'radio': 0,
+                                             'if': 300000,
+                                             'bandwidth': 500000,
+                                             'spread_factor': 8
+                                         },
+                                         'chan_multiSF_0': {
+                                             'enable': true,
+                                             'radio': 0,
+                                             'if': -400000
+                                         },
+                                         'chan_multiSF_1': {
+                                             'enable': true,
+                                             'radio': 0,
+                                             'if': -200000
+                                         },
+                                         'chan_multiSF_2': {
+                                             'enable': true,
+                                             'radio': 0,
+                                             'if': 0
+                                         },
+                                         'chan_multiSF_3': {
+                                             'enable': true,
+                                             'radio': 0,
+                                             'if': 200000
+                                         },
+                                         'chan_multiSF_4': {
+                                             'enable': true,
+                                             'radio': 1,
+                                             'if': -300000
+                                         },
+                                         'chan_multiSF_5': {
+                                             'enable': true,
+                                             'radio': 1,
+                                             'if': -100000
+                                         },
+                                         'chan_multiSF_6': {
+                                             'enable': true,
+                                             'radio': 1,
+                                             'if': 100000
+                                         },
+                                         'chan_multiSF_7': {
+                                             'enable': true,
+                                             'radio': 1,
+                                             'if': 300000
+                                         }
+                                     }]"),
+                                     flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations);
+
+        internal static readonly string ValidUSRouterConfigMessage = JsonUtil.Strictify(/*lang=json*/ @"{
+            'msgtype': 'router_config',
+            'NetID': [1],
+            'JoinEui': [[0, 18446744073709551615]],
+	        'region': 'US902',
+	        'hwspec': 'sx1301/1',
+	        'freq_range': [ 902000000, 928000000 ],
+            'DRs': [ [ 10, 125, 0 ],
+                       [ 9, 125, 0 ],
+                       [ 8, 125, 0 ],
+                       [ 7, 125, 0 ],
+                       [ 8, 500, 0 ],
+                       [ -1, 0, 0 ],
+                       [ -1, 0, 0 ],
+                       [ -1, 0, 0 ],
+                       [ 12, 500, 0 ],
+                       [ 11, 500, 0 ],
+                       [ 10, 500, 0 ],
+                       [ 9, 500, 0 ],
+                       [ 8, 500, 0 ],
+                       [ 7, 500, 0 ]],
+            'sx1301_conf': [
+                        {
+                            'radio_0': {
+                                'enable': true,
+                                'freq': 904300000
+                            },
+                            'radio_1': {
+                                'enable': true,
+                                'freq': 905000000
+                            },
+                            'chan_FSK': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 300000
+                            },
+                            'chan_Lora_std': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 300000,
+                                'bandwidth': 500000,
+                                'spread_factor': 8
+                            },
+                            'chan_multiSF_0': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -400000
+                            },
+                            'chan_multiSF_1': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -200000
+                            },
+                            'chan_multiSF_2': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 0
+                            },
+                            'chan_multiSF_3': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 200000
+                            },
+                            'chan_multiSF_4': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -300000
+                            },
+                            'chan_multiSF_5': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -100000
+                            },
+                            'chan_multiSF_6': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 100000
+                            },
+                            'chan_multiSF_7': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 300000
+                            }
+                        }
+                    ],
+            'nocca': true,
+            'nodc': true,
+            'nodwell': true}");
+
         [Theory]
         [InlineData(null)]
         [InlineData(0)]
@@ -257,6 +433,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         }
 
         [Fact]
+        public void WriteRouterConfig_US()
+        {
+            // act
+            var actual = LnsStationConfiguration.GetConfiguration(ValidUSStationConfiguration);
+
+            // assert
+            Assert.Equal(JsonUtil.Minify(ValidUSRouterConfigMessage), actual);
+        }
+
+        [Fact]
         public void WriteRouterConfigWithBcning()
         {
             var ValidStationConfigurationWithBcning =
@@ -277,7 +463,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
                                      includeBcning: true,
                                      flags: RouterConfigStationFlags.NoClearChannelAssessment | RouterConfigStationFlags.NoDutyCycle | RouterConfigStationFlags.NoDwellTimeLimitations) ;
 
-        var ValidRouterConfigMessageWithBcning = JsonUtil.Strictify(@"{
+        var ValidRouterConfigMessageWithBcning = JsonUtil.Strictify(/*lang=json*/ @"{
             'msgtype': 'router_config',
             'NetID': [1],
             'JoinEui': [[0, 18446744073709551615]],
@@ -583,14 +769,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [Fact]
         public void RegionConfigurationConverter_Throws_OnEmptyRegion()
         {
-            var config = JsonUtil.Strictify(@"{'region':''}");
+            var config = JsonUtil.Strictify(/*lang=json*/ @"{'region':''}");
             Assert.Throws<JsonException>(() => _ = LnsStationConfiguration.GetRegion(config));
         }
 
         [Fact]
         public void RegionConfigurationConverter_Throws_OnNotSetRegion()
         {
-            var config = JsonUtil.Strictify(@"{'region':'NotSet'}");
+            var config = JsonUtil.Strictify(/*lang=json*/ @"{'region':'NotSet'}");
             Assert.Throws<NotSupportedException>(() => _ = LnsStationConfiguration.GetRegion(config));
         }
 
