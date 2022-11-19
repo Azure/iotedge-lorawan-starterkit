@@ -114,7 +114,7 @@ jobs:
         run: |
           dotnet publish LoRaEngine/LoraKeysManagerFacade -c Release
           FUNCTION_ZIP=function-${VERSION}.zip
-          cd LoRaEngine/LoraKeysManagerFacade/bin/Release/net${DOTNET_VERSION%??} && zip -r $FUNCTION_ZIP .
+          cd LoRaEngine/LoraKeysManagerFacade/bin/Release/net${DOTNET_VERSION%??} && zip -r $FUNCTION_ZIP . && mv $FUNCTION_ZIP ../../../../..
           # Define FUNCTION_ZIP env var for next steps.
           echo "FUNCTION_ZIP=$FUNCTION_ZIP" >> $GITHUB_ENV
       - name: Package Discovery Service
