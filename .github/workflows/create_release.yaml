@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: 'The release version, for example 2.0.0.'
+        description: "The release version, for example 2.0.0."
         required: true
 
 env:
   VERSION: ${{ inputs.releaseVersion }}
-  DOTNET_VERSION: '6.0.x'
+  DOTNET_VERSION: "6.0.x"
 
 jobs:
   BuildAndPushDockerImages:
@@ -42,7 +42,7 @@ jobs:
           docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
     env:
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}
-      
+
   CreatePRToUpdateDoc:
     runs-on: ubuntu-latest
     steps:
@@ -69,7 +69,7 @@ jobs:
         run: |
           gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" --title "$DESCRIPTION" \
           --body "$DESCRIPTION"
-        env: 
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreatePRToUpdateBicep:
@@ -98,7 +98,7 @@ jobs:
         run: |
           gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base dev --title "$DESCRIPTION" \
           --body "$DESCRIPTION"
-        env: 
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateDraftRelease:
@@ -108,15 +108,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3.0.3
-        with: 
+        with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Package Azure Function
         run: |
           dotnet publish LoRaEngine/LoraKeysManagerFacade -c Release
           FUNCTION_ZIP=function-${VERSION}.zip
-          zip -r $FUNCTION_ZIP LoRaEngine/LoraKeysManagerFacade/bin/Release/net${DOTNET_VERSION%??}
+          cd LoRaEngine/LoraKeysManagerFacade/bin/Release/net${DOTNET_VERSION%??} && zip -r $FUNCTION_ZIP .
           # Define FUNCTION_ZIP env var for next steps.
-          echo "FUNCTION_ZIP=$FUNCTION_ZIP" >> $GITHUB_ENV
+          echo "FUNCTION_ZIP=LoRaEngine/LoraKeysManagerFacade/bin/Release/net${DOTNET_VERSION%??}/$FUNCTION_ZIP" >> $GITHUB_ENV
       - name: Package Discovery Service
         run: |
           dotnet publish LoRaEngine/modules/LoRaWan.NetworkServerDiscovery/LoRaWan.NetworkServerDiscovery.csproj -c Release
@@ -125,14 +125,14 @@ jobs:
           zip -r $DISCOVERY_SERVICE_ZIP $PUBLISH_FOLDER
           # Define DISCOVERY_SERVICE_ZIP env var for next steps.
           echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
-      - name: Update the default LoRaWAN Starter Kit version to use in Bicep. 
+      - name: Update the default LoRaWAN Starter Kit version to use in Bicep.
         run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Generate ARM file
         working-directory: TemplateBicep
         run: az bicep build --file main.bicep --outfile $ARM_FILE
       - name: Compile provisioning CLI for different platform
         working-directory: Tools/Cli-LoRa-Device-Provisioning
-        shell: pwsh 
+        shell: pwsh
         run: pwsh BuildForRelease.ps1
       - name: Create Draft release
         run: |
@@ -145,6 +145,7 @@ jobs:
             --title "Release v$VERSION" --draft --repo ${{ github.repository }} --notes ""
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    needs: [BuildAndPushDockerImages, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
+    needs:
+      [BuildAndPushDockerImages, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
     env:
       ARM_FILE: azuredeploy.json
