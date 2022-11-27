@@ -84,8 +84,7 @@ jobs:
         run: |
           sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Generate ARM file
-        working-directory: TemplateBicep
-        run: az bicep build --file BicepTemplate/main.bicep --outfile $ARM_FILE
+        run: az bicep build --file TemplateBicep/main.bicep --outfile $ARM_FILE
       - name: Set up git user using the built-in token
         run: |
           git config user.name github-actions
@@ -98,6 +97,7 @@ jobs:
           echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
           git checkout -b $BRANCH_NAME
           git add TemplateBicep/main.bicep
+          git add $ARM_FILE
           git commit -m "$DESCRIPTION"
           git push --set-upstream origin $BRANCH_NAME
       - name: Create pull request
