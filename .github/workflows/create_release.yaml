@@ -78,8 +78,7 @@ jobs:
       ARM_FILE: Template/azuredeploy.json
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: dev
+
       - name: Update the default LoRaWAN Starter Kit version to use in Bicep.
         run: |
           sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
