@@ -165,19 +165,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// </summary>
         private const SpreadingFactor SkipSpreadingFactor = (SpreadingFactor)(-1);
 
+        private static readonly IJsonReader<JoinEui> JoinEuiReader = from eui in JsonReader.String() select JoinEui.Parse(eui);
+        private static readonly IJsonReader<Hertz> HertzReader = from n in JsonReader.UInt32() select new Hertz(n);
+
         private static readonly IJsonReader<string> RouterConfigurationConverter =
             JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
                                                                             select new NetId((int)id))),
-                              JsonReader.Property("JoinEui",
-                                                  JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
-                                                                                                select JoinEui.Parse(eui))
-                                                                   select (arr[0], arr[1]))
-                                                            .OrNull(),
+                              JsonReader.Property("JoinEui", JsonReader.Array(JsonReader.Tuple(JoinEuiReader, JoinEuiReader))
+                                                                       .OrNull(),
                                                   (true, Array.Empty<(JoinEui, JoinEui)>())),
                               JsonReader.Property("region", JsonReader.String()),
                               JsonReader.Property("hwspec", JsonReader.String()),
-                              JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
-                                                                select (new Hertz(r[0]), new Hertz(r[1]))),
+                              JsonReader.Property("freq_range", JsonReader.Tuple(HertzReader, HertzReader)),
                               JsonReader.Property("DRs",
                                   JsonReader.Array(from e in JsonReader.Tuple(JsonReader.Either(from n in JsonReader.Int32().Validate(n => n is 0 or -1)
                                                                                                 select (SpreadingFactor)n,
