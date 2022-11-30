@@ -29,6 +29,7 @@
       <PrometheusNetVersion>7.0.0</PrometheusNetVersion>
       <AzureIdentityVersion>1.7.0</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
+      <JacobVersion>0.5.0</JacobVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.12</DockerDotnetVersion>
