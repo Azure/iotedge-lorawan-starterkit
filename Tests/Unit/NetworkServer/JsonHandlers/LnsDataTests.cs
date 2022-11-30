@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Text.Json;
-    using global::LoRaTools;
     using Jacob;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
