@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
+    <PackageReference Include="Jacob" Version="0.5.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(ApplicationInsightsVersion)" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="$(PrometheusNetVersion)" />
   </ItemGroup>

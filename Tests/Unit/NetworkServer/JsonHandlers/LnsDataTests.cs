@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
     using System;
     using System.Text.Json;
     using global::LoRaTools;
+    using Jacob;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using LoRaWan.Tests.Common;
@@ -87,37 +88,35 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
             Assert.Equal(9, updf.RadioMetadata.UpInfo.SignalNoiseRatio);
         }
 
-        private const string GeneralJsonErrorMessage = "Exception of type 'System.Text.Json.JsonException' was thrown.";
-
         [Theory]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData("Invalid JSON value; expecting a JSON number compatible with Byte. See token \"Number\" at offset 25.",
                     @"{ 'msgtype': 'updf', 'MHdr': 300, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value; expecting a JSON number compatible with UInt32. See token ""Number"" at offset 39.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': -58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value; expecting a JSON number compatible with Byte. See token ""Number"" at offset 56.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 300, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value; expecting a JSON number compatible with UInt16. See token ""Number"" at offset 65.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': -164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Number"" at offset 77.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': 5, 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData("Invalid value in JSON: 300",
+        [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""PropertyName"" at offset 92.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 300, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Number"" at offset 103.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': 5, 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value; expecting a JSON number compatible with Int32. See token ""Number"" at offset 118.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData("Invalid value in JSON: -2",
+        [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""PropertyName"" at offset 91.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(GeneralJsonErrorMessage,
+        [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Null"" at offset 104.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': null, 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"""FRMPayload"" without an ""FPort"" is forbidden.",

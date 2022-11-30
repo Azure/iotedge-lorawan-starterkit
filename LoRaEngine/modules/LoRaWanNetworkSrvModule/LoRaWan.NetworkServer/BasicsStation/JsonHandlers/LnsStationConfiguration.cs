@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System.Linq;
     using System.Text;
     using System.Text.Json;
-    using LoRaTools;
+    using Jacob;
     using LoRaTools.Regions;
 
     internal static class LnsStationConfiguration
@@ -169,10 +169,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
                                                                             select new NetId((int)id))),
                               JsonReader.Property("JoinEui",
-                                                  JsonReader.Either(JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
-                                                                                                                  select JoinEui.Parse(eui))
-                                                                                     select (arr[0], arr[1])),
-                                                                    JsonReader.Null<(JoinEui, JoinEui)[]>()),
+                                                  JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
+                                                                                                select JoinEui.Parse(eui))
+                                                                   select (arr[0], arr[1]))
+                                                            .OrNull(),
                                                   (true, Array.Empty<(JoinEui, JoinEui)>())),
                               JsonReader.Property("region", JsonReader.String()),
                               JsonReader.Property("hwspec", JsonReader.String()),

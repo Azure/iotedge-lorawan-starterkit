@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
+    <PackageReference Include="Jacob" Version="0.5.0" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="$(MicrosoftAzureDevicesClientVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsVersion)" />
@@ -19,21 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LoRaWan\LoRaWan.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="JsonReader.g.cs">
-      <DependentUpon>JsonReader.g.tt</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="JsonReader.g.tt">
-      <LastGenOutput>JsonReader.g.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
