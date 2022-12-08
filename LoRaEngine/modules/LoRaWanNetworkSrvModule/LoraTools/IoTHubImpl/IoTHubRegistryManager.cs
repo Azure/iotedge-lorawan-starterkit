@@ -83,6 +83,9 @@ namespace LoRaTools.IoTHubImpl
             return new IoTHubLoRaDeviceTwinPageResult(q);
         }
 
+        public async Task<IStationTwin> GetStationTwinAsync(StationEui stationEui, CancellationToken? cancellationToken = null)
+             => new IoTHubStationTwin(await this.instance.GetTwinAsync(stationEui.ToString(), cancellationToken ?? CancellationToken.None));
+
         public IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime)
         {
             var formattedDateTime = lastUpdateDateTime.ToString(Constants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
