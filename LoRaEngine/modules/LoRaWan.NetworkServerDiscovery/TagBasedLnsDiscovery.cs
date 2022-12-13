@@ -10,7 +10,6 @@ namespace LoRaWan.NetworkServerDiscovery
     using LoRaTools;
     using LoRaTools.IoTHubImpl;
     using LoRaTools.NetworkServerDiscovery;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Caching.Memory;
@@ -20,7 +19,6 @@ namespace LoRaWan.NetworkServerDiscovery
     {
         private const string IotHubConnectionStringName = "IotHub";
         private const string HostName = "IotHubHostName";
-        private const string NetworkTagName = "network";
         private const string LnsByNetworkCacheKey = "LnsUriByNetwork";
         private const string NetworkByStationCacheKey = "NetworkByStation";
 
@@ -80,25 +78,22 @@ namespace LoRaWan.NetworkServerDiscovery
                                        _ =>
                                        {
                                            this.logger.LogInformation("Loaded twin for station '{Station}'", stationEui);
-                                           return this.registryManager.GetTwinAsync(stationEui.ToString(), cancellationToken);
+                                           return this.registryManager.GetStationTwinAsync(stationEui, cancellationToken);
                                        },
                                        null, cancellationToken);
 
             if (twin is null)
                 throw new LoRaProcessingException($"Could not find twin for station '{stationEui}'", LoRaProcessingErrorCode.TwinFetchFailed);
 
-            var reader = new TwinCollectionReader(twin.Tags, this.logger);
-            var networkId = reader.ReadRequiredString(NetworkTagName);
-
             // Protect against SQL injection.
-            if (networkId.Any(n => !char.IsLetterOrDigit(n)))
+            if (twin.NetworkId.Any(n => !char.IsLetterOrDigit(n)))
                 throw new LoRaProcessingException("Network ID may not be empty and only contain alphanumeric characters.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
 
             var lnsUris = await GetOrCreateAsync(
-                $"{LnsByNetworkCacheKey}:{networkId}",
+                $"{LnsByNetworkCacheKey}:{twin.NetworkId}",
                 async _ =>
                 {
-                    var query = this.registryManager.FindLnsByNetworkId(networkId);
+                    var query = this.registryManager.FindLnsByNetworkId(twin.NetworkId);
                     var results = new List<Uri>();
                     var parseFailures = new List<string>();
                     while (query.HasMoreResults)
@@ -115,10 +110,10 @@ namespace LoRaWan.NetworkServerDiscovery
                                                           .Select(r => r.DeviceId));
                     }
 
-                    this.logger.LogInformation("Loaded {Count} LNS candidates for network '{NetworkId}'", results.Count, networkId);
+                    this.logger.LogInformation("Loaded {Count} LNS candidates for network '{NetworkId}'", results.Count, twin.NetworkId);
 
                     if (parseFailures.Count > 0)
-                        this.logger.LogWarning("The following LNS in network '{NetworkId}' have a misconfigured host address: {DeviceIds}.", networkId, string.Join(',', parseFailures));
+                        this.logger.LogWarning("The following LNS in network '{NetworkId}' have a misconfigured host address: {DeviceIds}.", twin.NetworkId, string.Join(',', parseFailures));
 
                     // Also cache if no LNS URIs are found for the given network.
                     // This makes sure that rogue LBS do not cause too many registry operations.
@@ -128,7 +123,7 @@ namespace LoRaWan.NetworkServerDiscovery
                 cancellationToken);
 
             if (lnsUris.Count == 0)
-                throw new LoRaProcessingException($"No LNS found in network '{networkId}'.", LoRaProcessingErrorCode.LnsDiscoveryFailed);
+                throw new LoRaProcessingException($"No LNS found in network '{twin.NetworkId}'.", LoRaProcessingErrorCode.LnsDiscoveryFailed);
 
             lock (this.lastLnsUriByStationIdLock)
             {
@@ -142,6 +137,11 @@ namespace LoRaWan.NetworkServerDiscovery
         /// Unifies all cache operations by setting the same absolute expiration on all cache entries.
         /// By passing a semaphore it serializes all cache operations to avoid having two concurrent requests to the registry for the same operation.
         /// </summary>
+        /// <typeparam name="TItem"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="factory"></param>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellationToken"></param>
         private async Task<TItem> GetOrCreateAsync<TItem>(string key, Func<ICacheEntry, Task<TItem>> factory, SemaphoreSlim? semaphore, CancellationToken cancellationToken)
         {
             if (semaphore is { } someSemaphore)
