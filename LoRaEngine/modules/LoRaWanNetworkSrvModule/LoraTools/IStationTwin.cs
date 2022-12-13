@@ -3,14 +3,8 @@
 
 namespace LoRaTools
 {
-    using Microsoft.Azure.Devices.Shared;
-
-    public interface IDeviceTwin
+    public interface IStationTwin : IDeviceTwin
     {
-        string DeviceId { get; }
-
-        string ETag { get; }
-
-        TwinProperties Properties { get; }
+        string NetworkId { get; }
     }
 }
