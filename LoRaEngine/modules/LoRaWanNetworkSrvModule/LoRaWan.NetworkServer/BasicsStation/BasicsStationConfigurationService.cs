@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools;
+    using Jacob;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;

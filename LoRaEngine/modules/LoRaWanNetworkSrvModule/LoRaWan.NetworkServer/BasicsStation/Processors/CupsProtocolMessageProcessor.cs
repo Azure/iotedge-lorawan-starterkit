@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools;
+    using Jacob;
     using LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;

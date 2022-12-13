@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Common
     using System.Text.Json.Serialization;
     using System.Threading;
     using System.Threading.Tasks;
+    using Jacob;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;

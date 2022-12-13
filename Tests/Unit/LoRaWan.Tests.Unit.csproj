@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="$(BogusVersion)" />
+    <PackageReference Include="Jacob" Version="$(JacobVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
     <PackageReference Include="morelinq" Version="3.3.2" />

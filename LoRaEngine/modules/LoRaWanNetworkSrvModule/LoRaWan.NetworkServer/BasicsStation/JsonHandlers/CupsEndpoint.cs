@@ -7,20 +7,20 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Collections.Immutable;
-    using LoRaTools;
+    using Jacob;
 
     public static class CupsEndpoint
     {
         internal static readonly IJsonReader<CupsUpdateInfoRequest> UpdateRequestReader =
             JsonReader.Object(JsonReader.Property("router", from s in JsonReader.String()
                                                             select StationEui.Parse(s)),
-                              JsonReader.Property("cupsUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                              JsonReader.Property("cupsUri", from s in JsonReader.String().OrNull()
                                                              select string.IsNullOrEmpty(s) ? null : new Uri(s)),
-                              JsonReader.Property("tcUri", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                              JsonReader.Property("tcUri", from s in JsonReader.String().OrNull()
                                                            select string.IsNullOrEmpty(s) ? null : new Uri(s)),
                               JsonReader.Property("cupsCredCrc", JsonReader.UInt32()),
                               JsonReader.Property("tcCredCrc", JsonReader.UInt32()),
-                              JsonReader.Property("package", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                              JsonReader.Property("package", from s in JsonReader.String().OrNull()
                                                              select string.IsNullOrEmpty(s) ? null : s),
                               JsonReader.Property("keys", JsonReader.Array(JsonReader.UInt32())),
                               (r, c, t, cc, tc, p, k) => new CupsUpdateInfoRequest(r, c, t, cc, tc, p, k.ToImmutableArray()));
