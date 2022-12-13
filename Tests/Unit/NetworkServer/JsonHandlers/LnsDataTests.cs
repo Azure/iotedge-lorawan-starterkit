@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Number"" at offset 77.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': 5, 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""PropertyName"" at offset 92.",
+        [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""Number"" at offset 88.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 300, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Number"" at offset 103.",
@@ -112,7 +112,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [InlineData(@"Invalid JSON value; expecting a JSON number compatible with Int32. See token ""Number"" at offset 118.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
-        [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""PropertyName"" at offset 91.",
+        [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""Number"" at offset 88.",
                     @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Null"" at offset 104.",
