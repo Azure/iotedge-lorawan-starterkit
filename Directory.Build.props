@@ -41,7 +41,7 @@
       <MicrosoftExtensionsConfigurationBinderVersion>6.0.0</MicrosoftExtensionsConfigurationBinderVersion>
       <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.1</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
       <MicrosoftExtensionsConfigurationJsonVersion>6.0.0</MicrosoftExtensionsConfigurationJsonVersion>
-      <SystemIOPortsVersion>6.0.0</SystemIOPortsVersion>
+      <SystemIOPortsVersion>7.0.0</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.5</XUnitRunnerVisualStudio>
       <CoverletMSBuild>3.2.0</CoverletMSBuild>
       <MicrosoftExtensionsLogging>6.0.0</MicrosoftExtensionsLogging>
