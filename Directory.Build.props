@@ -16,7 +16,7 @@
       <MicrosoftAzureDevicesClientVersion>1.41.2</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>6.0.1</MicrosoftExtensionsCachingMemoryVersion>
       <MicrosoftAzureFunctionsExtensionsVersion>1.1.0</MicrosoftAzureFunctionsExtensionsVersion>
-      <MicrosoftExtensionsDependencyInjectionVersion>6.0.1</MicrosoftExtensionsDependencyInjectionVersion>
+      <MicrosoftExtensionsDependencyInjectionVersion>7.0.0</MicrosoftExtensionsDependencyInjectionVersion>
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
       <MicrosoftNETSdkFunctionsVersion>4.1.3</MicrosoftNETSdkFunctionsVersion>
