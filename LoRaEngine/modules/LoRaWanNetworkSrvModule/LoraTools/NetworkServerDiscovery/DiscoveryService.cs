@@ -12,6 +12,7 @@ namespace LoRaTools.NetworkServerDiscovery
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+    using Jacob;
     using LoRaTools;
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
