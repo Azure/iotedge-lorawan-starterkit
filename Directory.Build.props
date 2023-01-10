@@ -20,7 +20,7 @@
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
       <MicrosoftNETSdkFunctionsVersion>4.1.3</MicrosoftNETSdkFunctionsVersion>
-      <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
+      <NewtonsoftJsonVersion>13.0.2</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.6.70</StackExchangeRedisVersion>
