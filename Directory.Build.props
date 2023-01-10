@@ -23,7 +23,7 @@
       <NewtonsoftJsonVersion>13.0.2</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
-      <StackExchangeRedisVersion>2.6.70</StackExchangeRedisVersion>
+      <StackExchangeRedisVersion>2.6.86</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.21.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>7.0.0</PrometheusNetVersion>
