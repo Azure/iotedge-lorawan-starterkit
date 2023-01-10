@@ -11,7 +11,9 @@ namespace LoRaTools.Regions
     using Microsoft.Extensions.Logging;
     using static LoRaWan.RxDelay;
 
+#pragma warning disable CA1724
     public abstract class Region
+#pragma warning restore CA1724
     {
         public LoRaRegionType LoRaRegion { get; set; }
 
