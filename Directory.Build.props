@@ -27,7 +27,7 @@
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.21.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>7.0.0</PrometheusNetVersion>
-      <AzureIdentityVersion>1.8.0</AzureIdentityVersion>
+      <AzureIdentityVersion>1.8.1</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
       <JacobVersion>0.6.0</JacobVersion>
     </PropertyGroup>
