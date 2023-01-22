@@ -1,9 +1,14 @@
----
+---How to access he lorawan command line interface?---
 hide:
   - toc
 ---
 
 # LBS IoT Edge Module configuration
+#commands for setting each environment variables
+
+Tc_URI       
+              
+CUPS_URI                   
 
 The following table is providing a list of configuration options, to be provided as environment variables for manual configuration of the `LoRaBasicsStationModule`:
 
