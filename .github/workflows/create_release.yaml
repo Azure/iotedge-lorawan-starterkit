@@ -74,12 +74,17 @@ jobs:
 
   CreatePRToUpdateBicep:
     runs-on: ubuntu-latest
+    env:
+      ARM_FILE: Template/azuredeploy.json
     steps:
       - uses: actions/checkout@v3
         with:
           ref: dev
       - name: Update the default LoRaWAN Starter Kit version to use in Bicep.
-        run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
+        run: |
+          sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
+      - name: Generate ARM file
+        run: az bicep build --file TemplateBicep/main.bicep --outfile $ARM_FILE
       - name: Set up git user using the built-in token
         run: |
           git config user.name github-actions
@@ -87,11 +92,12 @@ jobs:
       - name: Create branch
         run: |
           BRANCH_NAME="feature/update-version-${VERSION}-${{ github.run_id }}"
-          DESCRIPTION="Update the default LoRaWAN Starter Kit version to use in Bicep with version $VERSION."
+          DESCRIPTION="Update the default LoRaWAN Starter Kit version to use in Bicep and ARM with version $VERSION."
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
           git checkout -b $BRANCH_NAME
           git add TemplateBicep/main.bicep
+          git add $ARM_FILE
           git commit -m "$DESCRIPTION"
           git push --set-upstream origin $BRANCH_NAME
       - name: Create pull request
@@ -127,9 +133,6 @@ jobs:
           echo "DISCOVERY_SERVICE_ZIP=$DISCOVERY_SERVICE_ZIP" >> $GITHUB_ENV
       - name: Update the default LoRaWAN Starter Kit version to use in Bicep.
         run: sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
-      - name: Generate ARM file
-        working-directory: TemplateBicep
-        run: az bicep build --file main.bicep --outfile $ARM_FILE
       - name: Compile provisioning CLI for different platform
         working-directory: Tools/Cli-LoRa-Device-Provisioning
         shell: pwsh
@@ -137,7 +140,7 @@ jobs:
       - name: Create Draft release
         run: |
           CLI_RELEASE_PATH=Tools/Cli-LoRa-Device-Provisioning/LoRaWan.Tools.CLI/bin/Release/net${DOTNET_VERSION%??}
-          gh release create v$VERSION TemplateBicep/$ARM_FILE $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
+          gh release create v$VERSION $FUNCTION_ZIP $DISCOVERY_SERVICE_ZIP \
           $CLI_RELEASE_PATH/linux-x64/lora-cli.linux-x64.tar.gz \
           $CLI_RELEASE_PATH/linux-musl-x64/lora-cli.linux-musl-x64.tar.gz \
           $CLI_RELEASE_PATH/win-x64/lora-cli.win-x64.zip \
@@ -147,5 +150,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     needs:
       [BuildAndPushDockerImages, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
-    env:
-      ARM_FILE: azuredeploy.json
