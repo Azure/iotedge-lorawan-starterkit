@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Text.Json;
-    using LoRaTools;
+    using Jacob;
 
     public static class LnsData
     {
@@ -34,7 +34,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         internal static readonly IJsonReader<(string Station, string Package)> VersionMessageReader =
             JsonReader.Object(JsonReader.Property("station", JsonReader.String()),
-                              JsonReader.Property("package", from s in JsonReader.Either(JsonReader.String(), JsonReader.Null<string>())
+                              JsonReader.Property("package", from s in JsonReader.String().OrNull()
                                                              select string.IsNullOrEmpty(s) ? string.Empty : s),
                               (s, p) => (s, p));
 
@@ -102,7 +102,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("FPort", JsonReader.Either(from n in JsonReader.Byte()
                                                                              select (FramePort?)n,
                                                                              from _ in JsonReader.Int32().Validate(n => n == -1)
-                                                                             select (FramePort?)null)),
+                                                                             select (FramePort?)null,
+                                                                             "Invalid FPort in JSON, which must be either -1 or 0..255.")),
                               JsonReader.Property("FRMPayload", JsonReader.String()),
                               MicProperty,
                               RadioMetadataProperties.DataRate,

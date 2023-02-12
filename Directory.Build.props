@@ -20,20 +20,21 @@
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
       <MicrosoftNETSdkFunctionsVersion>4.1.3</MicrosoftNETSdkFunctionsVersion>
-      <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
+      <NewtonsoftJsonVersion>13.0.2</NewtonsoftJsonVersion>
       <PortableBouncyCastleVersion>1.9.0</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.6.70</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
       <ApplicationInsightsVersion>2.21.0</ApplicationInsightsVersion>
       <PrometheusNetVersion>7.0.0</PrometheusNetVersion>
-      <AzureIdentityVersion>1.7.0</AzureIdentityVersion>
+      <AzureIdentityVersion>1.8.0</AzureIdentityVersion>
       <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
+      <JacobVersion>0.6.0</JacobVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.12</DockerDotnetVersion>
-      <MicrosoftNETTestSdkVersion>17.3.2</MicrosoftNETTestSdkVersion>
-      <MoqVersion>4.18.2</MoqVersion>
+      <MicrosoftNETTestSdkVersion>17.4.1</MicrosoftNETTestSdkVersion>
+      <MoqVersion>4.18.4</MoqVersion>
       <XUnitVersion>2.4.2</XUnitVersion>
       <XunitCombinatorialVersion>1.5.25</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.1</MicrosoftExtensionsConfigurationVersion>
@@ -47,7 +48,7 @@
       <MicrosoftExtensionsLoggingConfiguration>6.0.0</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>34.0.2</BogusVersion>
       <NullablePkg>1.3.0</NullablePkg>
-      <MicrosoftAspNetCoreMvcTestingVersion>6.0.10</MicrosoftAspNetCoreMvcTestingVersion>
+      <MicrosoftAspNetCoreMvcTestingVersion>6.0.13</MicrosoftAspNetCoreMvcTestingVersion>
       <AzureMessagingEventHubsVersion>5.7.3</AzureMessagingEventHubsVersion>
     </PropertyGroup>
 
