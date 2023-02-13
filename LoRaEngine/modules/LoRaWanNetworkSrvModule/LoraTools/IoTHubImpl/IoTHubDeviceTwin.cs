@@ -14,6 +14,8 @@ namespace LoRaTools.IoTHubImpl
 
         public IoTHubDeviceTwin(Twin twin)
         {
+            ArgumentNullException.ThrowIfNull(twin, nameof(twin));
+
             this.TwinInstance = twin;
             this.Properties = new IoTHubTwinPropertiesContainer(twin);
         }
