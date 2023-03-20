@@ -717,7 +717,7 @@ jobs:
           type: add
 
       # Upload simulated cloud results as artifact
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: simulated-cloud-test-results
