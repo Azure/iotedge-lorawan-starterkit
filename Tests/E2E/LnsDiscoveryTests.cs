@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.E2E
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using Jacob;
     using LoRaTools;
     using LoRaWan.Tests.Common;
     using Microsoft.AspNetCore.Mvc.Testing;

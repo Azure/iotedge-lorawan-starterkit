@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using Jacob;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.NetworkServerDiscovery;
