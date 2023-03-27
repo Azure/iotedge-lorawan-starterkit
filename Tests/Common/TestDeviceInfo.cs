@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Common
 {
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Text.Json.Serialization;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using static ReceiveWindowNumber;
@@ -60,7 +61,8 @@ namespace LoRaWan.Tests.Common
 
         public bool Supports32BitFCnt { get; set; }
 
-        public DeduplicationMode Deduplication { get; set; } = DeduplicationMode.Drop; // default to drop
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public DeduplicationMode Deduplication { get; set; } = DeduplicationMode.Drop;
 
         public ushort RXDelay { get; set; }
 
