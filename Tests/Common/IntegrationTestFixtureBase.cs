@@ -8,6 +8,8 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Linq;
     using System.Text;
+    using System.Text.Json;
+    using System.Text.Json.Nodes;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.CommonAPI;
@@ -17,8 +19,6 @@ namespace LoRaWan.Tests.Common
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using Xunit;
 
     /// <summary>
@@ -130,7 +130,7 @@ namespace LoRaWan.Tests.Common
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
         {
-            using var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
+            using var msg = new Message(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message)))
             {
                 ExpiryTimeUtc = DateTime.UtcNow.AddMinutes(C2dExpiryTime)
             };
@@ -312,11 +312,9 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
-            if (getDeviceResult == null)
-                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            _ = await registryManager.GetTwinAsync(stationDeviceId) ?? throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
-            var initialClientThumbprints = ((JArray)deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName]).ToObject<string[]>();
+            var initialClientThumbprints = JsonObject.Create(deviceTwin.Properties.Desired[BasicsStationConfigurationService.ClientThumbprintPropertyName]).AsArray();
             if (condition(initialClientThumbprints))
             {
                 var arrayToList = new List<string>(initialClientThumbprints);
@@ -331,17 +329,15 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
-            if (getDeviceResult == null)
-                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            _ = await registryManager.GetTwinAsync(stationDeviceId) ?? throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
-            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            var newCupsInfo = JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson) with
             {
                 TcCredCrc = crc,
                 CupsCredCrc = crc,
             };
-            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
+            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JsonSerializer.SerializeToElement(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }
 
@@ -350,19 +346,17 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"Updating IoT Hub twin for fw upgrades of concentrator {stationEui}...");
             var registryManager = GetRegistryManager();
             var stationDeviceId = GetDeviceId(stationEui);
-            var getDeviceResult = await registryManager.GetTwinAsync(stationDeviceId);
-            if (getDeviceResult == null)
-                throw new InvalidOperationException("Concentrator should exist in IoT Hub");
+            _ = await registryManager.GetTwinAsync(stationDeviceId) ?? throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
             var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
-            var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
+            var newCupsInfo = JsonSerializer.Deserialize<CupsTwinInfo>(cupsJson) with
             {
                 FwKeyChecksum = crc,
                 FwSignatureInBase64 = digestBase64String,
                 Package = package,
                 FwUrl = new Uri(fwUrl.GetLeftPart(UriPartial.Path)) // the GetLeftPart is useful to exclude any potential SAS token stored in the original variable
             };
-            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JObject.FromObject(newCupsInfo);
+            deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName] = JsonSerializer.SerializeToElement(newCupsInfo);
             await registryManager.UpdateTwinAsync(stationDeviceId, deviceTwin, deviceTwin.ETag);
         }
 
@@ -386,7 +380,7 @@ namespace LoRaWan.Tests.Common
                 {
                     TestLogger.Log($"Device {testDevice.DeviceID} does not exist. Creating");
                     var twin = new Twin(testDevice.DeviceID);
-                    twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
+                    twin.Properties.Desired = new TwinCollection(JsonSerializer.Serialize(testDevice.GetDesiredProperties()));
 
                     TestLogger.Log($"Creating device {testDevice.DeviceID}");
                     await registryManager.AddDeviceAsync(new IoTHubDeviceTwin(twin));
@@ -416,7 +410,7 @@ namespace LoRaWan.Tests.Common
                             TestLogger.Log($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{existingValue}'");
 
                             var patch = new Twin();
-                            patch.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(desiredProperties));
+                            patch.Properties.Desired = new TwinCollection(JsonSerializer.Serialize(desiredProperties));
                             await registryManager.UpdateTwinAsync(testDevice.DeviceID, new IoTHubDeviceTwin(patch), deviceTwin.ETag);
                             TestLogger.Log($"Update twin for device {testDevice.DeviceID}");
                             break;
