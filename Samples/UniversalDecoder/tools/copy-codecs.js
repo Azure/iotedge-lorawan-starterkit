@@ -18,6 +18,7 @@ const index = glob.sync(`**/*`,
       '**/*.jpg',
       '**/*.png',
       '**/*.svg',
+      '**/decoderpir.js'
     ]
   }).map(f => {
     const srcPath = `${srcDir}/${f}`;
