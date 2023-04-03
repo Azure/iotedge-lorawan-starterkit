@@ -61,14 +61,14 @@ namespace LoRaWan.Tests.E2E
             Assert.NotNull(twinAfterJoin.Properties.Reported);
             try
             {
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("FCntUp"), "Property FCntUp does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("FCntDown"), "Property FCntDown does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("NetId"), "Property NetId does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("DevAddr"), "Property DevAddr does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("DevNonce"), "Property DevNonce does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("NwkSKey"), "Property NwkSKey does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("AppSKey"), "Property AppSKey does not exist");
-                Assert.True(twinAfterJoin.Properties.Reported.Contains("DevEUI"), "Property DevEUI does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("FCntUp"), "Property FCntUp does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("FCntDown"), "Property FCntDown does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("NetId"), "Property NetId does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("DevAddr"), "Property DevAddr does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("DevNonce"), "Property DevNonce does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("NwkSKey"), "Property NwkSKey does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("AppSKey"), "Property AppSKey does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.ContainsKey("DevEUI"), "Property DevEUI does not exist");
                 var devAddrBefore = (string)twinBeforeJoin.Properties.Reported["DevAddr"];
                 var devAddrAfter = (string)twinAfterJoin.Properties.Reported["DevAddr"];
                 var actualReportedDevEUI = (string)twinAfterJoin.Properties.Reported["DevEUI"];

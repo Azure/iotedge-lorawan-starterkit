@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.E2E
                 Assert.True(updfLog.Found);
 
                 var twin = await TestFixture.GetTwinAsync(stationEui.ToString());
-                var twinReader = new TwinCollectionReader(twin.Properties.Reported, null);
+                var twinReader = new TwinPropertiesReader(twin.Properties.Reported, null);
                 Assert.True(twinReader.TryRead<string>(TwinProperty.Package, out var reportedPackage)
                             && string.Equals(fwPackage, reportedPackage, StringComparison.OrdinalIgnoreCase));
             }
