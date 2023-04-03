@@ -7,6 +7,8 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
     using static ReceiveWindowNumber;
 
     public class TestDeviceInfo
@@ -60,6 +62,7 @@ namespace LoRaWan.Tests.Common
 
         public bool Supports32BitFCnt { get; set; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public DeduplicationMode Deduplication { get; set; } = DeduplicationMode.Drop; // default to drop
 
         public ushort RXDelay { get; set; }
