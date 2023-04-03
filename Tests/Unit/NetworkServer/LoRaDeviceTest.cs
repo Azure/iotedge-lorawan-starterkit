@@ -828,7 +828,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             private class LoRaDeviceTest : LoRaDevice
             {
-                private readonly ILogger<TwinCollectionReader> logger = NullLogger<TwinCollectionReader>.Instance;
+                private readonly ILogger<TwinPropertiesReader> logger = NullLogger<TwinPropertiesReader>.Instance;
 
                 public LoRaDeviceTest(ILoRaDeviceClient deviceClient)
 #pragma warning disable CA2000 // Dispose objects before losing scope - ownership is transferred
