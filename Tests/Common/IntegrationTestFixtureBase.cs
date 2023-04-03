@@ -335,7 +335,7 @@ namespace LoRaWan.Tests.Common
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
-            var cupsJson = (string)(deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
+            var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
             var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
             {
                 TcCredCrc = crc,
@@ -354,7 +354,7 @@ namespace LoRaWan.Tests.Common
             if (getDeviceResult == null)
                 throw new InvalidOperationException("Concentrator should exist in IoT Hub");
             var deviceTwin = await registryManager.GetTwinAsync(stationDeviceId);
-            var cupsJson = (string)(deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
+            var cupsJson = ((object)deviceTwin.Properties.Desired[BasicsStationConfigurationService.CupsPropertyName]).ToString();
             var newCupsInfo = JsonConvert.DeserializeObject<CupsTwinInfo>(cupsJson) with
             {
                 FwKeyChecksum = crc,
