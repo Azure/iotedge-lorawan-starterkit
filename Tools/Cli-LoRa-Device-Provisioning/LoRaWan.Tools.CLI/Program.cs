@@ -191,7 +191,7 @@ namespace LoRaWan.Tools.CLI
                 }
                 else
                 {
-                    var updateOptions = new UpdateOptions(opts);
+                    var updateOptions = opts.ToUpdateOptions();
                     var newTwins = IoTDeviceHelper.UpdateDeviceTwin(existingDeviceTwins, updateOptions);
                     newTwins.DeviceId = opts.DevEui;
                     isSuccess = await IoTDeviceHelper.WriteDeviceTwin(newTwins, opts.DevEui, configurationHelper, false);
