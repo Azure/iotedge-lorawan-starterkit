@@ -107,6 +107,9 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
                         DevEUI.ToString(),
                         It.IsNotNull<Twin>(),
                         It.IsAny<string>()), Times.Once());
+                this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
+                        It.IsAny<Device>(),
+                        It.IsAny<Twin>()), Times.Never());
             }
             else
             {
@@ -166,6 +169,9 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
                         DevEUI.ToString(),
                         It.IsNotNull<Twin>(),
                         It.IsAny<string>()), Times.Once());
+                this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
+                        It.IsAny<Device>(),
+                        It.IsAny<Twin>()), Times.Never());
             }
             else
             {
