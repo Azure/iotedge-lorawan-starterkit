@@ -3,40 +3,11 @@
 
 namespace LoRaWan.Tools.CLI.Options
 {
-    using System;
     using CommandLine;
 
     [Verb("update", HelpText = "Update an existing device in IoT Hub.")]
     public class UpdateOptions
     {
-        public UpdateOptions(AddOptions opts)
-        {
-            if (opts == null) throw new ArgumentNullException(nameof(opts));
-            Rx1DrOffset = opts.Rx1DrOffset;
-            AppEui = opts.AppEui;
-            AppSKey = opts.AppSKey;
-            AppKey = opts.AppKey;
-            NwkSKey = opts.NwkSKey;
-            DevEui = opts.DevEui;
-            ABPRelaxMode = opts.ABPRelaxMode;
-            ClassType = opts.ClassType;
-            Deduplication = opts.Deduplication;
-            DownlinkEnabled = opts.DownlinkEnabled;
-            DevAddr = opts.DevAddr;
-            FCntDownStart = opts.FCntDownStart;
-            FCntResetCounter = opts.FCntResetCounter;
-            FCntUpStart = opts.FCntUpStart;
-            KeepAliveTimeout = opts.KeepAliveTimeout;
-            NetId = opts.NetId;
-            NwkSKey = opts.NwkSKey;
-            PreferredWindow = opts.PreferredWindow;
-            Rx1DrOffset = opts.Rx1DrOffset;
-            Rx2DataRate = opts.Rx2DataRate;
-            RxDelay = opts.RxDelay;
-            SensorDecoder = opts.SensorDecoder;
-            Supports32BitFCnt = opts.Supports32BitFCnt;
-        }
-
         [Option(
             "deveui",
             Required = true,

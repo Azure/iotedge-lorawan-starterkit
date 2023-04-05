@@ -6,6 +6,7 @@ namespace LoRaWan.Tools.CLI.Options
     using System;
     using System.Collections.Generic;
     using CommandLine;
+    using Riok.Mapperly.Abstractions;
 
     [Verb("add", HelpText = "Add a new device to IoT Hub.")]
     public class AddOptions
@@ -228,5 +229,11 @@ namespace LoRaWan.Tools.CLI.Options
             HelpText = "Network identifier for LNS Discovery purposes"
             )]
         public string Network { get; set; }
+    }
+
+    [Mapper]
+    public static partial class AddOptionsMapper
+    {
+        public static partial UpdateOptions ToUpdateOptions(this AddOptions opts);
     }
 }
