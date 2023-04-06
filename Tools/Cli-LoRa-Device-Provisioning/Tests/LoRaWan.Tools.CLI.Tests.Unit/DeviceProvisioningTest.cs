@@ -55,8 +55,10 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(raw)!;
         }
 
-        [Fact]
-        public async Task AddABPDevice()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task AddABPDevice(bool deviceExistsInRegistry)
         {
             // Arrange            
             var savedTwin = new Twin();
@@ -80,8 +82,17 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
                     IsSuccessful = true
                 });
 
-            this.registryManager.Setup(x => x.GetTwinAsync(DevEUI))
-                .ReturnsAsync(savedTwin);
+            // If the device exists in registry we expect the getTwin to return the device.
+            if (deviceExistsInRegistry)
+            {
+                this.registryManager.Setup(x => x.GetTwinAsync(DevEUI)).ReturnsAsync(savedTwin);
+            }
+            else
+            {
+                this.registryManager.SetupSequence(x => x.GetTwinAsync(DevEUI))
+                    .ReturnsAsync((Twin?)null)
+                    .ReturnsAsync(savedTwin);
+            }
 
             // Act
             var args = CreateArgs($"add --type abp --deveui {DevEUI} --appskey {AppSKey} --nwkskey {NwkSKey} --devaddr {DevAddr} --decoder {Decoder} --network {NetworkName}");
@@ -89,13 +100,29 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
 
             // Assert
             Assert.Equal(0, actual);
-            this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
-                    It.Is<Device>(d => d.Id == DevEUI.ToString()),
-                    It.IsNotNull<Twin>()), Times.Once());
+
+            if (deviceExistsInRegistry)
+            {
+                this.registryManager.Verify(c => c.UpdateTwinAsync(
+                        DevEUI.ToString(),
+                        It.IsNotNull<Twin>(),
+                        It.IsAny<string>()), Times.Once());
+                this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
+                        It.IsAny<Device>(),
+                        It.IsAny<Twin>()), Times.Never());
+            }
+            else
+            {
+                this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
+                        It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                        It.IsNotNull<Twin>()), Times.Once());
+            }
         }
 
-        [Fact]
-        public async Task AddOTAADevice()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task AddOTAADevice(bool deviceExistsInRegistry)
         {
             // Arrange            
             var savedTwin = new Twin();
@@ -118,8 +145,17 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
                     IsSuccessful = true
                 });
 
-            this.registryManager.Setup(x => x.GetTwinAsync(DevEUI))
-                .ReturnsAsync(savedTwin);
+            // If the device exists in registry we expect the getTwin to return the device.
+            if (deviceExistsInRegistry)
+            {
+                this.registryManager.Setup(x => x.GetTwinAsync(DevEUI)).ReturnsAsync(savedTwin);
+            }
+            else
+            {
+                this.registryManager.SetupSequence(x => x.GetTwinAsync(DevEUI))
+                    .ReturnsAsync((Twin?)null)
+                    .ReturnsAsync(savedTwin);
+            }
 
             // Act
             var args = CreateArgs($"add --type otaa --deveui {DevEUI} --appeui {AppEui} --appkey {AppKey}  --decoder {Decoder} --network {NetworkName}");
@@ -127,9 +163,22 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
 
             // Assert
             Assert.Equal(0, actual);
-            this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
-                    It.Is<Device>(d => d.Id == DevEUI.ToString()),
-                    It.IsNotNull<Twin>()), Times.Once());
+            if (deviceExistsInRegistry)
+            {
+                this.registryManager.Verify(c => c.UpdateTwinAsync(
+                        DevEUI.ToString(),
+                        It.IsNotNull<Twin>(),
+                        It.IsAny<string>()), Times.Once());
+                this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
+                        It.IsAny<Device>(),
+                        It.IsAny<Twin>()), Times.Never());
+            }
+            else
+            {
+                this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
+                        It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                        It.IsNotNull<Twin>()), Times.Once());
+            }
         }
 
         [Fact]

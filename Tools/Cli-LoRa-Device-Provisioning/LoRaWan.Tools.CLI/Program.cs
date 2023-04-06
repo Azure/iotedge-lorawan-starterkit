@@ -182,7 +182,21 @@ namespace LoRaWan.Tools.CLI
             if (IoTDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
             {
                 var twin = IoTDeviceHelper.CreateDeviceTwin(opts);
-                isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
+
+                // Check if the device already exists.
+                var existingDeviceTwins = await IoTDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+                if (existingDeviceTwins is null)
+                {
+                    WriteToConsole($"Device {opts.DevEui} already exists, updating the twins.", ConsoleColor.Yellow);
+                    isSuccess = await IoTDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
+                }
+                else
+                {
+                    var updateOptions = opts.ToUpdateOptions();
+                    var newTwins = IoTDeviceHelper.UpdateDeviceTwin(existingDeviceTwins, updateOptions);
+                    newTwins.DeviceId = opts.DevEui;
+                    isSuccess = await IoTDeviceHelper.WriteDeviceTwin(newTwins, opts.DevEui, configurationHelper, false);
+                }
             }
             else
             {
