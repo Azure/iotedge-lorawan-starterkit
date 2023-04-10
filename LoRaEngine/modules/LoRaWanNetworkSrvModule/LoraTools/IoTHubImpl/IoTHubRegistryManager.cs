@@ -4,19 +4,13 @@
 namespace LoRaTools.IoTHubImpl
 {
     using System;
-    using System.Collections.Generic;
     using System.Globalization;
     using System.Net.Http;
-    using System.Runtime.CompilerServices;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     public sealed class IoTHubRegistryManager : IDeviceRegistryManager, IDisposable
     {
@@ -84,7 +78,12 @@ namespace LoRaTools.IoTHubImpl
         }
 
         public async Task<IStationTwin> GetStationTwinAsync(StationEui stationEui, CancellationToken? cancellationToken = null)
-             => new IoTHubStationTwin(await this.instance.GetTwinAsync(stationEui.ToString(), cancellationToken ?? CancellationToken.None));
+        {
+            var twin = await this.instance.GetTwinAsync(stationEui.ToString(), cancellationToken ?? CancellationToken.None);
+            if (twin is null)
+                return null;
+            return new IoTHubStationTwin(twin);
+        }
 
         public IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime)
         {
