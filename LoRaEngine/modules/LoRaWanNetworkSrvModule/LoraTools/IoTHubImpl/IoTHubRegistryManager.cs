@@ -77,14 +77,6 @@ namespace LoRaTools.IoTHubImpl
             return new IoTHubLoRaDeviceTwinPageResult(q);
         }
 
-        public async Task<IStationTwin> GetStationTwinAsync(StationEui stationEui, CancellationToken? cancellationToken = null)
-        {
-            var twin = await this.instance.GetTwinAsync(stationEui.ToString(), cancellationToken ?? CancellationToken.None);
-            if (twin is null)
-                return null;
-            return new IoTHubStationTwin(twin);
-        }
-
         public IRegistryPageResult<ILoRaDeviceTwin> GetLastUpdatedLoRaDevices(DateTime lastUpdateDateTime)
         {
             var formattedDateTime = lastUpdateDateTime.ToString(Constants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
@@ -115,5 +107,7 @@ namespace LoRaTools.IoTHubImpl
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId, CancellationToken? cancellationToken = null)
              => await this.instance.GetTwinAsync(deviceId, cancellationToken ?? CancellationToken.None) is { } twin ? new IoTHubDeviceTwin(twin) : null;
+        public async Task<IStationTwin> GetStationTwinAsync(StationEui stationEui, CancellationToken? cancellationToken = null)
+            => await this.instance.GetTwinAsync(stationEui.ToString(), cancellationToken ?? CancellationToken.None) is { } twin ? new IoTHubStationTwin(twin) : null;
     }
 }
