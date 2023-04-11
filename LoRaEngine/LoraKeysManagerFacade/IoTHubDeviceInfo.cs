@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade
 
     public class IoTHubDeviceInfo
     {
-        [JsonProperty("DevAddr")]
+        [JsonProperty(nameof(DevAddr))]
         public string DevAddrString
         {
             get => DevAddr.ToString();
@@ -21,7 +21,7 @@ namespace LoraKeysManagerFacade
         [JsonIgnore]
         public DevEui? DevEUI { get; set; }
 
-        [JsonProperty("DevEUI")]
+        [JsonProperty(nameof(DevEUI))]
         public string DevEuiString
         {
             get => DevEUI?.ToString();
