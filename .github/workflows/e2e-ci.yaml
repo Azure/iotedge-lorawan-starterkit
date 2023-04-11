@@ -410,8 +410,8 @@ jobs:
     name: Deploy IoT Edge on All-In-One ARM gateway
     env:
       IOT_EDGE_DEPLOYMENT_ID: ciaioarmgw
-      EDGE_AGENT_VERSION: 1.2.6
-      EDGE_HUB_VERSION: 1.2.6
+      EDGE_AGENT_VERSION: 1.4.9
+      EDGE_HUB_VERSION: 1.4.9
     steps:
       - name: Az CLI login
         uses: azure/login@v1
@@ -471,8 +471,8 @@ jobs:
     env:
       IOT_EDGE_DEPLOYMENT_ID: cieflowazurevmamd64
       NET_SRV_LOG_TO_TCP_ADDRESS: ${{ needs.certificates_job.outputs.itestupip }}
-      EDGE_AGENT_VERSION: 1.1.8
-      EDGE_HUB_VERSION: 1.1.8
+      EDGE_AGENT_VERSION: 1.4.9
+      EDGE_HUB_VERSION: 1.4.9
     steps:
       - name: Az CLI login
         uses: azure/login@v1
@@ -521,8 +521,8 @@ jobs:
     name: Deploy IoT Edge on ItestArm2 concentrator
     env:
       IOT_EDGE_DEPLOYMENT_ID: cilbseflowarm
-      EDGE_AGENT_VERSION: 1.1.8
-      EDGE_HUB_VERSION: 1.1.8
+      EDGE_AGENT_VERSION: 1.4.9
+      EDGE_HUB_VERSION: 1.4.9
     steps:
       - name: Az CLI login
         uses: azure/login@v1
