@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Common
             desiredProperties[TwinProperty.KeepAliveTimeout] = KeepAliveTimeout;
 
             if (Deduplication is not DeduplicationMode.Drop)
-                desiredProperties[TwinProperty.Deduplication] = Deduplication;
+                desiredProperties[TwinProperty.Deduplication] = Deduplication.ToString();
 
             return desiredProperties;
         }
