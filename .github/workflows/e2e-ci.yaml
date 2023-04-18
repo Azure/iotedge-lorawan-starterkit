@@ -599,7 +599,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3.0.3
         with:
-          dotnet-version: "6.0.x" # SDK Version to use.
+          global-json-file: global.json
 
       - name: .NET SDK Information
         run: dotnet --info
@@ -674,7 +674,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3.0.3
         with:
-          dotnet-version: "6.0.x" # SDK Version to use.
+          global-json-file: global.json
 
       - name: .NET SDK Information
         run: dotnet --info
@@ -763,7 +763,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3.0.3
         with:
-          dotnet-version: "6.0.x" # SDK Version to use.
+          global-json-file: global.json
 
       - name: .NET SDK Information
         run: dotnet --info
