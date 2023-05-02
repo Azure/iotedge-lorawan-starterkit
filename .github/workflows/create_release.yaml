@@ -115,7 +115,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3.0.3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
       - name: Package Azure Function
         run: |
           dotnet publish LoRaEngine/LoraKeysManagerFacade -c Release
