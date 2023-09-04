@@ -26,7 +26,7 @@ jobs:
     name: Build and Test Solution
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout current branch
 
     - uses: actions/setup-dotnet@v3.0.3
@@ -117,7 +117,7 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout current branch
 
     - name: Read Secrets from keyvault
