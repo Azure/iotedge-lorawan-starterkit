@@ -108,7 +108,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Power ON Azure VM
@@ -132,7 +132,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -168,7 +168,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - uses: actions/setup-dotnet@v3.0.3
@@ -214,7 +214,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
         with:
           fetch-depth: "2"
@@ -291,7 +291,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -368,7 +368,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -420,7 +420,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -481,7 +481,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -531,7 +531,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -587,7 +587,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -662,7 +662,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -751,7 +751,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout current branch
 
       - name: Read Secrets from keyvault
@@ -912,7 +912,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
@@ -943,7 +943,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Read Secrets from keyvault
         uses: ./.github/actions/read_keyvault
