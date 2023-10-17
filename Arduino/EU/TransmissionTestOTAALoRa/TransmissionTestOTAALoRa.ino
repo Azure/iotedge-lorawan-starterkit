@@ -4,14 +4,14 @@
 bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId ="47AAC86800430028";
-char * appKey="8AFE71A145B253E49C3031AD068277A1";
+char * appKey="Check your device's AppKey in IoT Hub";
 char * appEui ="BE7A0000000014E2";
 
 /*
 iot hub OTAA tags for deviceid: 47AAC86800430028
       "desired": {
       "AppEUI": "BE7A0000000014E2",
-      "AppKey": "8AFE71A145B253E49C3031AD068277A1",
+      "AppKey": "Check your device's AppKey in IoT Hub",
       "GatewayID" :"",
       "SensorDecoder" :"DecoderValueSensor"
       },

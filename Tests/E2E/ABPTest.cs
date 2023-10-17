@@ -184,8 +184,6 @@ namespace LoRaWan.Tests.E2E
         }
 
         // Tests using a incorrect Network Session key, resulting device not ours
-        // AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
-        // NwkSKey="3B7E151628AED2A6ABF7158809CF4F3C",
         // DevAddr="0028B1B2"
         // Uses Device7_ABP
         [RetryFact]

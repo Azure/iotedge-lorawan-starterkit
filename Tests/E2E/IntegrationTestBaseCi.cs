@@ -43,8 +43,7 @@ namespace LoRaWan.Tests.E2E
                 if (disposing)
                 {
                     // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
-                    if (ArduinoDevice != null)
-                        ArduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                    ArduinoDevice?.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                 }
 
                 this.isDisposed = true;
