@@ -18,12 +18,12 @@ runs:
   steps:
     - name: "Deallocate VM"
       shell: bash
-      if: ${{ !inputs.POWER_SWITCH }}
+      if: inputs.POWER_SWITCH == 'false'
       run: | 
         az vm deallocate --name ${{ inputs.AZURE_VM_NAME }} --resource-group ${{ inputs.AZURE_RG_NAME }} --no-wait 
 
     - name: "Start VM"
       shell: bash
-      if: ${{ inputs.POWER_SWITCH }}
+      if: inputs.POWER_SWITCH == 'true'
       run: | 
         az vm start --name ${{ inputs.AZURE_VM_NAME }} --resource-group ${{ inputs.AZURE_RG_NAME }} --no-wait 
