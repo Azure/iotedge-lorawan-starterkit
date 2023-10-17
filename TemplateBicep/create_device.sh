@@ -20,8 +20,14 @@ create_devices_with_lora_cli() {
     # add leaf devices
     if [ "${DEPLOY_DEVICE}" = "1" ]; then
         echo "Creating leaf devices 46AAC86800430028 and 47AAC86800430028..."
-        ./loradeviceprovisioning add --type abp --deveui "46AAC86800430028" --appskey "2B7E151628AED2A6ABF7158809CF4F3C" --nwkskey "3B7E151628AED2A6ABF7158809CF4F3C" --devaddr "0228B1B1" --decoder "DecoderValueSensor" --network "$NETWORK"
-        ./loradeviceprovisioning add --type otaa --deveui "47AAC86800430028" --appeui "BE7A0000000014E2" --appkey "8AFE71A145B253E49C3031AD068277A1" --decoder "DecoderValueSensor" --network "$NETWORK"
+        abp_apps_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)
+        abp_nwks_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)
+        otaa_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)
+        ./loradeviceprovisioning add --type abp --deveui "46AAC86800430028" --appskey $abp_apps_key --nwkskey $abp_nwks_key --devaddr "0228B1B1" --decoder "DecoderValueSensor" --network "$NETWORK"
+        ./loradeviceprovisioning add --type otaa --deveui "47AAC86800430028" --appeui "BE7A0000000014E2" --appkey $otaa_key --decoder "DecoderValueSensor" --network "$NETWORK"
+
+        echo "The ABP device 46AAC86800430028 has an AppSKey of $abp_apps_key and a NwkSKey of $abp_nwks_key"
+        echo "The OTAA device 47AAC86800430028 has an OTAA App key of $otaa_key"
     fi
 }
 

@@ -97,13 +97,13 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         }
 
         [Theory]
-        [InlineData("{'router':'invalidEui','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(FormatException))]
-        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https:/cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(UriFormatException))]
-        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss:/lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(UriFormatException))]
-        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':null, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(JsonException))]
-        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':null,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(JsonException))]
-        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':123,'keys':[]}", typeof(JsonException))]
-        [InlineData("{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':'1.0.0','keys':['a']}", typeof(JsonException))]
+        [InlineData(/*lang=json*/ "{'router':'invalidEui','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(FormatException))]
+        [InlineData(/*lang=json*/ "{'router':'aabb:ccff:fe00:1122','cupsUri':'https:/cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(UriFormatException))]
+        [InlineData(/*lang=json*/ "{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss:/lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(UriFormatException))]
+        [InlineData(/*lang=json*/ "{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':null, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(JsonException))]
+        [InlineData(/*lang=json*/ "{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':null,'station':'2.0.5','model':'m','package':null,'keys':[]}", typeof(JsonException))]
+        [InlineData(/*lang=json*/ "{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':123,'keys':[]}", typeof(JsonException))]
+        [InlineData(/*lang=json*/ "{'router':'aabb:ccff:fe00:1122','cupsUri':'https://cups:5002', 'tcUri':'wss://lns:5001', 'cupsCredCrc':1, 'tcCredCrc':1,'station':'2.0.5','model':'m','package':'1.0.0','keys':['a']}", typeof(JsonException))]
         public async Task HandleUpdateInfoAsync_Fails_WithInvalidInput(string input, Type exceptionType)
         {
             // setup
