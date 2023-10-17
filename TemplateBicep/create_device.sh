@@ -25,9 +25,12 @@ create_devices_with_lora_cli() {
         otaa_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)
         ./loradeviceprovisioning add --type abp --deveui "46AAC86800430028" --appskey $abp_apps_key --nwkskey $abp_nwks_key --devaddr "0228B1B1" --decoder "DecoderValueSensor" --network "$NETWORK"
         ./loradeviceprovisioning add --type otaa --deveui "47AAC86800430028" --appeui "BE7A0000000014E2" --appkey $otaa_key --decoder "DecoderValueSensor" --network "$NETWORK"
-
+        echo "\n"
+        echo "*****************************************************************************************************"
         echo "The ABP device 46AAC86800430028 has an AppSKey of $abp_apps_key and a NwkSKey of $abp_nwks_key"
         echo "The OTAA device 47AAC86800430028 has an OTAA App key of $otaa_key"
+        echo "*****************************************************************************************************"
+        echo "\n"
     fi
 }
 
