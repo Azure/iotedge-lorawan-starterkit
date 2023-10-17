@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
 
     public class IoTHubDeviceInfo
     {
-        [JsonProperty("DevAddr")]
+        [JsonProperty(nameof(DevAddr))]
         public string DevAddrString
         {
             get => DevAddr?.ToString();
@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
         [JsonIgnore]
         public DevAddr? DevAddr { get; set; }
 
-        [JsonProperty("DevEUI")]
+        [JsonProperty(nameof(DevEUI))]
         public string DevEuiString
         {
             get => DevEUI.ToString();
@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer
 
         public string GatewayId { get; set; }
 
-        [JsonProperty("NwkSKey")]
+        [JsonProperty(nameof(NwkSKey))]
         public string NwkSKeyString
         {
             get => NwkSKey?.ToString();

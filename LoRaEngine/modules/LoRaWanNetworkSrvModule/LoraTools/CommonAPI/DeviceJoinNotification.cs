@@ -19,21 +19,21 @@ namespace LoRaTools.CommonAPI
         [JsonIgnore]
         public NetworkSessionKey? NwkSKey { get; set; }
 
-        [JsonProperty("DevAddr")]
+        [JsonProperty(nameof(DevAddr))]
         public string DevAddrString
         {
             get => DevAddr.ToString();
             set => DevAddr = DevAddr.Parse(value);
         }
 
-        [JsonProperty("DevEUI")]
+        [JsonProperty(nameof(DevEUI))]
         public string DevEuiString
         {
             get => DevEUI?.ToString();
             set => DevEUI = value is null ? null : DevEui.Parse(value);
         }
 
-        [JsonProperty("NwkSKey")]
+        [JsonProperty(nameof(NwkSKey))]
         public string NwkSKeyString
         {
             get => NwkSKey?.ToString();
