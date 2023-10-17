@@ -10,15 +10,15 @@ bool confirmed = true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId = "46AAC86800430028";
 char * devAddr = "0228B1B1";
-char * appSKey = "2B7E151628AED2A6ABF7158809CF4F3C";
-char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
+char * appSKey = "Check your device's appSKey in IoT Hub";
+char * nwkSKey = "Check your device's nwkSKey in IoT Hub";
 
 
 /*
   iot hub ABP tags for deviceid: 46AAC86800430028
     "desired": {
-    "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
-    "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
+    "AppSKey": "Check your device's appSKey in IoT Hub",
+    "NwkSKey": "Check your device's nwkSKey in IoT Hub",
     "DevAddr": "0228B1B1",
     "GatewayID" :"",
     "SensorDecoder" :"DecoderValueSensor"

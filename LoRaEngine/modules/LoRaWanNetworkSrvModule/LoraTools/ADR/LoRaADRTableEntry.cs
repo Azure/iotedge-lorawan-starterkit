@@ -8,7 +8,7 @@ namespace LoRaTools.ADR
 
     public class LoRaADRTableEntry
     {
-        [JsonProperty("DevEUI")]
+        [JsonProperty(nameof(DevEui))]
         public string DevEuiString
         {
             get => DevEUI.ToString();

@@ -2,8 +2,8 @@
 /*
 iot hub ABP desired properties for deviceid: 46AAC86800430028
     "desired": {
-    "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
-    "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
+    "AppSKey": "Check your device's appSKey in IoT Hub",
+    "NwkSKey": "Check your device's nwkSKey in IoT Hub",
     "DevAddr": "0228B1B1",
     "GatewayID" :"",
     "SensorDecoder" :"DecoderValueSensor"
@@ -13,7 +13,7 @@ iot hub ABP desired properties for deviceid: 46AAC86800430028
 iot hub OTAA desired properties for deviceid: 47AAC86800430028
     "desired": {
     "AppEUI": "BE7A0000000014E2",
-    "AppKey": "8AFE71A145B253E49C3031AD068277A1",
+    "AppKey": "Check your device's AppKey in IoT Hub",
     "GatewayID" :"",
     "SensorDecoder" :"DecoderValueSensor"
     },
@@ -54,7 +54,7 @@ void setup(void)
 void configLoraOTAA(void)
 {
     deviceId ="47AAC86800430028";
-    appKey="8AFE71A145B253E49C3031AD068277A1";
+    appKey="Check your device's AppKey in IoT Hub";
     appEui ="BE7A0000000014E2";
     lora.setDeciveMode(LWOTAA);
     lora.setId(devAddr, deviceId, appEui);
@@ -65,7 +65,7 @@ void configLoraOTAA(void)
 void configLoraOTAAWrongDevEUI(void)
 {
     deviceId ="AAAAC86800430028";
-    appKey="8AFE71A145B253E49C3031AD068277A1";
+    appKey="Check your device's AppKey in IoT Hub";
     appEui ="BE7A0000000014E2";
     lora.setDeciveMode(LWOTAA);
     lora.setId(devAddr, deviceId, appEui);
@@ -78,8 +78,8 @@ void configLoraABP(void)
 {
    deviceId ="46AAC86800430028";
    devAddr ="0228B1B1";
-   appSKey ="2B7E151628AED2A6ABF7158809CF4F3C";
-   nwkSKey ="3B7E151628AED2A6ABF7158809CF4F3C";
+   appSKey ="Check your device's appSKey in IoT Hub";
+   nwkSKey ="Check your device's nwkSKey in IoT Hub";
    lora.setDeciveMode(LWABP);
    lora.setId(devAddr, deviceId, appEui);
    lora.setKey(nwkSKey, appSKey, appKey);
@@ -89,8 +89,8 @@ void configLoraABPWrongDevAddr(void)
 {
    deviceId ="46AAC86800430028";
    devAddr ="0028BBBB";
-   appSKey ="2B7E151628AED2A6ABF7158809CF4F3C";
-   nwkSKey ="3B7E151628AED2A6ABF7158809CF4F3C";
+   appSKey ="Check your device's appSKey in IoT Hub";
+   nwkSKey ="Check your device's nwkSKey in IoT Hub";
    lora.setDeciveMode(LWABP);
    lora.setId(devAddr, deviceId, appEui);
    lora.setKey(nwkSKey, appSKey, appKey);
