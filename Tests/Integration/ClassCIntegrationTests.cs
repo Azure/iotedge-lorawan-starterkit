@@ -55,7 +55,9 @@ namespace LoRaWan.Tests.Integration
         }
 
         [Theory]
+#pragma warning disable CA1825 // Avoid zero-length array allocations
         [MemberData(nameof(Upstream_And_Downstream_Succeeds_For_All_Regions_TheoryData))]
+#pragma warning restore CA1825 // Avoid zero-length array allocations
         public async Task When_ABP_Sends_Upstream_Followed_By_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint fcntDownFromTwin, uint fcntDelta, Region region)
         {
             const uint payloadFcnt = 2; // to avoid relax mode reset
