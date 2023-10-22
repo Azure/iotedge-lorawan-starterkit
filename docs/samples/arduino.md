@@ -10,7 +10,6 @@ If you are using another LoRaWan library, you will have to adjust this code as s
 
 > **When using the initial template to provision the devices, make sure to get the devices key in the devices' twins or in the ARM deployment logs (go to the deployment resource group and then to deployments/devices/createIothubDevices)**
 
-
 This samples were tested with the Seeeduino LoRaWan boards. Samples are organized by regions as LoRaWan uses different frequences based on your geography. Please make sure you're using the sample from the correct geography.
 
 1. **TransmissionTestOTAALoRa** - This is the most basic example. The sample perform an OTAA authentication and send a message to the gateway every 5 seconds. The sample also display on the serial interface any cloud to device message.
