@@ -78,7 +78,7 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 
 ### What does the template do?
 
-The template provision an IoT Hub with a [LoRa Basics™ Station](https://github.com/lorabasics/basicstation) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template).
+The template provision an IoT Hub with a [LoRa Basics™ Station](https://github.com/lorabasics/basicstation) and a network server module already pre-configured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/Template). When setting the "deployDevice" argument to true, some LoRaWan devices will be ready to be used immediagely, please consult the [Arduino Samples Documentation](samples/arduino.md) to discover how to quickly use them for tests.
 
 If you are using the the RAK833-USB, you'll need to build a different LoRa Basics™ Station image. You can find a fork of the official Basic Station repository with support for RAK833-USB [here](https://github.com/danigian/basicstation).
 
