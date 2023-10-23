@@ -1515,19 +1515,19 @@
 
 <h1 id="region-as923">Region AS923</h1>
 <p>If you configure a concentrator with an AS923 (sub-)region, you need to follow these steps in addition to how you would typically configure a concentrator for such a region. Since in AS923, dwell time limitations may apply, you need to be aware what the local regulations are with respect to dwell time limitations. Per default, the Network Server will assume that dwell time restrictions apply. For every concentrator in that region, you must configure the device twin to include the actual dwell time limitations that apply in the location of the concentrator. You can do this by adding the following block to the desired properties of the concentrator twin:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="err">...</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;routerConfig&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;desiredTxParams&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;downlinkDwellLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;uplinkDwellLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;eirp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"></span>
-<span class="w">            </span><span class="p">}</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="err">...</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;routerConfig&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;desiredTxParams&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;downlinkDwellLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;uplinkDwellLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;eirp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>The configuration values will be translated into a <code>TxParamSetupReq</code> MAC command (for an explanation refer to the LoRa specification) and as such be communicated automatically to every device that connects to the concentrator, based on whether that device already responded to the <code>TxParamSetupReq</code> MAC command with a <code>TxParamSetupAns</code>. In case a device did not acknowledge such a MAC command, or if the last acknowledged <code>TxParamSetupReq</code> does not match the desired TX params, it will automatically send downlink MAC commands to the device until it receives a <code>TxParamSetupAns</code>.</p>
 <div class="admonition warning">

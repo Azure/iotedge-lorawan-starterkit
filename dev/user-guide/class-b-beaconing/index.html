@@ -1602,46 +1602,46 @@
 <ol>
 <li>
 <p>Beaconing starts and is immediately suspended awaiting synchronization from the network server.</p>
-<div class="highlight"><pre><span></span><code><span class="o">[</span>S2E:INFO<span class="o">]</span> Beaconing every 2m8s on <span class="m">869</span>.525MHz<span class="o">(</span><span class="m">1</span><span class="o">)</span> @ DR3 <span class="o">(</span>frame layout <span class="m">2</span>/8/17<span class="o">)</span>
-<span class="o">[</span>S2E:INFO<span class="o">]</span> Beaconing <span class="nb">suspend</span> - missing GPS data: <span class="nb">time</span>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>S2E:INFO<span class="o">]</span><span class="w"> </span>Beaconing<span class="w"> </span>every<span class="w"> </span>2m8s<span class="w"> </span>on<span class="w"> </span><span class="m">869</span>.525MHz<span class="o">(</span><span class="m">1</span><span class="o">)</span><span class="w"> </span>@<span class="w"> </span>DR3<span class="w"> </span><span class="o">(</span>frame<span class="w"> </span>layout<span class="w"> </span><span class="m">2</span>/8/17<span class="o">)</span>
+<span class="o">[</span>S2E:INFO<span class="o">]</span><span class="w"> </span>Beaconing<span class="w"> </span><span class="nb">suspend</span><span class="w"> </span>-<span class="w"> </span>missing<span class="w"> </span>GPS<span class="w"> </span>data:<span class="w"> </span><span class="nb">time</span>
 </code></pre></div>
 </li>
 <li>
 <p>A <code>timesync</code> message is sent from the basic station to the network server.</p>
-<div class="highlight"><pre><span></span><code><span class="o">[</span>AIO:XDEB<span class="o">]</span> <span class="o">[</span><span class="m">3</span><span class="p">|</span>WS<span class="o">]</span> &gt; <span class="o">{</span><span class="s2">&quot;msgtype&quot;</span>:<span class="s2">&quot;timesync&quot;</span>,<span class="s2">&quot;txtime&quot;</span>:1023024197<span class="o">}</span>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>AIO:XDEB<span class="o">]</span><span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="p">|</span>WS<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span><span class="o">{</span><span class="s2">&quot;msgtype&quot;</span>:<span class="s2">&quot;timesync&quot;</span>,<span class="s2">&quot;txtime&quot;</span>:1023024197<span class="o">}</span>
 </code></pre></div>
 </li>
 <li>
 <p>A <code>timesync</code> response message is received from the network server.</p>
-<div class="highlight"><pre><span></span><code><span class="o">[</span>AIO:XDEB<span class="o">]</span> <span class="o">[</span><span class="m">3</span><span class="p">|</span>WS<span class="o">]</span> &lt; <span class="o">{</span><span class="s2">&quot;txtime&quot;</span>:1023024197,<span class="s2">&quot;gpstime&quot;</span>:1350820883268000,<span class="s2">&quot;msgtype&quot;</span>:<span class="s2">&quot;timesync&quot;</span><span class="o">}</span>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>AIO:XDEB<span class="o">]</span><span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="p">|</span>WS<span class="o">]</span><span class="w"> </span>&lt;<span class="w"> </span><span class="o">{</span><span class="s2">&quot;txtime&quot;</span>:1023024197,<span class="s2">&quot;gpstime&quot;</span>:1350820883268000,<span class="s2">&quot;msgtype&quot;</span>:<span class="s2">&quot;timesync&quot;</span><span class="o">}</span>
 </code></pre></div>
 </li>
 <li>
 <p>Beaconing resumes:</p>
-<div class="highlight"><pre><span></span><code><span class="o">[</span>S2E:INFO<span class="o">]</span> Beaconing resumed - recovered GPS data: <span class="nb">time</span>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>S2E:INFO<span class="o">]</span><span class="w"> </span>Beaconing<span class="w"> </span>resumed<span class="w"> </span>-<span class="w"> </span>recovered<span class="w"> </span>GPS<span class="w"> </span>data:<span class="w"> </span><span class="nb">time</span>
 </code></pre></div>
 </li>
 </ol>
 <p>Multiple things may go wrong during this process. Check <a href="../gateway-troubleshooting/">this page</a> for some common issues and troubleshooting tips.</p>
 <h2 id="arduino">Arduino</h2>
 <p>To test that the beacon can be locked by an arduino device, flash the following code onto your <code>Seeeduino LoRaWAN</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"></span>
-<span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">Serial1</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">115200</span><span class="p">);</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Serial1</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span>
+<span class="w">    </span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">115200</span><span class="p">);</span>
+<span class="p">}</span>
 
-<span class="kt">void</span><span class="w"> </span><span class="nf">loop</span><span class="p">()</span><span class="w"></span>
-<span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="n">Serial1</span><span class="p">.</span><span class="n">available</span><span class="p">())</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">Serial1</span><span class="p">.</span><span class="n">read</span><span class="p">());</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">available</span><span class="p">())</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">Serial1</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">read</span><span class="p">());</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="n">Serial1</span><span class="p">.</span><span class="n">available</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">Serial1</span><span class="p">.</span><span class="n">read</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">available</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Serial1</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">SerialUSB</span><span class="p">.</span><span class="n">read</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Open the serial monitor and check the version.</p>
 <div class="highlight"><pre><span></span><code>AT+VER

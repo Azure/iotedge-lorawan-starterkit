@@ -1580,23 +1580,23 @@
 <p>To add a new decoder, simply copy or reuse  the sample <code>DecoderValueSensor</code> method from the <code>LoraDecoders</code> class in <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/Classes/LoraDecoders.cs">LoraDecoder.cs</a>. You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the <code>LoraDecoders</code> class.</p>
 <p>The payload sent to the decoder is passed as string <code>devEui</code>, byte[] <code>payload</code> and uint <code>fport</code>.</p>
 <p>After writing the code that decodes your message, your method should return a <strong>string containing valid JSON</strong> containing the response to be sent upstream.</p>
-<div class="highlight"><pre><span></span><code><span class="k">internal</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">LoraDecoders</span><span class="w"></span>
-<span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">DecoderValueSensor</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">devEUI</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="p">[]</span><span class="w"> </span><span class="n">payload</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="n">fport</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="k">internal</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">LoraDecoders</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="nf">DecoderValueSensor</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">devEUI</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="p">[]</span><span class="w"> </span><span class="n">payload</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="n">fport</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// EITHER: Convert a payload containing a string back to string format for further processing</span>
-<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="n">GetString</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="n">GetString</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span>
 
 <span class="w">        </span><span class="c1">// OR: Convert a payload containing binary data to HEX string for further processing</span>
-<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">result_binary</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ConversionHelper</span><span class="p">.</span><span class="n">ByteArrayToString</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">result_binary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConversionHelper</span><span class="p">.</span><span class="n">ByteArrayToString</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span>
 
 <span class="w">        </span><span class="c1">// Write code that decodes the payload here.</span>
 
 <span class="w">        </span><span class="c1">// Return a JSON string containing the decoded data</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">value</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="p">});</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="p">});</span>
 
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>You can test the decoder on your machine by debugging the SensorDecoderModule project in Visual Studio.</p>
 <p>When creating a debugging configuration in Visual Studio Code or a <code>launchSettings.json</code> file in Visual Studio, the default address that the webserver will try to use is <code>http://localhost:5000</code> or <code>https://localhost:5001</code>. You can override this with any port of your choice.</p>
@@ -1630,10 +1630,10 @@
 </ul>
 <p>To build the Docker image, right-click on the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/DecoderSample/module.json">module.json</a> file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.</p>
 <p>To <strong>temporarily test</strong> the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.</p>
-<p><div class="highlight"><pre><span></span><code>docker run --rm -it -p <span class="m">8881</span>:80 --name decodersample &lt;container registry&gt;/&lt;image&gt;:&lt;tag&gt;
+<p><div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-p<span class="w"> </span><span class="m">8881</span>:80<span class="w"> </span>--name<span class="w"> </span>decodersample<span class="w"> </span>&lt;container<span class="w"> </span>registry&gt;/&lt;image&gt;:&lt;tag&gt;
 <span class="sb">````</span>
 
-You can <span class="k">then</span> use a browser to navigate to:
+You<span class="w"> </span>can<span class="w"> </span><span class="k">then</span><span class="w"> </span>use<span class="w"> </span>a<span class="w"> </span>browser<span class="w"> </span>to<span class="w"> </span>navigate<span class="w"> </span>to:
 </code></pre></div>
 http://localhost:8881/api/DecoderValueSensor?devEui=0000000000000000&amp;fport=1&amp;payload=QUJDREUxMjM0NQ%3D%3D
 <div class="highlight"><pre><span></span><code>### Deploying to IoT Edge

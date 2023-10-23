@@ -1880,13 +1880,13 @@ the Basics Station is performed by the user.</p>
 <p>The only change is related to the concentrator device twin.</p>
 <p>In addition to the values already stored in the twin, the following need to be
 added:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;cups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="c1">// ...</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;package&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;fwUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;fwKeyChecksum&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123456</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;fwSignature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;cups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="nt">&quot;package&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;fwUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;fwKeyChecksum&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123456</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;fwSignature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li><strong>'package'</strong>: desired package version of the Station (matching what will be
@@ -1954,17 +1954,17 @@ user to trigger a firmware upgrade. The command will accept the follwing inputs:
 <h2 id="appendix">Appendix</h2>
 <h3 id="generating-signature-keys">Generating signature keys</h3>
 <p>The following commands can be used to generate a signature key:</p>
-<div class="highlight"><pre><span></span><code>openssl ecparam -name prime256v1 -genkey <span class="p">|</span> openssl ec -out sig-0.pem
-openssl ec -in sig-0.pem -pubout -out sig-0.pub
-openssl ec -in sig-0.pub -inform PEM -outform DER -pubin <span class="p">|</span> tail -c <span class="m">64</span> &gt; sig-0.key
+<div class="highlight"><pre><span></span><code>openssl<span class="w"> </span>ecparam<span class="w"> </span>-name<span class="w"> </span>prime256v1<span class="w"> </span>-genkey<span class="w"> </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>ec<span class="w"> </span>-out<span class="w"> </span>sig-0.pem
+openssl<span class="w"> </span>ec<span class="w"> </span>-in<span class="w"> </span>sig-0.pem<span class="w"> </span>-pubout<span class="w"> </span>-out<span class="w"> </span>sig-0.pub
+openssl<span class="w"> </span>ec<span class="w"> </span>-in<span class="w"> </span>sig-0.pub<span class="w"> </span>-inform<span class="w"> </span>PEM<span class="w"> </span>-outform<span class="w"> </span>DER<span class="w"> </span>-pubin<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">64</span><span class="w"> </span>&gt;<span class="w"> </span>sig-0.key
 </code></pre></div>
 <h3 id="calculating-the-crc32-checksum-of-the-signature-key">Calculating the CRC32 checksum of the signature key</h3>
-<div class="highlight"><pre><span></span><code>cat sig-0.key <span class="p">|</span> gzip -1 <span class="p">|</span> tail -c <span class="m">8</span> <span class="p">|</span> od -t <span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">u</span><span class="si">}</span><span class="m">4</span> -N <span class="m">4</span> -An --endian<span class="o">=</span>little <span class="p">|</span> xargs <span class="nb">echo</span> &gt; sig-0.crc
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>sig-0.key<span class="w"> </span><span class="p">|</span><span class="w"> </span>gzip<span class="w"> </span>-1<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>od<span class="w"> </span>-t<span class="w"> </span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">u</span><span class="si">}</span><span class="m">4</span><span class="w"> </span>-N<span class="w"> </span><span class="m">4</span><span class="w"> </span>-An<span class="w"> </span>--endian<span class="o">=</span>little<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>&gt;<span class="w"> </span>sig-0.crc
 </code></pre></div>
 <h3 id="calculating-the-digest-of-a-firmware-upgrade-file">Calculating the digest of a firmware upgrade file</h3>
 <p>Digest of an upgrade file (<code>upgrade.sh</code>) can be calculated using the previously
 generated signature key with the command:</p>
-<div class="highlight"><pre><span></span><code>openssl dgst -sha512 -sign sig-0.pem update.sh &gt; update.sh.sig-0.sha512
+<div class="highlight"><pre><span></span><code>openssl<span class="w"> </span>dgst<span class="w"> </span>-sha512<span class="w"> </span>-sign<span class="w"> </span>sig-0.pem<span class="w"> </span>update.sh<span class="w"> </span>&gt;<span class="w"> </span>update.sh.sig-0.sha512
 </code></pre></div>
 
   <hr>

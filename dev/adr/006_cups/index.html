@@ -2082,16 +2082,16 @@
 <h3 id="iot-hub-related-changes">IoT Hub related changes</h3>
 <p>Only change is related to the concentrator device twin.</p>
 <p>The following "desired" properties should be properly set:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;cups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;cupsUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://IP_or_DNS:PORT&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;tcUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wss://IP_or_DNS:PORT&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;cupsCredCrc&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">INT</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;tcCredCrc&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">INT</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;cupsCredentialUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;tcCredentialUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="w"></span>
-<span class="p">},</span><span class="w"></span>
-<span class="c1">// Following field to be used for first version client certificate validation</span><span class="w"></span>
-<span class="nt">&quot;clientThumbprint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Client certificate thumbprint&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;cups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cupsUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://IP_or_DNS:PORT&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tcUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wss://IP_or_DNS:PORT&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cupsCredCrc&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tcCredCrc&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cupsCredentialUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tcCredentialUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://...&quot;</span>
+<span class="p">},</span>
+<span class="c1">// Following field to be used for first version client certificate validation</span>
+<span class="nt">&quot;clientThumbprint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;Client certificate thumbprint&quot;</span><span class="w"> </span><span class="p">]</span>
 </code></pre></div>
 <ul>
 <li><strong>'cupsCredCrc'</strong>: should be computed as CRC32 checksum calculated over the concatenated credentials files <code>cups.{trust,cert,key}</code></li>

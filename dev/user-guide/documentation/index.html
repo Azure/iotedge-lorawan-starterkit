@@ -1624,19 +1624,19 @@ are triggered by the PR:</p>
 </ul>
 <h2 id="working-locally">Working locally</h2>
 <p>Checkout the branch that contains the documentation:</p>
-<div class="highlight"><span class="filename">git worktree</span><pre><span></span><code>git checkout docs/main
+<div class="highlight"><span class="filename">git worktree</span><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>docs/main
 
 <span class="c1"># If you want to have `dev` branch and `docs` branch side by side,</span>
 <span class="c1"># try out git worktree</span>
 
 <span class="c1"># from the working folder:</span>
-git worktree add c:/path-to-sources/lorawan.docs docs/main
+git<span class="w"> </span>worktree<span class="w"> </span>add<span class="w"> </span>c:/path-to-sources/lorawan.docs<span class="w"> </span>docs/main
 </code></pre></div>
 <p>The recommended approach is using <code>docker</code> to serve the static site locally:</p>
-<div class="highlight"><span class="filename">serve documentation locally</span><pre><span></span><code>docker pull squidfunk/mkdocs-material
+<div class="highlight"><span class="filename">serve documentation locally</span><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>squidfunk/mkdocs-material
 
 <span class="c1"># in the folder where the `docs/main` branch lives locally:</span>
-docker run --rm -it -p <span class="m">8000</span>:8000 -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>:/docs squidfunk/mkdocs-material
+docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span>-v<span class="w"> </span><span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>:/docs<span class="w"> </span>squidfunk/mkdocs-material
 </code></pre></div>
 <p>Now you can see the site running locally on <a href="http://localhost:8000">http://localhost:8000</a>. You can change
 the port in the <code>docker run</code> command.</p>
@@ -1650,8 +1650,8 @@ container out-of-the-box. There are two ways to deal with this:  </p>
 <li>Create a custom docker image with the plugin installed:  </li>
 </ol>
 <div class="highlight"><span class="filename">Dockerfile</span><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">squidfunk/mkdocs-material</span>
-<span class="k">COPY</span><span class="w"> </span>requirements.txt .
-<span class="k">RUN</span><span class="w"> </span>pip install -r requirements.txt
+<span class="k">COPY</span><span class="w"> </span>requirements.txt<span class="w"> </span>.
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </code></pre></div>
 </div>
 <p>The <code>Dockerfile</code> is available in the repo as well.</p>
@@ -1667,7 +1667,7 @@ docker run --rm -it -p 8000:8000 -v ${PWD}:/docs mkdocs-material-with-extensions
 <p>Install Python and pip, and then the required packages:</p>
 <div class="highlight"><span class="filename">install prerequisites</span><pre><span></span><code><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </code></pre></div>
-<div class="highlight"><span class="filename">run mkdocs</span><pre><span></span><code>mkdocs serve
+<div class="highlight"><span class="filename">run mkdocs</span><pre><span></span><code>mkdocs<span class="w"> </span>serve
 </code></pre></div>
 <h2 id="deployment">Deployment</h2>
 <p>For deployment, the additional toolset <a href="https://github.com/jimporter/mike"><code>mike</code></a>

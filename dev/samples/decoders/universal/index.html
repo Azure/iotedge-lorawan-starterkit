@@ -1742,14 +1742,14 @@
 <p>Codecs provided by TTN are stored in a well defined <a href="https://github.com/TheThingsNetwork/lorawan-devices#files-and-directories">folder structure</a>. The universal decoder copies the codec files into its docker image at build time for later use from the web application. As currently codecs are not implemented as node modules (see <a href="https://github.com/TheThingsNetwork/lorawan-devices/issues/177">open issue</a>), these files were patched accordingly after being copied so that they can be imported and reused.</p>
 <h2 id="quick-start">Quick start</h2>
 <p>Install node dependencies and copy/patch codecs from the TTN repository:</p>
-<div class="highlight"><pre><span></span><code>npm install
-npm run codecs
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install
+npm<span class="w"> </span>run<span class="w"> </span>codecs
 </code></pre></div>
 <p>Create docker image (replace <code>amd64</code> with the architecture of your choice)</p>
-<div class="highlight"><pre><span></span><code>docker build . -f Dockerfile.amd64 -t universaldecoder
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>.<span class="w"> </span>-f<span class="w"> </span>Dockerfile.amd64<span class="w"> </span>-t<span class="w"> </span>universaldecoder
 </code></pre></div>
 <p>Run docker image:</p>
-<div class="highlight"><pre><span></span><code>docker run --rm -d -p <span class="m">8080</span>:8080 universaldecoder
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>universaldecoder
 </code></pre></div>
 <p>Call the built-in <code>DecoderValueSensor</code> decoder at the following url. You should see the result as JSON string.</p>
 <div class="highlight"><pre><span></span><code>http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&amp;fport=1&amp;payload=QUJDREUxMjM0NQ%3D%3D
@@ -1762,11 +1762,11 @@ npm run codecs
 </code></pre></div>
 <h2 id="local-development">Local development</h2>
 <h3 id="start-local-server">Start local server</h3>
-<div class="highlight"><pre><span></span><code>npm start
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>start
 </code></pre></div>
 <p>You can access the universal decoder at the url available in the output of the previous command.</p>
 <h3 id="run-tests">Run tests</h3>
-<div class="highlight"><pre><span></span><code>npm <span class="nb">test</span>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
 <h2 id="universal-decoder-rest-api">Universal Decoder REST API</h2>
 <p>The url accepted by the universal decoder follows the pattern:</p>
@@ -1801,10 +1801,10 @@ npm run codecs
 </ul>
 <p>To build the Docker image, right-click on the <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/Samples/UniversalDecoder/module.json">module.json</a> file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.</p>
 <p>To <strong>temporarily test</strong> the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 8080 to a free port on your host machine (8080 is usually good).</p>
-<p><div class="highlight"><pre><span></span><code>docker run --rm -it -p <span class="m">8080</span>:8080 --name universaldecoder &lt;container registry&gt;/&lt;image&gt;:&lt;tag&gt;
+<p><div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>--name<span class="w"> </span>universaldecoder<span class="w"> </span>&lt;container<span class="w"> </span>registry&gt;/&lt;image&gt;:&lt;tag&gt;
 <span class="sb">````</span>
 
-Call the built-in <span class="sb">`</span>DecoderValueSensor<span class="sb">`</span> decoder at the following url:
+Call<span class="w"> </span>the<span class="w"> </span>built-in<span class="w"> </span><span class="sb">`</span>DecoderValueSensor<span class="sb">`</span><span class="w"> </span>decoder<span class="w"> </span>at<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>url:
 </code></pre></div>
 http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&amp;fport=1&amp;payload=QUJDREUxMjM0NQ%3D%3D
 <div class="highlight"><pre><span></span><code>### Deploy to IoT Edge

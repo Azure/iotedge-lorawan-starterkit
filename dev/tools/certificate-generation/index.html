@@ -1580,7 +1580,7 @@
 </div>
 <h2 id="generate-a-server-certificate">Generate a server certificate</h2>
 <p>As an example, if you want to generate a server certificate for a LoRaWAN Network Server hosted at <code>mytest.endpoint.com</code> and secure the output .PFX with a passphrase, you will need to issue the following script in the <code>Tools\BasicStation-Certificates-Generation</code> folder of the Starter Kit:</p>
-<div class="highlight"><pre><span></span><code>./certificate-generate.sh server mytest.endpoint.com chosenPfxPassword
+<div class="highlight"><pre><span></span><code>./certificate-generate.sh<span class="w"> </span>server<span class="w"> </span>mytest.endpoint.com<span class="w"> </span>chosenPfxPassword
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">IMPORTANT</p>
@@ -1590,7 +1590,7 @@
 <p>You can now follow previous sections instructions on how to import this certificate in the provided LoRaWanNetworkSrvModule.</p>
 <h2 id="generate-a-client-certificate">Generate a client certificate</h2>
 <p>As an example, if you want to generate a client certificate for a Basic Station with DevEUI 'AABBCCFFFE001122', you will need to issue the following command</p>
-<div class="highlight"><pre><span></span><code>./certificate-generate.sh client AABBCCFFFE001122
+<div class="highlight"><pre><span></span><code>./certificate-generate.sh<span class="w"> </span>client<span class="w"> </span>AABBCCFFFE001122
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">IMPORTANT</p>

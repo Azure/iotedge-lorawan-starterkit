@@ -2003,17 +2003,17 @@ FACADE_AUTH_CODE=yourfunctionpassword
 </ul>
 <p>You will need your own identifiers when provisioning the device.</p>
 <p>Look out for these code lines:</p>
-<div class="highlight"><pre><span></span><code><span class="n">lora</span><span class="p">.</span><span class="n">setId</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;47AAC86800430010&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;BE7A0000000014E3&quot;</span><span class="p">);</span><span class="w"></span>
-<span class="n">lora</span><span class="p">.</span><span class="n">setKey</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">lora</span><span class="p">.</span><span class="n">setId</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;47AAC86800430010&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;BE7A0000000014E3&quot;</span><span class="p">);</span>
+<span class="n">lora</span><span class="p">.</span><span class="n">setKey</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">);</span>
 </code></pre></div>
 <!-- markdown-link-check-disable -->
 <p>To provisioning a device in Azure IoT Hub with these identifiers and capable to <a href="https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaPayloadDecoder.cs">decode</a> simple value payload into Json you have to create a device with:</p>
 <p>Device Id: <code>47AAC86800430010</code> and Device Twin's deired properties:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;AppKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DecoderValueSensor&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;AppKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DecoderValueSensor&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>You can  provision the device manually in the Azure portal or use the provided <a href="../../tools/device-provisioning/">Command Line Interface Provisioning Tool to list, query, verify add, update, and remove  devices</a>.</p>
 <!-- markdown-link-check-enable -->
@@ -2029,15 +2029,15 @@ FACADE_AUTH_CODE=yourfunctionpassword
 <ul>
 <li><a href="https://www.thethingsnetwork.org/lorawan/security.html">DevAddr, AppSKey and NwkSKey</a> are generated and stored in the Device Twin, e.g.:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;AppKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DecoderValueSensor&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5E8513F64D99A63753A5F0DBB9FB9F91&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C0EF4B9495BD4A4C32B42438CD52D4B8&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;025DEAAE&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;DevNonce&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;D9B6&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;desired&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;AppEUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BE7A0000000014E3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;AppKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8AFE71A145B253E49C3031AD068277A3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;SensorDecoder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DecoderValueSensor&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;AppSKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5E8513F64D99A63753A5F0DBB9FB9F91&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;NwkSKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C0EF4B9495BD4A4C32B42438CD52D4B8&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;DevAddr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;025DEAAE&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;DevNonce&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;D9B6&quot;</span>
+<span class="w">  </span><span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>If you follow the logs of the network server module (e.g. <code>sudo iotedge logs LoRaWanNetworkSrvModule -f</code>) you can follow the LoRa device join:</li>
@@ -2053,27 +2053,27 @@ TX ACK RECEIVED
 <ul>
 <li>Every 30 seconds the temperature is transmitted by the device, e.g.:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;tmms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;tmst&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4226472308</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;freq&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">868.5</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;chan&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;rfch&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;stat&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;modu&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LORA&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;datr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SF12BW125&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;codr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4/5&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;rssi&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-33</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;lsnr&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">7.5</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">18.78</span><span class="w"></span>
-<span class="w">  </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;EUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;47AAC86800430010&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;gatewayId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;berry2&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;edgets&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1534253192857</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tmms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tmst&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4226472308</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;freq&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">868.5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;chan&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;rfch&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;stat&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;modu&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LORA&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;datr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SF12BW125&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;codr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4/5&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;rssi&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-33</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;lsnr&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">7.5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">18.78</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;EUI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;47AAC86800430010&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;gatewayId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;berry2&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;edgets&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1534253192857</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Note: an easy way to follow messages send from the device is again with VSCode: right click on the device in the explorer -&gt; <code>Start Monitoring D2C Message</code>.</p>
 <p>This is how a complete transmission looks like:</p>
@@ -2104,18 +2104,18 @@ TX ACK RECEIVED
 </li>
 <li>
 <p><!-- markdown-link-check-enable --> Add a <code>local.settings.json</code> file to the project <a href="https://github.com/Azure/iotedge-lorawan-starterkit/tree/dev/LoRaEngine/LoraKeysManagerFacade">LoRaKeysManagerFacade</a> containing:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;IsEncrypted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;AzureWebJobsStorage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection String of your deployed blob storage&gt;&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;WEBSITE_CONTENTSHARE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Name of your Azure function&gt;&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;IsEncrypted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;AzureWebJobsStorage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection String of your deployed blob storage&gt;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;WEBSITE_CONTENTSHARE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Name of your Azure function&gt;&quot;</span>
 
-<span class="w">  </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;ConnectionStrings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection string of your IoT Hub Owner (go to keys -&gt; IoT Hub owner and select the connection string)&gt;&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;RedisConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection string of your Redis Cache&gt;&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;ConnectionStrings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;IoTHubConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection string of your IoT Hub Owner (go to keys -&gt; IoT Hub owner and select the connection string)&gt;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;RedisConnectionString&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Connection string of your Redis Cache&gt;&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 </li>
 <li>
