@@ -17,7 +17,7 @@ as environment variables for manual configuration of the
 | HTTPS_PROXY                 | HTTPS proxy url                                                                        | No                                  |
 | RX2_DATR                    | RX2 data rate; useful to override the default regional RX2 Data Rate at a global level | No (defaults to null, regional default value is used) |
 | RX2_FREQ                    | RX2 frequency; useful to override the default regional RX2 Frequency at a global level | No (defaults to null, regional default value is used) |
-| FACADE_SERVER_URL           | Azure Facade function url, e.g. "https://deployedfunction.azurewebsites.net/api"       | Yes                                 |
+| FACADE_SERVER_URL           | Azure Facade function url, e.g. <https://deployedfunction.azurewebsites.net/api>       | Yes                                 |
 | FACADE_AUTH_CODE            | Azure Facade function auth code                                                        | Yes                                 |
 | LOG_LEVEL                   | Logging level                                                                          | No (defaults to level 4 (Error)     |
 | LOG_TO_CONSOLE              | Indicates whether logging to console is enabled or not                                 | No (default to `true`)              |
@@ -58,5 +58,5 @@ environment variables:
 | IOTHUBHOSTNAME | Host name of the IoT Hub to which the LNS should connect to. | Yes |
 | HOSTNAME | Identifier of the LNS. | Yes |
 | REDIS_CONNECTION_STRING | Connection string used to connect to the deployed Redis instance. | Yes |
-| FACADE_SERVER_URL | Azure Facade function url, e.g. "https://deployedfunction.azurewebsites.net/api" | Yes |
+| FACADE_SERVER_URL | Azure Facade function url, e.g. <https://deployedfunction.azurewebsites.net/api> | Yes |
 | FACADE_AUTH_CODE | Azure Facade function auth code | Yes |
