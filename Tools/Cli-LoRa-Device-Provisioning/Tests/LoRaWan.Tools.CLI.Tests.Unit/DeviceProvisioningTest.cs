@@ -17,20 +17,24 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
         private readonly Mock<RegistryManager> registryManager;
 
         private const string NetworkName = "quickstartnetwork";
-        private const string DevEUI = "46AAC86800430028";
+        private readonly string devEUI = GetRandomHexNumber(16);
         private const string Decoder = "DecoderValueSensor";
         private const string LoRaVersion = "999.999.10"; // using an non-existing version to ensure it is not hardcoded with a valid value
         private const string IotEdgeVersion = "1.4";
 
         // OTAA Properties
-        private const string AppKey = "8AFE71A145B253E49C3031AD068277A1";
-        private const string AppEui = "BE7A0000000014E2";
+        private readonly string appKey = GetRandomHexNumber(32);
+        private readonly string appEui = GetRandomHexNumber(16);
 
         // ABP properties
-        private const string AppSKey = "2B7E151628AED2A6ABF7158809CF4F3C";
-        private const string NwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
-        private const string DevAddr = "0228B1B1";
-
+        private readonly string appSKey = GetRandomHexNumber(32);
+        private readonly string nwkSKey = GetRandomHexNumber(32);
+        private const string DevAddr = "027AEC7B";
+        private static readonly Random Random = new Random();
+        public static string GetRandomHexNumber(int digits)
+        {
+            return string.Concat(Enumerable.Range(0, digits).Select(_ => Random.Next(16).ToString("X", CultureInfo.InvariantCulture)));
+        }
         public DeviceProvisioningTest()
         {
             this.registryManager = new Mock<RegistryManager>();
@@ -64,14 +68,14 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             var savedTwin = new Twin();
 
             this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(
-                    It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                    It.Is<Device>(d => d.Id == devEUI.ToString()),
                     It.IsNotNull<Twin>()))
                 .Callback((Device d, Twin t) =>
                 {
                     Assert.Equal(NetworkName, t.Tags[DeviceTags.NetworkTagName].ToString());
                     Assert.Equal(new string[] { DeviceTags.DeviceTypes.Leaf }, ((JArray)t.Tags[DeviceTags.DeviceTypeTagName]).Select(x => x.ToString()).ToArray());
-                    Assert.Equal(AppSKey, t.Properties.Desired[TwinProperty.AppSKey].ToString());
-                    Assert.Equal(NwkSKey, t.Properties.Desired[TwinProperty.NwkSKey].ToString());
+                    Assert.Equal(appSKey, t.Properties.Desired[TwinProperty.AppSKey].ToString());
+                    Assert.Equal(nwkSKey, t.Properties.Desired[TwinProperty.NwkSKey].ToString());
                     Assert.Equal(DevAddr, t.Properties.Desired[TwinProperty.DevAddr].ToString());
                     Assert.Equal(Decoder, t.Properties.Desired[TwinProperty.SensorDecoder].ToString());
                     Assert.Equal(string.Empty, t.Properties.Desired[TwinProperty.GatewayID].ToString());
@@ -85,17 +89,17 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             // If the device exists in registry we expect the getTwin to return the device.
             if (deviceExistsInRegistry)
             {
-                this.registryManager.Setup(x => x.GetTwinAsync(DevEUI)).ReturnsAsync(savedTwin);
+                this.registryManager.Setup(x => x.GetTwinAsync(devEUI)).ReturnsAsync(savedTwin);
             }
             else
             {
-                this.registryManager.SetupSequence(x => x.GetTwinAsync(DevEUI))
+                this.registryManager.SetupSequence(x => x.GetTwinAsync(devEUI))
                     .ReturnsAsync((Twin?)null)
                     .ReturnsAsync(savedTwin);
             }
 
             // Act
-            var args = CreateArgs($"add --type abp --deveui {DevEUI} --appskey {AppSKey} --nwkskey {NwkSKey} --devaddr {DevAddr} --decoder {Decoder} --network {NetworkName}");
+            var args = CreateArgs($"add --type abp --deveui {devEUI} --appskey {appSKey} --nwkskey {nwkSKey} --devaddr {DevAddr} --decoder {Decoder} --network {NetworkName}");
             var actual = await Program.Run(args, this.configurationHelper);
 
             // Assert
@@ -104,7 +108,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             if (deviceExistsInRegistry)
             {
                 this.registryManager.Verify(c => c.UpdateTwinAsync(
-                        DevEUI.ToString(),
+                        devEUI.ToString(),
                         It.IsNotNull<Twin>(),
                         It.IsAny<string>()), Times.Once());
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
@@ -114,7 +118,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             else
             {
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
-                        It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                        It.Is<Device>(d => d.Id == devEUI.ToString()),
                         It.IsNotNull<Twin>()), Times.Once());
             }
         }
@@ -128,14 +132,14 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             var savedTwin = new Twin();
 
             this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(
-                    It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                    It.Is<Device>(d => d.Id == devEUI.ToString()),
                     It.IsNotNull<Twin>()))
                 .Callback((Device d, Twin t) =>
                 {
                     Assert.Equal(NetworkName, t.Tags[DeviceTags.NetworkTagName].ToString());
                     Assert.Equal(new string[] { DeviceTags.DeviceTypes.Leaf }, ((JArray)t.Tags[DeviceTags.DeviceTypeTagName]).Select(x => x.ToString()).ToArray());
-                    Assert.Equal(AppKey, t.Properties.Desired[TwinProperty.AppKey].ToString());
-                    Assert.Equal(AppEui, t.Properties.Desired[TwinProperty.AppEUI].ToString());
+                    Assert.Equal(appKey, t.Properties.Desired[TwinProperty.AppKey].ToString());
+                    Assert.Equal(appEui, t.Properties.Desired[TwinProperty.AppEUI].ToString());
                     Assert.Equal(Decoder, t.Properties.Desired[TwinProperty.SensorDecoder].ToString());
                     Assert.Equal(string.Empty, t.Properties.Desired[TwinProperty.GatewayID].ToString());
                     savedTwin = t;
@@ -148,17 +152,17 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             // If the device exists in registry we expect the getTwin to return the device.
             if (deviceExistsInRegistry)
             {
-                this.registryManager.Setup(x => x.GetTwinAsync(DevEUI)).ReturnsAsync(savedTwin);
+                this.registryManager.Setup(x => x.GetTwinAsync(devEUI)).ReturnsAsync(savedTwin);
             }
             else
             {
-                this.registryManager.SetupSequence(x => x.GetTwinAsync(DevEUI))
+                this.registryManager.SetupSequence(x => x.GetTwinAsync(devEUI))
                     .ReturnsAsync((Twin?)null)
                     .ReturnsAsync(savedTwin);
             }
 
             // Act
-            var args = CreateArgs($"add --type otaa --deveui {DevEUI} --appeui {AppEui} --appkey {AppKey}  --decoder {Decoder} --network {NetworkName}");
+            var args = CreateArgs($"add --type otaa --deveui {devEUI} --appeui {appEui} --appkey {appKey}  --decoder {Decoder} --network {NetworkName}");
             var actual = await Program.Run(args, this.configurationHelper);
 
             // Assert
@@ -166,7 +170,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             if (deviceExistsInRegistry)
             {
                 this.registryManager.Verify(c => c.UpdateTwinAsync(
-                        DevEUI.ToString(),
+                        devEUI.ToString(),
                         It.IsNotNull<Twin>(),
                         It.IsAny<string>()), Times.Once());
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
@@ -176,7 +180,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             else
             {
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
-                        It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                        It.Is<Device>(d => d.Id == devEUI.ToString()),
                         It.IsNotNull<Twin>()), Times.Once());
             }
         }
@@ -186,14 +190,14 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
         public async Task WhenBulkOperationFailed_AddDevice_Should_Return_False()
         {
             // Arrange
-            this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(It.Is<Device>(d => d.Id == DevEUI.ToString()), It.IsNotNull<Twin>()))
+            this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(It.Is<Device>(d => d.Id == devEUI.ToString()), It.IsNotNull<Twin>()))
                 .ReturnsAsync(new BulkRegistryOperationResult
                 {
                     IsSuccessful = false
                 });
 
             // Act
-            var args = CreateArgs($"add --type otaa --deveui {DevEUI} --appeui 8AFE71A145B253E49C3031AD068277A1 --appkey BE7A0000000014E2 --decoder MyDecoder --network myNetwork");
+            var args = CreateArgs($"add --type otaa --deveui {devEUI} --appeui 8AFE71A145B253E49C3031AD068277A1 --appkey BE7A0000000014E2 --decoder MyDecoder --network myNetwork");
             var actual = await Program.Run(args, this.configurationHelper);
 
             // Assert
