@@ -17,6 +17,8 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
         private readonly Mock<RegistryManager> registryManager;
 
         private const string NetworkName = "quickstartnetwork";
+        private static readonly Random Random = new Random();
+
         private static readonly string DevEUI = GetRandomHexNumber(16);
         private const string Decoder = "DecoderValueSensor";
         private const string LoRaVersion = "999.999.10"; // using an non-existing version to ensure it is not hardcoded with a valid value
@@ -30,14 +32,9 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
         private static readonly string AppSKey = GetRandomHexNumber(32);
         private static readonly string NwkSKey = GetRandomHexNumber(32);
         private const string DevAddr = "027AEC7B";
-        private static Random random = new Random();
         public static string GetRandomHexNumber(int digits)
         {
-            if(random == null)
-            {
-                random =new Random();
-            }
-            return string.Concat(Enumerable.Range(0, digits).Select(_ => random.Next(16).ToString("X", CultureInfo.InvariantCulture)));
+            return string.Concat(Enumerable.Range(0, digits).Select(_ => Random.Next(16).ToString("X", CultureInfo.InvariantCulture)));
         }
         public DeviceProvisioningTest()
         {
@@ -72,7 +69,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             var savedTwin = new Twin();
 
             this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(
-                    It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                    It.Is<Device>(d => d.Id == DevEUI),
                     It.IsNotNull<Twin>()))
                 .Callback((Device d, Twin t) =>
                 {
@@ -112,7 +109,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             if (deviceExistsInRegistry)
             {
                 this.registryManager.Verify(c => c.UpdateTwinAsync(
-                        DevEUI.ToString(),
+                        DevEUI,
                         It.IsNotNull<Twin>(),
                         It.IsAny<string>()), Times.Once());
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
@@ -122,7 +119,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             else
             {
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
-                        It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                        It.Is<Device>(d => d.Id == DevEUI),
                         It.IsNotNull<Twin>()), Times.Once());
             }
         }
@@ -136,7 +133,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             var savedTwin = new Twin();
 
             this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(
-                    It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                    It.Is<Device>(d => d.Id == DevEUI),
                     It.IsNotNull<Twin>()))
                 .Callback((Device d, Twin t) =>
                 {
@@ -174,7 +171,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             if (deviceExistsInRegistry)
             {
                 this.registryManager.Verify(c => c.UpdateTwinAsync(
-                        DevEUI.ToString(),
+                        DevEUI,
                         It.IsNotNull<Twin>(),
                         It.IsAny<string>()), Times.Once());
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
@@ -184,7 +181,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
             else
             {
                 this.registryManager.Verify(c => c.AddDeviceWithTwinAsync(
-                        It.Is<Device>(d => d.Id == DevEUI.ToString()),
+                        It.Is<Device>(d => d.Id == DevEUI),
                         It.IsNotNull<Twin>()), Times.Once());
             }
         }
@@ -194,7 +191,7 @@ namespace LoRaWan.Tools.CLI.Tests.Unit
         public async Task WhenBulkOperationFailed_AddDevice_Should_Return_False()
         {
             // Arrange
-            this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(It.Is<Device>(d => d.Id == DevEUI.ToString()), It.IsNotNull<Twin>()))
+            this.registryManager.Setup(c => c.AddDeviceWithTwinAsync(It.Is<Device>(d => d.Id == DevEUI), It.IsNotNull<Twin>()))
                 .ReturnsAsync(new BulkRegistryOperationResult
                 {
                     IsSuccessful = false
