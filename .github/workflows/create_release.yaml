@@ -34,12 +34,6 @@ jobs:
         run: |
           docker buildx build -f "./LoRaEngine/modules/LoRaWanNetworkSrvModule/Dockerfile.${{ matrix.image }}" -t $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION-${{ matrix.image }} --output type=image,push=true "."
           docker buildx build -f "./LoRaEngine/modules/LoRaBasicsStationModule/Dockerfile.${{ matrix.image }}" -t $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-${{ matrix.image }} --build-arg CONTAINER_REGISTRY_ADDRESS=docker.io --output type=image,push=true "."
-      - name: Create manifests
-        run: |
-          docker manifest create $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION-${{ matrix.image }} --amend
-          docker manifest create $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-${{ matrix.image }} --amend
-          docker manifest push $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION
-          docker manifest push $DOCKERHUB_ORGANISATION/lorawannetworksrvmodule:$VERSION
     env:
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}
   
