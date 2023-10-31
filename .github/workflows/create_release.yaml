@@ -43,7 +43,7 @@ jobs:
     env:
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}
   
-  CreateManifest:
+  CreateManifests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,6 +66,8 @@ jobs:
             $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-amd64 \
             $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-arm32v7 \
             $DOCKERHUB_ORGANISATION/lorabasicsstationmodule:$VERSION-arm64v8
+    needs:
+      [BuildAndPushDockerImages]
     env:
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}
 
@@ -177,4 +179,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     needs:
-      [BuildAndPushDockerImages, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
+      [BuildAndPushDockerImages, CreateManifests, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
