@@ -130,9 +130,16 @@ Write release notes to the [release notes documentation](https://github.com/Azur
 
 Go to the [Create draft release workflow](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/create_release.yaml) and specify the release version before running the workflow.
 
-### Merge 2 PRs
+### Create and merge 2 PRs
 
-The Prerelease workflow will create 2 PRs, one PR to update the Starter Kit version in Bicep and one PR to update the Button URL. Merge these 2 PRs.
+The release workflow will create 2 branches:
+- `docs/release-${RELEASE_VERSION}-${GITHUB_RUN_ID}`
+This branch updates the Button URL.
+
+- `feature/update-version-${RELEASE_VERSION}-${GITHUB_RUN_ID}`
+This branch updates the Starter Kit version in Bicep.
+
+Created 2 PRs from these branches, verify the PRs look good and merge them.
 
 ### Update master
 

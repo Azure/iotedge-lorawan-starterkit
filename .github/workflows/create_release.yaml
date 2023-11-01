@@ -65,7 +65,7 @@ jobs:
     env:
       DOCKERHUB_ORGANISATION: ${{ secrets.DOCKER_REPOSITORY }}
 
-  CreatePRToUpdateDoc:
+  CreateBranchToUpdateDoc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -87,14 +87,10 @@ jobs:
           git add docs/quickstart.md
           git commit -m "$DESCRIPTION"
           git push --set-upstream origin $BRANCH_NAME
-      - name: Create pull request
-        run: |
-          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base "docs/main" --title "$DESCRIPTION" \
-          --body "$DESCRIPTION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  CreatePRToUpdateBicep:
+  CreateBranchToUpdateBicep:
     runs-on: ubuntu-latest
     env:
       ARM_FILE: Template/azuredeploy.json
@@ -124,10 +120,6 @@ jobs:
           git add $ARM_FILE
           git commit -m "$DESCRIPTION"
           git push --set-upstream origin $BRANCH_NAME
-      - name: Create pull request
-        run: |
-          gh pr create --repo ${{ github.repository }} --head $BRANCH_NAME --base dev --title "$DESCRIPTION" \
-          --body "$DESCRIPTION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -173,4 +165,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     needs:
-      [BuildAndPushDockerImages, CreateManifests, CreatePRToUpdateDoc, CreatePRToUpdateBicep]
+      [BuildAndPushDockerImages, CreateManifests, CreateBranchToUpdateDoc, CreateBranchToUpdateBicep]
