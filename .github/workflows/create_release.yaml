@@ -103,7 +103,6 @@ jobs:
           sed -r -i "s/param version string = '[0-9/.]+'/param version string = '${VERSION}'/g" TemplateBicep/main.bicep
       - name: Generate ARM file
         run: |
-          mkdir Template
           az bicep build --file TemplateBicep/main.bicep --outfile $ARM_FILE
       - name: Set up git user using the built-in token
         run: |
