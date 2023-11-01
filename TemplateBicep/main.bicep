@@ -37,7 +37,7 @@ param useDiscoveryService bool = false
 param gitUsername string = 'Azure'
 
 @description('The LoRaWAN Starter Kit version to use.')
-param version string = '2.2.1'
+param version string = '2.2.2'
 
 @description('The location of the cli tool to be used for device provisioning.')
 param loraCliUrl string = 'https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v${version}/lora-cli.linux-musl-x64.tar.gz'

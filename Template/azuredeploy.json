@@ -1,0 +1,1409 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.22.6.54827",
+      "templateHash": "11434623448491979162"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "uniqueSolutionPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix used for resource names. Should be unique as this will also be used for domain names."
+      }
+    },
+    "edgeGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Edge gateway"
+      }
+    },
+    "deployDevice": {
+      "type": "bool",
+      "metadata": {
+        "description": "Provision a final LoRa device in the IoT hub in addition to the gateway"
+      }
+    },
+    "resetPin": {
+      "type": "int",
+      "metadata": {
+        "description": "Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value"
+      }
+    },
+    "region": {
+      "type": "string",
+      "defaultValue": "EU863",
+      "allowedValues": [
+        "EU863",
+        "US902",
+        "AS923-1",
+        "AS923-2",
+        "AS923-3",
+        "CN470RP1",
+        "CN470RP2",
+        "AU915"
+      ],
+      "metadata": {
+        "description": "In what region is your gateway deployed?"
+      }
+    },
+    "stationEui": {
+      "type": "string",
+      "defaultValue": "AA555A0000000101",
+      "metadata": {
+        "description": "The StationEUI of the sample concentrator device"
+      }
+    },
+    "spiSpeed": {
+      "type": "int",
+      "defaultValue": 8,
+      "allowedValues": [
+        8,
+        2
+      ],
+      "metadata": {
+        "description": "[In Mbps] Custom SPI speed for your gateway, currently only supported for ARM gateways"
+      }
+    },
+    "spiDev": {
+      "type": "int",
+      "defaultValue": 0,
+      "allowedValues": [
+        0,
+        1,
+        2
+      ],
+      "metadata": {
+        "description": "SPI Dev version for x86 based gateway"
+      }
+    },
+    "useAzureMonitorOnEdge": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Controls whether observability is set up for IoT edge."
+      }
+    },
+    "useDiscoveryService": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Controls whether the standalone discovery service should be deployed."
+      }
+    },
+    "gitUsername": {
+      "type": "string",
+      "defaultValue": "Azure",
+      "metadata": {
+        "description": "The Git Username. Default is Azure."
+      }
+    },
+    "version": {
+      "type": "string",
+      "defaultValue": "2.2.2",
+      "metadata": {
+        "description": "The LoRaWAN Starter Kit version to use."
+      }
+    },
+    "loraCliUrl": {
+      "type": "string",
+      "defaultValue": "[format('https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v{0}/lora-cli.linux-musl-x64.tar.gz', parameters('version'))]",
+      "metadata": {
+        "description": "The location of the cli tool to be used for device provisioning."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "iotHub",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}hub', parameters('uniqueSolutionPrefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "3401594812311343473"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Devices/IotHubs",
+              "apiVersion": "2021-07-02",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "capacity": 1,
+                "name": "S1"
+              }
+            }
+          ],
+          "outputs": {
+            "iotHubName": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "storage",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "uniqueSolutionPrefix": {
+            "value": "[parameters('uniqueSolutionPrefix')]"
+          },
+          "storageAccountType": {
+            "value": "StorageV2"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "2290328540893640608"
+            }
+          },
+          "parameters": {
+            "uniqueSolutionPrefix": {
+              "type": "string"
+            },
+            "storageAccountType": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "storageAccountName": "[format('{0}storage', parameters('uniqueSolutionPrefix'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2022-05-01",
+              "name": "[variables('storageAccountName')]",
+              "location": "[parameters('location')]",
+              "kind": "[parameters('storageAccountType')]",
+              "sku": {
+                "name": "Standard_LRS"
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2022-05-01",
+              "name": "[format('{0}/default/stationcredentials', variables('storageAccountName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2022-05-01",
+              "name": "[format('{0}/default/fwupgrades', variables('storageAccountName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "storageAccountName": {
+              "type": "string",
+              "value": "[variables('storageAccountName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "redisCache",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "uniqueSolutionPrefix": {
+            "value": "[parameters('uniqueSolutionPrefix')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "18306563337347370909"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure location where to create the hosting plan. Default value is resource group location."
+              }
+            },
+            "uniqueSolutionPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Prefix used for resource names. Should be unique as this will also be used for domain names."
+              }
+            }
+          },
+          "variables": {
+            "redisCacheName": "[format('{0}redis', parameters('uniqueSolutionPrefix'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Cache/redis",
+              "apiVersion": "2022-06-01",
+              "name": "[variables('redisCacheName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "capacity": 0,
+                  "family": "C",
+                  "name": "Basic"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "redisCacheName": {
+              "type": "string",
+              "value": "[variables('redisCacheName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "function",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "appInsightName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'observability'), '2022-09-01').outputs.appInsightName.value]"
+          },
+          "logAnalyticsName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'observability'), '2022-09-01').outputs.logAnalyticsName.value]"
+          },
+          "uniqueSolutionPrefix": {
+            "value": "[parameters('uniqueSolutionPrefix')]"
+          },
+          "useAzureMonitorOnEdge": {
+            "value": "[parameters('useAzureMonitorOnEdge')]"
+          },
+          "hostingPlanLocation": {
+            "value": "[parameters('location')]"
+          },
+          "redisCacheName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'redisCache'), '2022-09-01').outputs.redisCacheName.value]"
+          },
+          "iotHubName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iotHub'), '2022-09-01').outputs.iotHubName.value]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage'), '2022-09-01').outputs.storageAccountName.value]"
+          },
+          "gitUsername": {
+            "value": "[parameters('gitUsername')]"
+          },
+          "version": {
+            "value": "[parameters('version')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "7712596626075070622"
+            }
+          },
+          "parameters": {
+            "gitUsername": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "hostingPlanLocation": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "hostingPlanSkuName": {
+              "type": "string",
+              "defaultValue": "Y1",
+              "metadata": {
+                "description": "Hosting plan SKU. Default is Y1."
+              }
+            },
+            "hostingPlanSkuTier": {
+              "type": "string",
+              "defaultValue": "Dynamic",
+              "metadata": {
+                "description": "Hosting Plan SKU tiers. Default value is Dynamic."
+              }
+            },
+            "uniqueSolutionPrefix": {
+              "type": "string"
+            },
+            "useAzureMonitorOnEdge": {
+              "type": "bool"
+            },
+            "redisCacheName": {
+              "type": "string"
+            },
+            "iotHubName": {
+              "type": "string"
+            },
+            "storageAccountName": {
+              "type": "string"
+            },
+            "logAnalyticsName": {
+              "type": "string"
+            },
+            "appInsightName": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "functionName": "[format('{0}function', parameters('uniqueSolutionPrefix'))]",
+            "functionZipBinary": "[format('https://github.com/{0}/iotedge-lorawan-starterkit/releases/download/v{1}/function-{2}.zip', parameters('gitUsername'), parameters('version'), parameters('version'))]",
+            "hostingPlanName": "[format('{0}plan', parameters('uniqueSolutionPrefix'))]",
+            "iotHubOwnerPolicyName": "iothubowner"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('hostingPlanName')]",
+              "location": "[parameters('hostingPlanLocation')]",
+              "sku": {
+                "name": "[parameters('hostingPlanSkuName')]",
+                "tier": "[parameters('hostingPlanSkuTier')]"
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('functionName')]",
+              "location": "[parameters('hostingPlanLocation')]",
+              "kind": "functionapp",
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                  "connectionStrings": [
+                    {
+                      "name": "IoTHubConnectionString",
+                      "type": "Custom",
+                      "connectionString": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName={1};SharedAccessKey={2}', parameters('iotHubName'), variables('iotHubOwnerPolicyName'), listKeys(resourceId('Microsoft.Devices/IotHubs/IotHubKeys', parameters('iotHubName'), variables('iotHubOwnerPolicyName')), '2021-07-02').primaryKey)]"
+                    },
+                    {
+                      "name": "RedisConnectionString",
+                      "type": "Custom",
+                      "connectionString": "[format('{0}.redis.cache.windows.net,abortConnect=false,ssl=true,password={1}', parameters('redisCacheName'), listKeys(resourceId('Microsoft.Cache/redis', parameters('redisCacheName')), '2022-06-01').primaryKey)]"
+                    }
+                  ],
+                  "appSettings": [
+                    {
+                      "name": "AzureWebJobsDashboard",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('storageAccountName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('storageAccountName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "AzureWebJobsSecretStorageType",
+                      "value": "Files"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('storageAccountName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTSHARE",
+                      "value": "[toLower(variables('functionName'))]"
+                    },
+                    {
+                      "name": "FACADE_HOST_NAME",
+                      "value": "[toLower(variables('functionName'))]"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "dotnet"
+                    },
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~4"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightName')), '2015-05-01').InstrumentationKey]"
+                    },
+                    {
+                      "name": "WEBSITE_RUN_FROM_PACKAGE",
+                      "value": "[variables('functionZipBinary')]"
+                    },
+                    {
+                      "name": "IOT_HUB_RESOURCE_ID",
+                      "value": "[resourceId('Microsoft.Devices/IotHubs', parameters('iotHubName'))]"
+                    },
+                    {
+                      "name": "LOG_ANALYTICS_WORKSPACE_ID",
+                      "value": "[if(parameters('useAzureMonitorOnEdge'), reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName')), '2022-10-01').customerId, '')]"
+                    },
+                    {
+                      "name": "LOG_ANALYTICS_WORKSPACE_KEY",
+                      "value": "[if(parameters('useAzureMonitorOnEdge'), listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName')), '2022-10-01').primarySharedKey, '')]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "functionName": {
+              "type": "string",
+              "value": "[variables('functionName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'iotHub')]",
+        "[resourceId('Microsoft.Resources/deployments', 'observability')]",
+        "[resourceId('Microsoft.Resources/deployments', 'redisCache')]",
+        "[resourceId('Microsoft.Resources/deployments', 'storage')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "observability",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "prefix": {
+            "value": "[parameters('uniqueSolutionPrefix')]"
+          },
+          "iotHubName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iotHub'), '2022-09-01').outputs.iotHubName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "useAzureMonitorOnEdge": {
+            "value": "[parameters('useAzureMonitorOnEdge')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "2957569720945738904"
+            }
+          },
+          "parameters": {
+            "prefix": {
+              "type": "string"
+            },
+            "iotHubName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "useAzureMonitorOnEdge": {
+              "type": "bool"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2022-10-01",
+              "name": "[format('{0}analytics', parameters('prefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "retentionInDays": 30,
+                "sku": {
+                  "name": "PerGB2018"
+                },
+                "workspaceCapping": {
+                  "dailyQuotaGb": 10
+                },
+                "features": {
+                  "searchVersion": 1
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[format('{0}insight', parameters('prefix'))]",
+              "kind": "web",
+              "location": "[parameters('location')]",
+              "properties": {
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}analytics', parameters('prefix')))]",
+                "Application_Type": "web"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}analytics', parameters('prefix')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('useAzureMonitorOnEdge')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "workbook",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "appInsightsName": {
+                    "value": "[format('{0}insight', parameters('prefix'))]"
+                  },
+                  "iothubName": {
+                    "value": "[parameters('iotHubName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.22.6.54827",
+                      "templateHash": "4565020005675261292"
+                    }
+                  },
+                  "parameters": {
+                    "location": {
+                      "type": "string"
+                    },
+                    "iothubName": {
+                      "type": "string"
+                    },
+                    "appInsightsName": {
+                      "type": "string"
+                    }
+                  },
+                  "variables": {
+                    "$fxv#0": "{\n    \"version\": \"Notebook/1.0\",\n    \"items\": [\n      {\n        \"type\": 9,\n        \"content\": {\n          \"version\": \"KqlParameterItem/1.0\",\n          \"parameters\": [\n            {\n              \"id\": \"31596d7b-c0a9-448f-b3cc-a3a906cb9d48\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"resourceType\",\n              \"type\": 7,\n              \"isRequired\": true,\n              \"isGlobal\": true,\n              \"value\": \"Microsoft.Devices/IotHubs\",\n              \"isHiddenWhenLocked\": true,\n              \"typeSettings\": {\n                \"additionalResourceOptions\": [],\n                \"showDefault\": false\n              },\n              \"jsonData\": \"[[\\\"Microsoft.Devices/IotHubs\\\"]\",\n              \"defaultValue\": \"value::1\"\n            },\n            {\n              \"id\": \"bebd5be4-3d61-45ed-9f07-b9ae091e1ccb\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"resource\",\n              \"type\": 5,\n              \"isRequired\": true,\n              \"isHiddenWhenLocked\": true,\n              \"typeSettings\": {\n                \"resourceTypeFilter\": {\n                  \"microsoft.devices/iothubs\": true\n                },\n                \"additionalResourceOptions\": [\"value::1\"],\n                \"showDefault\": false\n              },\n              \"defaultValue\": \"value::1\"\n            },\n            {\n              \"id\": \"d062cb40-2eed-4917-ab42-8f271db98312\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"InsightsMetricsExists\",\n              \"type\": 1,\n              \"query\": \"let hasNonEmptyTable = (T:string) \\n{ \\n   toscalar( union isfuzzy=true ( table(T) | count as Count ), (print Count=0) | summarize sum(Count) ) > 0\\n};\\nlet TableName = 'InsightsMetrics';\\nprint IsPresent=iif(hasNonEmptyTable(TableName), \\\"yes\\\", \\\"no\\\")\",\n              \"crossComponentResources\": [\"{resource}\"],\n              \"isHiddenWhenLocked\": true,\n              \"timeContext\": {\n                \"durationMs\": 259200000\n              },\n              \"queryType\": 0,\n              \"resourceType\": \"{resourceType}\"\n            },\n            {\n              \"id\": \"36a641eb-587a-40c0-b491-b7b2f85eb0c0\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"mainAction\",\n              \"type\": 1,\n              \"isGlobal\": true,\n              \"value\": \"devicelist\",\n              \"isHiddenWhenLocked\": true\n            },\n            {\n              \"id\": \"4ea30d03-74c2-4b08-bf00-f3c0a4c57f13\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"alertResources\",\n              \"type\": 5,\n              \"isRequired\": true,\n              \"multiSelect\": true,\n              \"quote\": \"'\",\n              \"delimiter\": \",\",\n              \"typeSettings\": {\n                \"resourceTypeFilter\": {\n                  \"microsoft.devices/iothubs\": true,\n                  \"microsoft.insights/components\": true\n                },\n                \"additionalResourceOptions\": [\"value::all\"],\n                \"showDefault\": false\n              },\n              \"defaultValue\": \"value::all\"\n            },\n            {\n              \"id\": \"6f896f81-18dc-4307-98f3-77927af019af\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"appInsightsResourceId\",\n              \"type\": 5,\n              \"isRequired\": true,\n              \"multiSelect\": true,\n              \"quote\": \"'\",\n              \"delimiter\": \",\",\n              \"typeSettings\": {\n                \"resourceTypeFilter\": {\n                  \"microsoft.insights/components\": true\n                },\n                \"additionalResourceOptions\": [\"value::all\"]\n              },\n              \"defaultValue\": \"value::all\"\n            },\n            {\n              \"id\": \"dcd93c30-5162-4e48-bb6a-f347e466e552\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"Subscription\",\n              \"type\": 6,\n              \"isRequired\": true,\n              \"multiSelect\": true,\n              \"quote\": \"'\",\n              \"delimiter\": \",\",\n              \"typeSettings\": {\n                \"additionalResourceOptions\": [\"value::all\"],\n                \"showDefault\": false\n              },\n              \"jsonData\": \"[\\\"{{subscriptionResourceId}}\\\"]')]\",\n              \"defaultValue\": \"value::all\"\n            }\n          ],\n          \"style\": \"pills\",\n          \"queryType\": 0,\n          \"resourceType\": \"microsoft.insights/components\"\n        },\n        \"conditionalVisibility\": {\n          \"parameterName\": \"neverset\",\n          \"comparison\": \"isNotEqualTo\"\n        },\n        \"name\": \"parameters - 5\"\n      },\n      {\n        \"type\": 9,\n        \"content\": {\n          \"version\": \"KqlParameterItem/1.0\",\n          \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n          \"parameters\": [\n            {\n              \"id\": \"1b4b2d2e-4f2e-4881-903d-f307d6958a1c\",\n              \"version\": \"KqlParameterItem/1.0\",\n              \"name\": \"timeRange\",\n              \"label\": \"Time range\",\n              \"type\": 4,\n              \"isRequired\": true,\n              \"isGlobal\": true,\n              \"value\": {\n                \"durationMs\": 14400000\n              },\n              \"typeSettings\": {\n                \"selectableValues\": [\n                  {\n                    \"durationMs\": 1800000\n                  },\n                  {\n                    \"durationMs\": 3600000\n                  },\n                  {\n                    \"durationMs\": 14400000\n                  },\n                  {\n                    \"durationMs\": 43200000\n                  },\n                  {\n                    \"durationMs\": 86400000\n                  },\n                  {\n                    \"durationMs\": 172800000\n                  },\n                  {\n                    \"durationMs\": 259200000\n                  },\n                  {\n                    \"durationMs\": 604800000\n                  },\n                  {\n                    \"durationMs\": 1209600000\n                  },\n                  {\n                    \"durationMs\": 2592000000\n                  }\n                ],\n                \"allowCustom\": true\n              }\n            }\n          ],\n          \"style\": \"pills\",\n          \"queryType\": 0,\n          \"resourceType\": \"{resourceType}\"\n        },\n        \"customWidth\": \"30\",\n        \"conditionalVisibility\": {\n          \"parameterName\": \"InsightsMetricsExists\",\n          \"comparison\": \"isEqualTo\",\n          \"value\": \"yes\"\n        },\n        \"name\": \"Time Range\"\n      },\n      {\n        \"type\": 12,\n        \"content\": {\n          \"version\": \"NotebookGroup/1.0\",\n          \"groupType\": \"editable\",\n          \"title\": \"Overview - Failure Indicators\",\n          \"items\": [\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let connectivityLost = customMetrics\\r\\n| where name == \\\"StationConnectivityLost\\\"\\r\\n| project name, valueSum\\r\\n| summarize Count = sum(valueSum) by name\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"StationConnectivityLost\\\"\\r\\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (connectivityLost) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"noDataMessage\": \"No connections lost\",\n                \"noDataMessageStyle\": 3,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"Count\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"hotCold\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 17,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"maximumFractionDigits\": 0,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"red\"\n                    }\n                  },\n                  \"showBorder\": false\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"Station Connectivity Lost\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let receiveWindowMisses = customMetrics\\r\\n| where name == \\\"ReceiveWindowMisses\\\"\\r\\n| order by timestamp desc\\r\\n| project name, valueSum\\r\\n| summarize Sum = sum(valueSum) by name\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"ReceiveWindowMisses\\\"\\r\\n| make-series Trend = sum(valueSum) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (receiveWindowMisses) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"noDataMessage\": \"No receive windows missed\",\n                \"noDataMessageStyle\": 3,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\"\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"Sum\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"hotCold\"\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"red\"\n                    }\n                  },\n                  \"showBorder\": false,\n                  \"size\": \"auto\"\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"Receive Windows\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let unhandledExceptions = customMetrics\\r\\n| where name == \\\"UnhandledExceptions\\\"\\r\\n| project name, valueSum, exceptionKeyword = \\\"Exception\\\"\\r\\n| summarize Count = sum(valueSum) by name, exceptionKeyword\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"UnhandledExceptions\\\"\\r\\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (unhandledExceptions) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"noDataMessage\": \"No unhandled exceptions detected\",\n                \"noDataMessageStyle\": 3,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1,\n                    \"formatOptions\": {\n                      \"linkColumn\": \"exceptionKeyword\",\n                      \"linkTarget\": \"Search\"\n                    }\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"Count\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"hotCold\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 17,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"maximumFractionDigits\": 2,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"red\"\n                    }\n                  },\n                  \"showBorder\": false\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"Unhandled Exceptions\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let c2dmessagesTooLong = customMetrics\\r\\n| where name == \\\"C2DMessageTooLong\\\"\\r\\n| project name, valueSum\\r\\n| summarize Count = sum(valueSum) by name\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"C2DMessageTooLong\\\"\\r\\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (c2dmessagesTooLong) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"noDataMessage\": \"No C2D messages that were too long detected\",\n                \"noDataMessageStyle\": 3,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\"\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"Sum\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"hotCold\"\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"red\"\n                    }\n                  },\n                  \"showBorder\": false,\n                  \"size\": \"auto\"\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"C2DMessageTooLong\"\n            }\n          ]\n        },\n        \"name\": \"Overview - Failure Indicators\"\n      },\n      {\n        \"type\": 12,\n        \"content\": {\n          \"version\": \"NotebookGroup/1.0\",\n          \"groupType\": \"editable\",\n          \"title\": \"Overview - Performance Indicators\",\n          \"items\": [\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let activeConnections = customMetrics\\r\\n| where name == \\\"ActiveStationConnections\\\"\\r\\n| order by timestamp desc\\r\\n| project value, name\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"ActiveStationConnections\\\"\\r\\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (activeConnections) on name\\r\\n| project-away name, timestamp\\r\\n\\r\\n\\r\\n\",\n                \"size\": 4,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"value\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"auto\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 17,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"useGrouping\": false,\n                        \"maximumFractionDigits\": 0,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"blue\"\n                    }\n                  },\n                  \"showBorder\": false,\n                  \"size\": \"auto\"\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"Active Station Connections\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let deliveryLatency = customMetrics\\r\\n| where name == \\\"D2CMessageDeliveryLatency\\\"\\r\\n| order by timestamp desc\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"D2CMessageDeliveryLatency\\\"\\r\\n| make-series Trend = avg(value) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (deliveryLatency) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"value\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"auto\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 23,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"maximumFractionDigits\": 2,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"blue\"\n                    }\n                  },\n                  \"showBorder\": false,\n                  \"size\": \"auto\"\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"Delivery Latencies\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let joinRequests = customMetrics\\r\\n| where name == \\\"JoinRequests\\\"\\r\\n| order by timestamp desc\\r\\n| project name, valueSum\\r\\n| summarize JoinRequestSum = sum(valueSum) by name\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"JoinRequests\\\"\\r\\n| make-series Trend = sum(valueSum) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (joinRequests) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"JoinRequestSum\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"auto\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 17,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"maximumFractionDigits\": 2,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 9,\n                    \"formatOptions\": {\n                      \"palette\": \"blue\"\n                    }\n                  },\n                  \"showBorder\": false,\n                  \"size\": \"auto\"\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"Join requests\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let messageSizes = customMetrics\\r\\n| where name == \\\"D2CMessageSize\\\"\\r\\n| order by timestamp desc\\r\\n| summarize D2CMessageSize = avg(value) by name;\\r\\ncustomMetrics\\r\\n| where name == \\\"D2CMessageSize\\\"\\r\\n| make-series Hist = sum(valueSum) default = 0 on value from 5.0 to 250.0 step 5.0 by name\\r\\n| join (messageSizes) on name\",\n                \"size\": 4,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"D2CMessageSize\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"auto\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 2,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"maximumFractionDigits\": 2,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Hist\",\n                    \"formatter\": 10,\n                    \"formatOptions\": {\n                      \"palette\": \"blue\"\n                    }\n                  },\n                  \"showBorder\": false,\n                  \"size\": \"auto\"\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"D2C message size\"\n            },\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let sum = customMetrics\\r\\n| where name == \\\"D2CMessagesReceived\\\"\\r\\n| order by timestamp desc\\r\\n| project name, valueSum\\r\\n| summarize Sum = sum(valueSum) by name\\r\\n| take 1;\\r\\ncustomMetrics\\r\\n| where name == \\\"D2CMessagesReceived\\\"\\r\\n| make-series Trend = sum(valueSum) default = 0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by name\\r\\n| join (sum) on name\\r\\n| project-away name, timestamp\",\n                \"size\": 4,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"visualization\": \"tiles\",\n                \"tileSettings\": {\n                  \"titleContent\": {\n                    \"columnMatch\": \"name1\",\n                    \"formatter\": 1\n                  },\n                  \"leftContent\": {\n                    \"columnMatch\": \"Sum\",\n                    \"formatter\": 12,\n                    \"formatOptions\": {\n                      \"palette\": \"auto\"\n                    },\n                    \"numberFormat\": {\n                      \"unit\": 17,\n                      \"options\": {\n                        \"style\": \"decimal\",\n                        \"maximumFractionDigits\": 2,\n                        \"maximumSignificantDigits\": 3\n                      }\n                    }\n                  },\n                  \"secondaryContent\": {\n                    \"columnMatch\": \"Trend\",\n                    \"formatter\": 10,\n                    \"formatOptions\": {\n                      \"palette\": \"blue\"\n                    }\n                  },\n                  \"showBorder\": false\n                }\n              },\n              \"customWidth\": \"15\",\n              \"name\": \"D2CMessagesReceived\"\n            }\n          ]\n        },\n        \"name\": \"Overview - Performance Indicators\"\n      },\n      {\n        \"type\": 12,\n        \"content\": {\n          \"version\": \"NotebookGroup/1.0\",\n          \"groupType\": \"editable\",\n          \"title\": \"Dependencies\",\n          \"items\": [\n            {\n              \"type\": 3,\n              \"content\": {\n                \"version\": \"KqlItem/1.0\",\n                \"query\": \"let rawData = dependencies\\r\\n| project duration, name, type, timestamp, EndpointWithoutDeviceId = extract(\\\"(.*)/[0-9a-zA-Z]{16}$\\\", 1, name)\\r\\n| project duration, type, timestamp, Endpoint = iff(isempty(EndpointWithoutDeviceId), name, EndpointWithoutDeviceId);\\r\\nlet history = rawData\\r\\n| make-series avg(duration) default=0 on timestamp from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Endpoint\\r\\n| project-away timestamp;\\r\\nrawData\\r\\n| summarize Mean = avg(duration), (p95) = percentiles(duration, 95), Requests = count() by type, Endpoint\\r\\n| join (history) on Endpoint\\r\\n| order by Requests desc\",\n                \"size\": 3,\n                \"timeContext\": {\n                  \"durationMs\": 14400000\n                },\n                \"timeContextFromParameter\": \"timeRange\",\n                \"queryType\": 0,\n                \"resourceType\": \"microsoft.insights/components\",\n                \"crossComponentResources\": [\"{appInsightsResourceId}\"],\n                \"gridSettings\": {\n                  \"formatters\": [\n                    {\n                      \"columnMatch\": \"Mean\",\n                      \"formatter\": 0,\n                      \"numberFormat\": {\n                        \"unit\": 23,\n                        \"options\": {\n                          \"style\": \"decimal\",\n                          \"minimumSignificantDigits\": 3,\n                          \"maximumSignificantDigits\": 3\n                        }\n                      }\n                    },\n                    {\n                      \"columnMatch\": \"p95\",\n                      \"formatter\": 0,\n                      \"numberFormat\": {\n                        \"unit\": 23,\n                        \"options\": {\n                          \"style\": \"decimal\",\n                          \"minimumSignificantDigits\": 3,\n                          \"maximumSignificantDigits\": 3\n                        }\n                      }\n                    },\n                    {\n                      \"columnMatch\": \"Requests\",\n                      \"formatter\": 0,\n                      \"numberFormat\": {\n                        \"unit\": 17,\n                        \"options\": {\n                          \"style\": \"decimal\"\n                        }\n                      }\n                    },\n                    {\n                      \"columnMatch\": \"Endpoint1\",\n                      \"formatter\": 5\n                    },\n                    {\n                      \"columnMatch\": \"avg_duration\",\n                      \"formatter\": 10,\n                      \"formatOptions\": {\n                        \"palette\": \"blue\"\n                      },\n                      \"numberFormat\": {\n                        \"unit\": 23,\n                        \"options\": {\n                          \"style\": \"decimal\"\n                        }\n                      }\n                    },\n                    {\n                      \"columnMatch\": \"Median\",\n                      \"formatter\": 0,\n                      \"numberFormat\": {\n                        \"unit\": 23,\n                        \"options\": {\n                          \"style\": \"decimal\",\n                          \"minimumSignificantDigits\": 3,\n                          \"maximumSignificantDigits\": 3\n                        }\n                      }\n                    },\n                    {\n                      \"columnMatch\": \"p80\",\n                      \"formatter\": 0,\n                      \"numberFormat\": {\n                        \"unit\": 23,\n                        \"options\": {\n                          \"style\": \"decimal\",\n                          \"minimumSignificantDigits\": 3,\n                          \"maximumSignificantDigits\": 3\n                        }\n                      }\n                    }\n                  ],\n                  \"labelSettings\": [\n                    {\n                      \"columnId\": \"type\",\n                      \"label\": \"Type\"\n                    },\n                    {\n                      \"columnId\": \"avg_duration\",\n                      \"label\": \"Average Duration (history)\"\n                    }\n                  ]\n                }\n              },\n              \"name\": \"Dependency durations\"\n            }\n          ]\n        },\n        \"name\": \"Dependencies\"\n      },\n      {\n        \"type\": 12,\n        \"content\": {\n          \"version\": \"NotebookGroup/1.0\",\n          \"groupType\": \"editable\",\n          \"title\": \"Fleet Overview\",\n          \"items\": [\n            {\n              \"type\": 11,\n              \"content\": {\n                \"version\": \"LinkItem/1.0\",\n                \"style\": \"tabs\",\n                \"links\": [\n                  {\n                    \"id\": \"9ba0a0e8-584b-421a-85e6-96c89eda5a17\",\n                    \"cellValue\": \"mainAction\",\n                    \"linkTarget\": \"parameter\",\n                    \"linkLabel\": \"Devices\",\n                    \"subTarget\": \"devicelist\",\n                    \"style\": \"link\"\n                  },\n                  {\n                    \"id\": \"3b8d77da-20d0-499a-b62d-25f5c6a88a55\",\n                    \"cellValue\": \"mainAction\",\n                    \"linkTarget\": \"parameter\",\n                    \"linkLabel\": \"Alerts\",\n                    \"subTarget\": \"alerts\",\n                    \"style\": \"link\"\n                  }\n                ]\n              },\n              \"customWidth\": \"25\",\n              \"conditionalVisibility\": {\n                \"parameterName\": \"InsightsMetricsExists\",\n                \"comparison\": \"isEqualTo\",\n                \"value\": \"yes\"\n              },\n              \"name\": \"links - 8 - Copy\"\n            },\n            {\n              \"type\": 12,\n              \"content\": {\n                \"version\": \"NotebookGroup/1.0\",\n                \"groupType\": \"template\",\n                \"loadFromTemplateId\": \"Community-Workbooks/IoTHub/IoT Edge\",\n                \"items\": [],\n                \"exportParameters\": true\n              },\n              \"conditionalVisibilities\": [\n                {\n                  \"parameterName\": \"InsightsMetricsExists\",\n                  \"comparison\": \"isEqualTo\",\n                  \"value\": \"yes\"\n                },\n                {\n                  \"parameterName\": \"mainAction\",\n                  \"comparison\": \"isEqualTo\",\n                  \"value\": \"devicelist\"\n                }\n              ],\n              \"name\": \"device-group\",\n              \"styleSettings\": {\n                \"showBorder\": true\n              }\n            },\n            {\n              \"type\": 12,\n              \"content\": {\n                \"version\": \"NotebookGroup/1.0\",\n                \"groupType\": \"editable\",\n                \"items\": [\n                  {\n                    \"type\": 9,\n                    \"content\": {\n                      \"version\": \"KqlParameterItem/1.0\",\n                      \"parameters\": [\n                        {\n                          \"id\": \"bd6d6075-dc8f-43d3-829f-7e2245a3eb21\",\n                          \"version\": \"KqlParameterItem/1.0\",\n                          \"name\": \"State\",\n                          \"type\": 2,\n                          \"isRequired\": true,\n                          \"multiSelect\": true,\n                          \"quote\": \"'\",\n                          \"delimiter\": \",\",\n                          \"query\": \"{\\\"version\\\":\\\"1.0.0\\\",\\\"content\\\":\\\"[ \\\\r\\\\n    {\\\\\\\"id\\\\\\\":\\\\\\\"New\\\\\\\", \\\\\\\"label\\\\\\\": \\\\\\\"New\\\\\\\"},\\\\r\\\\n    {\\\\\\\"id\\\\\\\":\\\\\\\"Acknowledged\\\\\\\", \\\\\\\"label\\\\\\\": \\\\\\\"Acknowledged\\\\\\\"},\\\\r\\\\n    {\\\\\\\"id\\\\\\\":\\\\\\\"Closed\\\\\\\", \\\\\\\"label\\\\\\\": \\\\\\\"Closed\\\\\\\"}\\\\r\\\\n]\\\",\\\"transformers\\\":null}\",\n                          \"crossComponentResources\": [\"{Subscription}\"],\n                          \"value\": [\"value::all\"],\n                          \"typeSettings\": {\n                            \"additionalResourceOptions\": [\"value::all\"],\n                            \"selectAllValue\": \"*\",\n                            \"showDefault\": false\n                          },\n                          \"queryType\": 8\n                        }\n                      ],\n                      \"style\": \"above\",\n                      \"queryType\": 0,\n                      \"resourceType\": \"microsoft.insights/components\"\n                    },\n                    \"customWidth\": \"0\",\n                    \"name\": \"parameters\",\n                    \"styleSettings\": {\n                      \"margin\": \"10px 0px 0px 10px\"\n                    }\n                  },\n                  {\n                    \"type\": 12,\n                    \"content\": {\n                      \"version\": \"NotebookGroup/1.0\",\n                      \"groupType\": \"editable\",\n                      \"items\": [\n                        {\n                          \"type\": 12,\n                          \"content\": {\n                            \"version\": \"NotebookGroup/1.0\",\n                            \"groupType\": \"editable\",\n                            \"items\": [\n                              {\n                                \"type\": 3,\n                                \"content\": {\n                                  \"version\": \"KqlItem/1.0\",\n                                  \"query\": \"AlertsManagementResources | where type =~ 'microsoft.alertsmanagement/alerts'\\r\\n| where todatetime(properties.essentials.startDateTime) {timeRange}\\r\\n| where \\\"*\\\" in ({alertResources}) or properties.essentials.targetResource in~ ({alertResources})\\r\\n| extend State=tostring(properties.essentials.alertState)\\r\\n| where \\\"*\\\" in ({State}) or State in ({State})\\r\\n| summarize Count=count(), New=countif(State==\\\"New\\\"), \\r\\nAcknowledged=countif(State==\\\"Acknowledged\\\"), \\r\\nClosed=countif(State==\\\"Closed\\\") \\r\\nby Severity=tostring(properties.essentials.severity)\\r\\n| order by Severity asc\",\n                                  \"size\": 3,\n                                  \"noDataMessage\": \"No alerts found\",\n                                  \"noDataMessageStyle\": 3,\n                                  \"exportMultipleValues\": true,\n                                  \"exportedParameters\": [\n                                    {\n                                      \"fieldName\": \"Severity\",\n                                      \"parameterName\": \"Severity\",\n                                      \"parameterType\": 1\n                                    }\n                                  ],\n                                  \"queryType\": 1,\n                                  \"resourceType\": \"microsoft.resourcegraph/resources\",\n                                  \"crossComponentResources\": [\n                                    \"{Subscription}\"\n                                  ],\n                                  \"visualization\": \"table\"\n                                },\n                                \"name\": \"Alerts summary\"\n                              }\n                            ],\n                            \"exportParameters\": true\n                          },\n                          \"conditionalVisibility\": {\n                            \"parameterName\": \"Subscription\",\n                            \"comparison\": \"isNotEqualTo\"\n                          },\n                          \"name\": \"alert-summary-group\"\n                        },\n                        {\n                          \"type\": 12,\n                          \"content\": {\n                            \"version\": \"NotebookGroup/1.0\",\n                            \"groupType\": \"editable\",\n                            \"items\": [\n                              {\n                                \"type\": 11,\n                                \"content\": {\n                                  \"version\": \"LinkItem/1.0\",\n                                  \"style\": \"tabs\",\n                                  \"links\": [\n                                    {\n                                      \"id\": \"b4b81349-14f3-49a1-91df-701be106b46a\",\n                                      \"cellValue\": \"tab\",\n                                      \"linkTarget\": \"parameter\",\n                                      \"linkLabel\": \"Alert Details\",\n                                      \"subTarget\": \"details\",\n                                      \"preText\": \"Alert Details\",\n                                      \"style\": \"link\"\n                                    },\n                                    {\n                                      \"id\": \"7e0cfa3e-5858-4016-adf1-3695c714d915\",\n                                      \"cellValue\": \"tab\",\n                                      \"linkTarget\": \"parameter\",\n                                      \"linkLabel\": \"Alerts by Region\",\n                                      \"subTarget\": \"region\",\n                                      \"style\": \"link\"\n                                    }\n                                  ]\n                                },\n                                \"name\": \"links - 2\"\n                              },\n                              {\n                                \"type\": 3,\n                                \"content\": {\n                                  \"version\": \"KqlItem/1.0\",\n                                  \"query\": \"AlertsManagementResources | where type =~ 'microsoft.alertsmanagement/alerts'\\r\\n| where todatetime(properties.essentials.startDateTime) {timeRange}  \\r\\n| extend Severity=tostring(properties.essentials.severity)\\r\\n| where Severity in ({Severity})\\r\\n| extend State=tostring(properties.essentials.alertState)\\r\\n| project AlertId=id, StartTime=todatetime(tostring(properties.essentials.startDateTime)), Severity, State=tostring(properties.essentials.alertState), Name=name, TargetResource = tostring(properties.essentials.targetResource), MonitorService = tostring(properties.essentials.monitorService), SignalType=tostring(properties.essentials.signalType), Description=tostring(properties.essentials.description)\\r\\n\",\n                                  \"size\": 3,\n                                  \"showExportToExcel\": true,\n                                  \"queryType\": 1,\n                                  \"resourceType\": \"microsoft.resourcegraph/resources\",\n                                  \"crossComponentResources\": [\n                                    \"{Subscription}\"\n                                  ],\n                                  \"visualization\": \"table\",\n                                  \"gridSettings\": {\n                                    \"formatters\": [\n                                      {\n                                        \"columnMatch\": \"AlertId\",\n                                        \"formatter\": 5\n                                      },\n                                      {\n                                        \"columnMatch\": \"StartTime\",\n                                        \"formatter\": 6\n                                      },\n                                      {\n                                        \"columnMatch\": \"Severity\",\n                                        \"formatter\": 11\n                                      },\n                                      {\n                                        \"columnMatch\": \"Name\",\n                                        \"formatter\": 1,\n                                        \"formatOptions\": {\n                                          \"linkTarget\": \"OpenBlade\",\n                                          \"bladeOpenContext\": {\n                                            \"bladeName\": \"AlertDetailsTemplateBlade\",\n                                            \"extensionName\": \"Microsoft_Azure_Monitoring\",\n                                            \"bladeParameters\": [\n                                              {\n                                                \"name\": \"alertId\",\n                                                \"source\": \"column\",\n                                                \"value\": \"AlertId\"\n                                              },\n                                              {\n                                                \"name\": \"alertName\",\n                                                \"source\": \"column\",\n                                                \"value\": \"Name\"\n                                              },\n                                              {\n                                                \"name\": \"invokedFrom\",\n                                                \"source\": \"static\",\n                                                \"value\": \"Workbooks\"\n                                              }\n                                            ]\n                                          }\n                                        },\n                                        \"tooltipFormat\": {\n                                          \"tooltip\": \"View alert details\"\n                                        }\n                                      }\n                                    ]\n                                  }\n                                },\n                                \"conditionalVisibilities\": [\n                                  {\n                                    \"parameterName\": \"Severity\",\n                                    \"comparison\": \"isNotEqualTo\"\n                                  },\n                                  {\n                                    \"parameterName\": \"tab\",\n                                    \"comparison\": \"isEqualTo\",\n                                    \"value\": \"details\"\n                                  }\n                                ],\n                                \"name\": \"Alert details\"\n                              },\n                              {\n                                \"type\": 3,\n                                \"content\": {\n                                  \"version\": \"KqlItem/1.0\",\n                                  \"query\": \"AlertsManagementResources | where type =~ 'microsoft.alertsmanagement/alerts'\\r\\n| where todatetime(properties.essentials.startDateTime) {timeRange}  \\r\\n| extend State=tostring(properties.essentials.alertState)\\r\\n| where \\\"*\\\" in ({State}) or State in ({State})\\r\\n| where \\\"*\\\" in ({alertResources}) or properties.essentials.targetResource in~ ({alertResources})\\r\\n| summarize Alerts=count(), New=countif(State==\\\"New\\\"), \\r\\nAcknowledged=countif(State==\\\"Acknowledged\\\"), \\r\\nClosed=countif(State==\\\"Closed\\\")\\r\\nby Resource=tostring(properties.essentials.targetResource )\\r\\n| order by Alerts desc\\r\\n\",\n                                  \"size\": 3,\n                                  \"title\": \"Alerts by Region\",\n                                  \"noDataMessage\": \"No alerts\",\n                                  \"noDataMessageStyle\": 3,\n                                  \"queryType\": 1,\n                                  \"resourceType\": \"microsoft.resourcegraph/resources\",\n                                  \"crossComponentResources\": [\n                                    \"{Subscription}\"\n                                  ],\n                                  \"visualization\": \"map\",\n                                  \"mapSettings\": {\n                                    \"locInfo\": \"AzureResource\",\n                                    \"locInfoColumn\": \"Resource\",\n                                    \"sizeSettings\": \"Alerts\",\n                                    \"sizeAggregation\": \"Sum\",\n                                    \"legendMetric\": \"Alerts\",\n                                    \"legendAggregation\": \"Sum\",\n                                    \"itemColorSettings\": {\n                                      \"nodeColorField\": \"Alerts\",\n                                      \"colorAggregation\": \"Sum\",\n                                      \"type\": \"heatmap\",\n                                      \"heatmapPalette\": \"greenRed\"\n                                    }\n                                  }\n                                },\n                                \"conditionalVisibility\": {\n                                  \"parameterName\": \"tab\",\n                                  \"comparison\": \"isEqualTo\",\n                                  \"value\": \"region\"\n                                },\n                                \"name\": \"Alerts map\"\n                              }\n                            ]\n                          },\n                          \"conditionalVisibility\": {\n                            \"parameterName\": \"Severity\",\n                            \"comparison\": \"isNotEqualTo\"\n                          },\n                          \"name\": \"visible if severity selected\"\n                        }\n                      ]\n                    },\n                    \"conditionalVisibility\": {\n                      \"parameterName\": \"Subscription\",\n                      \"comparison\": \"isNotEqualTo\"\n                    },\n                    \"name\": \"visible if subscriptions selected\"\n                  }\n                ],\n                \"exportParameters\": true\n              },\n              \"conditionalVisibility\": {\n                \"parameterName\": \"mainAction\",\n                \"comparison\": \"isEqualTo\",\n                \"value\": \"alerts\"\n              },\n              \"name\": \"alerts-group\",\n              \"styleSettings\": {\n                \"margin\": \"15px 0px\",\n                \"showBorder\": true\n              }\n            }\n          ]\n        },\n        \"name\": \"Fleet Overview\"\n      }\n    ],\n    \"isLocked\": false,\n    \"defaultResourceIds\": [\n        \"{{appInsightsResourceId}}\",\n        \"{{iotHubResourceId}}\",\n        \"{{subscriptionResourceId}}\"\n    ],\n    \"fallbackResourceIds\": [\n        \"{{appInsightsResourceId}}\",\n        \"{{iotHubResourceId}}\",\n        \"{{subscriptionResourceId}}\"\n    ],\n    \"fromTemplateId\": \"community-Workbooks/IoTHub/IoT Edge\"\n  }",
+                    "workbookDisplayName": "StarterKitWorkbook",
+                    "workbookContent": "[replace(replace(replace(variables('$fxv#0'), '{{subscriptionResourceId}}', subscription().id), '{{appInsightsResourceId}}', resourceId('Microsoft.Insights/components', parameters('appInsightsName'))), '{{iotHubResourceId}}', resourceId('Microsoft.Devices/IotHubs', parameters('iothubName')))]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Insights/workbooks",
+                      "apiVersion": "2022-04-01",
+                      "name": "[guid(variables('workbookDisplayName'))]",
+                      "location": "[parameters('location')]",
+                      "kind": "shared",
+                      "properties": {
+                        "displayName": "[variables('workbookDisplayName')]",
+                        "serializedData": "[variables('workbookContent')]",
+                        "version": "1.0",
+                        "category": "workbook",
+                        "sourceId": "[resourceId('Microsoft.Devices/IotHubs', parameters('iothubName'))]"
+                      }
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', format('{0}insight', parameters('prefix')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('useAzureMonitorOnEdge')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "azureMonitorAlerts",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "appInsightsName": {
+                    "value": "[format('{0}insight', parameters('prefix'))]"
+                  },
+                  "iothubName": {
+                    "value": "[parameters('iotHubName')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.22.6.54827",
+                      "templateHash": "10169398803768460939"
+                    }
+                  },
+                  "parameters": {
+                    "iothubName": {
+                      "type": "string"
+                    },
+                    "appInsightsName": {
+                      "type": "string"
+                    },
+                    "alertSensitivity": {
+                      "type": "string",
+                      "defaultValue": "Medium",
+                      "metadata": {
+                        "description": "Dynamic Threshold sensitivity (High, Medium, Low)"
+                      }
+                    },
+                    "evaluationPeriods": {
+                      "type": "int",
+                      "defaultValue": 4,
+                      "metadata": {
+                        "description": "Dynamic Threshold Failing Periods configurations https://docs.microsoft.com/azure/azure-monitor/alerts/alerts-dynamic-thresholds#what-do-the-advanced-settings-in-dynamic-thresholds-mean"
+                      }
+                    },
+                    "failingPeriods": {
+                      "type": "int",
+                      "defaultValue": 4,
+                      "metadata": {
+                        "description": "Dynamic Threshold Failing Periods configurations https://docs.microsoft.com/azure/azure-monitor/alerts/alerts-dynamic-thresholds#what-do-the-advanced-settings-in-dynamic-thresholds-mean"
+                      }
+                    },
+                    "metricNamespace": {
+                      "type": "string",
+                      "defaultValue": "LoRaWan",
+                      "metadata": {
+                        "description": "Metric namespace for the alert. Default is LoRaWan"
+                      }
+                    },
+                    "evaluationFrequency": {
+                      "type": "string",
+                      "defaultValue": "PT1H",
+                      "metadata": {
+                        "description": "Every hour (5 mins, 15 mins, 30 mins, etc.)"
+                      }
+                    },
+                    "aggregationPeriod": {
+                      "type": "string",
+                      "defaultValue": "PT1H",
+                      "metadata": {
+                        "description": "1 hour (5 mins, 15 mins, 30 mins, etc.)"
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Insights/metricAlerts",
+                      "apiVersion": "2018-03-01",
+                      "name": "High Upstream Message Latency",
+                      "location": "global",
+                      "properties": {
+                        "description": "High device message processing time (throughput)",
+                        "severity": 2,
+                        "enabled": true,
+                        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                        "windowSize": "[parameters('aggregationPeriod')]",
+                        "autoMitigate": true,
+                        "targetResourceType": "microsoft.insights/components",
+                        "actions": [],
+                        "scopes": [
+                          "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
+                        ],
+                        "criteria": {
+                          "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                          "allOf": [
+                            {
+                              "alertSensitivity": "[parameters('alertSensitivity')]",
+                              "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[parameters('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[parameters('failingPeriods')]"
+                              },
+                              "name": "Metric1",
+                              "metricNamespace": "[parameters('metricNamespace')]",
+                              "metricName": "D2CMessageDeliveryLatency",
+                              "dimensions": [
+                                {
+                                  "name": "GatewayId",
+                                  "operator": "Include",
+                                  "values": [
+                                    "*"
+                                  ]
+                                }
+                              ],
+                              "operator": "GreaterThan",
+                              "timeAggregation": "Average",
+                              "criterionType": "DynamicThresholdCriterion",
+                              "skipMetricValidation": true
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Insights/metricAlerts",
+                      "apiVersion": "2018-03-01",
+                      "name": "High Receive Window Misses",
+                      "location": "global",
+                      "properties": {
+                        "description": "High receive window misses (throughput)",
+                        "severity": 2,
+                        "enabled": true,
+                        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                        "windowSize": "[parameters('aggregationPeriod')]",
+                        "autoMitigate": true,
+                        "targetResourceType": "microsoft.insights/components",
+                        "actions": [],
+                        "scopes": [
+                          "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
+                        ],
+                        "criteria": {
+                          "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                          "allOf": [
+                            {
+                              "alertSensitivity": "[parameters('alertSensitivity')]",
+                              "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[parameters('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[parameters('failingPeriods')]"
+                              },
+                              "name": "Metric1",
+                              "metricNamespace": "[parameters('metricNamespace')]",
+                              "metricName": "ReceiveWindowMisses",
+                              "dimensions": [
+                                {
+                                  "name": "GatewayId",
+                                  "operator": "Include",
+                                  "values": [
+                                    "*"
+                                  ]
+                                }
+                              ],
+                              "operator": "GreaterThan",
+                              "timeAggregation": "Average",
+                              "criterionType": "DynamicThresholdCriterion",
+                              "skipMetricValidation": true
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Insights/metricAlerts",
+                      "apiVersion": "2018-03-01",
+                      "name": "Unhandled Exceptions",
+                      "location": "global",
+                      "properties": {
+                        "description": "High error count (correctness)",
+                        "severity": 2,
+                        "enabled": true,
+                        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                        "windowSize": "[parameters('aggregationPeriod')]",
+                        "autoMitigate": true,
+                        "targetResourceType": "microsoft.insights/components",
+                        "actions": [],
+                        "scopes": [
+                          "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
+                        ],
+                        "criteria": {
+                          "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                          "allOf": [
+                            {
+                              "alertSensitivity": "[parameters('alertSensitivity')]",
+                              "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[parameters('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[parameters('failingPeriods')]"
+                              },
+                              "name": "Metric1",
+                              "metricNamespace": "[parameters('metricNamespace')]",
+                              "metricName": "UnhandledExceptions",
+                              "operator": "GreaterThan",
+                              "timeAggregation": "Count",
+                              "criterionType": "DynamicThresholdCriterion",
+                              "skipMetricValidation": true
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Insights/metricAlerts",
+                      "apiVersion": "2018-03-01",
+                      "name": "High Downstream Messages Abandoned Number",
+                      "location": "global",
+                      "properties": {
+                        "description": "High device messages abandoned number (correctness, throughput)",
+                        "severity": 2,
+                        "enabled": true,
+                        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                        "windowSize": "[parameters('aggregationPeriod')]",
+                        "autoMitigate": true,
+                        "targetResourceType": "microsoft.devices/iothubs",
+                        "actions": [],
+                        "scopes": [
+                          "[resourceId('Microsoft.Devices/IotHubs', parameters('iothubName'))]"
+                        ],
+                        "criteria": {
+                          "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                          "allOf": [
+                            {
+                              "alertSensitivity": "[parameters('alertSensitivity')]",
+                              "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[parameters('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[parameters('failingPeriods')]"
+                              },
+                              "name": "Metric1",
+                              "metricNamespace": "Microsoft.Devices/IotHubs",
+                              "metricName": "c2d.commands.egress.abandon.success",
+                              "operator": "GreaterThan",
+                              "timeAggregation": "Average",
+                              "criterionType": "DynamicThresholdCriterion",
+                              "skipMetricValidation": true
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Insights/metricAlerts",
+                      "apiVersion": "2018-03-01",
+                      "name": "High Downstream Messages Rejected Number",
+                      "location": "global",
+                      "properties": {
+                        "description": "High device messages rejected number (correctness, throughput)",
+                        "severity": 2,
+                        "enabled": true,
+                        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                        "windowSize": "[parameters('aggregationPeriod')]",
+                        "autoMitigate": true,
+                        "targetResourceType": "microsoft.devices/iothubs",
+                        "actions": [],
+                        "scopes": [
+                          "[resourceId('Microsoft.Devices/IotHubs', parameters('iothubName'))]"
+                        ],
+                        "criteria": {
+                          "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                          "allOf": [
+                            {
+                              "alertSensitivity": "[parameters('alertSensitivity')]",
+                              "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[parameters('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[parameters('failingPeriods')]"
+                              },
+                              "name": "Metric1",
+                              "metricNamespace": "Microsoft.Devices/IotHubs",
+                              "metricName": "c2d.commands.egress.reject.success",
+                              "operator": "GreaterThan",
+                              "timeAggregation": "Average",
+                              "criterionType": "DynamicThresholdCriterion",
+                              "skipMetricValidation": true
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Insights/metricAlerts",
+                      "apiVersion": "2018-03-01",
+                      "name": "High Upstream Messages Lost Ratio",
+                      "location": "global",
+                      "properties": {
+                        "description": "High Upstream Messages Lost Ratio (Correctness) (D2CMessagesReceived/D2CMessagesDelivered)",
+                        "severity": 2,
+                        "enabled": true,
+                        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+                        "windowSize": "[parameters('aggregationPeriod')]",
+                        "autoMitigate": true,
+                        "targetResourceType": "microsoft.insights/components",
+                        "actions": [],
+                        "scopes": [
+                          "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
+                        ],
+                        "criteria": {
+                          "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                          "allOf": [
+                            {
+                              "alertSensitivity": "[parameters('alertSensitivity')]",
+                              "failingPeriods": {
+                                "numberOfEvaluationPeriods": "[parameters('evaluationPeriods')]",
+                                "minFailingPeriodsToAlert": "[parameters('failingPeriods')]"
+                              },
+                              "name": "Metric1",
+                              "metricNamespace": "[parameters('metricNamespace')]",
+                              "metricName": "D2CMessagesLostRatio",
+                              "dimensions": [
+                                {
+                                  "name": "GatewayId",
+                                  "operator": "Include",
+                                  "values": [
+                                    "*"
+                                  ]
+                                }
+                              ],
+                              "operator": "GreaterThan",
+                              "timeAggregation": "Average",
+                              "criterionType": "DynamicThresholdCriterion",
+                              "skipMetricValidation": true
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', format('{0}insight', parameters('prefix')))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "appInsightName": {
+              "type": "string",
+              "value": "[format('{0}insight', parameters('prefix'))]"
+            },
+            "logAnalyticsName": {
+              "type": "string",
+              "value": "[format('{0}analytics', parameters('prefix'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'iotHub')]"
+      ]
+    },
+    {
+      "condition": "[parameters('useDiscoveryService')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "discoveryService",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "appInsightName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'observability'), '2022-09-01').outputs.appInsightName.value]"
+          },
+          "version": {
+            "value": "[parameters('version')]"
+          },
+          "gitUsername": {
+            "value": "[parameters('gitUsername')]"
+          },
+          "iotHubName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iotHub'), '2022-09-01').outputs.iotHubName.value]"
+          },
+          "uniqueSolutionPrefix": {
+            "value": "[parameters('uniqueSolutionPrefix')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "3615875151356609259"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "B1"
+            },
+            "version": {
+              "type": "string"
+            },
+            "iotHubName": {
+              "type": "string"
+            },
+            "appInsightName": {
+              "type": "string"
+            },
+            "roleNameGuid": {
+              "type": "string",
+              "defaultValue": "[guid(resourceGroup().id, 'twincontributor')]"
+            },
+            "uniqueSolutionPrefix": {
+              "type": "string"
+            },
+            "gitUsername": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "webAppName": "[format('{0}discovery', parameters('uniqueSolutionPrefix'))]",
+            "hostingPlanName": "[format('{0}plan', variables('webAppName'))]",
+            "aspNetCoreUrls": "http://0.0.0.0:80;https://0.0.0.0:443",
+            "discoveryZipUrl": "[format('https://github.com/{0}/iotedge-lorawan-starterkit/releases/download/v{1}/discoveryservice-{2}.zip', parameters('gitUsername'), parameters('version'), parameters('version'))]",
+            "iotHubTwinContributorRoleId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '494bdba2-168f-4f31-a0a1-191d2f7c028c')]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('hostingPlanName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('webAppName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "IotHubHostName",
+                      "value": "[reference(resourceId('Microsoft.Devices/IotHubs', parameters('iotHubName')), '2021-07-02').hostName]"
+                    },
+                    {
+                      "name": "WEBSITE_RUN_FROM_PACKAGE",
+                      "value": "[variables('discoveryZipUrl')]"
+                    },
+                    {
+                      "name": "ASPNETCORE_URLS",
+                      "value": "[variables('aspNetCoreUrls')]"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightName')), '2020-02-02').InstrumentationKey]"
+                    }
+                  ],
+                  "webSocketsEnabled": true
+                }
+              },
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Devices/IotHubs/{0}', parameters('iotHubName'))]",
+              "name": "[parameters('roleNameGuid')]",
+              "properties": {
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('webAppName')), '2022-03-01', 'full').identity.principalId]",
+                "roleDefinitionId": "[variables('iotHubTwinContributorRoleId')]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('webAppName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'iotHub')]",
+        "[resourceId('Microsoft.Resources/deployments', 'observability')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "createDevices",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "deployDevice": {
+            "value": "[parameters('deployDevice')]"
+          },
+          "logAnalyticsName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'observability'), '2022-09-01').outputs.logAnalyticsName.value]"
+          },
+          "functionAppName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'function'), '2022-09-01').outputs.functionName.value]"
+          },
+          "iothubName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iotHub'), '2022-09-01').outputs.iotHubName.value]"
+          },
+          "edgeGatewayName": {
+            "value": "[parameters('edgeGatewayName')]"
+          },
+          "resetPin": {
+            "value": "[parameters('resetPin')]"
+          },
+          "region": {
+            "value": "[parameters('region')]"
+          },
+          "stationEui": {
+            "value": "[parameters('stationEui')]"
+          },
+          "spiSpeed": {
+            "value": "[parameters('spiSpeed')]"
+          },
+          "spiDev": {
+            "value": "[parameters('spiDev')]"
+          },
+          "loraCliUrl": {
+            "value": "[parameters('loraCliUrl')]"
+          },
+          "version": {
+            "value": "[parameters('version')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "5039673451284488858"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "iothubName": {
+              "type": "string"
+            },
+            "edgeGatewayName": {
+              "type": "string"
+            },
+            "resetPin": {
+              "type": "int"
+            },
+            "spiSpeed": {
+              "type": "int"
+            },
+            "spiDev": {
+              "type": "int"
+            },
+            "utcValue": {
+              "type": "string",
+              "defaultValue": "[utcNow()]"
+            },
+            "functionAppName": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            },
+            "stationEui": {
+              "type": "string"
+            },
+            "lnsHostAddress": {
+              "type": "string",
+              "defaultValue": "ws://mylns:5000"
+            },
+            "useAzureMonitorOnEdge": {
+              "type": "bool",
+              "defaultValue": true
+            },
+            "logAnalyticsName": {
+              "type": "string"
+            },
+            "deployDevice": {
+              "type": "bool"
+            },
+            "loraCliUrl": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "$fxv#0": "create_devices_with_lora_cli() {\n    echo \"Downloading lora-cli from $LORA_CLI_URL...\"\n    curl -SsL \"$LORA_CLI_URL\" -o lora-cli.tar.gz\n    mkdir -p lora-cli && tar -xzf ./lora-cli.tar.gz -C ./lora-cli\n\n    cd lora-cli\n    chmod +x ./loradeviceprovisioning\n\n    local monitoringEnabled=\"false\"\n    if [ \"${MONITORING_ENABLED}\" = \"1\" ]; then\n        monitoringEnabled=\"true\"\n    fi\n\n    echo \"Creating gateway $EDGE_GATEWAY_NAME...\"\n    ./loradeviceprovisioning add-gateway --reset-pin \"$RESET_PIN\" --device-id \"$EDGE_GATEWAY_NAME\" --spi-dev \"$SPI_DEV\" --spi-speed \"$SPI_SPEED\" --api-url \"$FACADE_SERVER_URL\" --api-key \"$FACADE_AUTH_CODE\" --lns-host-address \"$LNS_HOST_ADDRESS\" --network \"$NETWORK\" --monitoring \"$monitoringEnabled\" --iothub-resource-id \"$IOTHUB_RESOURCE_ID\" --log-analytics-workspace-id \"$LOG_ANALYTICS_WORKSPACE_ID\" --log-analytics-shared-key \"$LOG_ANALYTICS_SHARED_KEY\" --lora-version \"$LORA_VERSION\"\n\n    echo \"Creating concentrator $STATION_DEVICE_NAME for region $REGION...\"\n    ./loradeviceprovisioning add --type concentrator --region \"$REGION\" --stationeui \"$STATION_DEVICE_NAME\" --no-cups --network \"$NETWORK\"\n\n    # add leaf devices\n    if [ \"${DEPLOY_DEVICE}\" = \"1\" ]; then\n        echo \"Creating leaf devices 46AAC86800430028 and 47AAC86800430028...\"\n        abp_apps_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)\n        abp_nwks_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)\n        otaa_key=$(tr -dc 'A-F0-9' < /dev/urandom | head -c32)\n        ./loradeviceprovisioning add --type abp --deveui \"46AAC86800430028\" --appskey $abp_apps_key --nwkskey $abp_nwks_key --devaddr \"0228B1B1\" --decoder \"DecoderValueSensor\" --network \"$NETWORK\"\n        ./loradeviceprovisioning add --type otaa --deveui \"47AAC86800430028\" --appeui \"BE7A0000000014E2\" --appkey $otaa_key --decoder \"DecoderValueSensor\" --network \"$NETWORK\"\n\n        echo \"The ABP device 46AAC86800430028 has an AppSKey of $abp_apps_key and a NwkSKey of $abp_nwks_key\"\n        echo \"The OTAA device 47AAC86800430028 has an OTAA App key of $otaa_key\"\n    fi\n}\n\n# Setting default values\nSTATION_DEVICE_NAME=${STATION_DEVICE_NAME:-AA555A0000000101}\nREGION=${REGION:-EU863}\nNETWORK=${NETWORK-quickstartnetwork}\nLNS_HOST_ADDRESS=${LNS_HOST_ADDRESS-ws://mylns:5000}\nSPI_DEV=${SPI_DEV-0}\nSPI_SPEED=${SPI_SPEED-8}\n\ncreate_devices_with_lora_cli\n"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deploymentScripts",
+              "apiVersion": "2020-10-01",
+              "name": "createIothubDevices",
+              "kind": "AzureCLI",
+              "location": "[parameters('location')]",
+              "properties": {
+                "forceUpdateTag": "[parameters('utcValue')]",
+                "azCliVersion": "2.40.0",
+                "cleanupPreference": "OnSuccess",
+                "timeout": "PT10M",
+                "retentionInterval": "P1D",
+                "environmentVariables": [
+                  {
+                    "name": "IOTHUB_RESOURCE_ID",
+                    "value": "[resourceId('Microsoft.Devices/IotHubs', parameters('iothubName'))]"
+                  },
+                  {
+                    "name": "IOTHUB_CONNECTION_STRING",
+                    "secureValue": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName={1};SharedAccessKey={2}', parameters('iothubName'), listKeys(resourceId('Microsoft.Devices/IotHubs', parameters('iothubName')), '2020-04-01').value[0].keyName, listKeys(resourceId('Microsoft.Devices/IotHubs', parameters('iothubName')), '2020-04-01').value[0].primaryKey)]"
+                  },
+                  {
+                    "name": "LOG_ANALYTICS_WORKSPACE_ID",
+                    "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName')), '2022-10-01').customerId]"
+                  },
+                  {
+                    "name": "LOG_ANALYTICS_SHARED_KEY",
+                    "secureValue": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName')), '2022-10-01').primarySharedKey]"
+                  },
+                  {
+                    "name": "EDGE_GATEWAY_NAME",
+                    "value": "[parameters('edgeGatewayName')]"
+                  },
+                  {
+                    "name": "STATION_DEVICE_NAME",
+                    "value": "[parameters('stationEui')]"
+                  },
+                  {
+                    "name": "RESET_PIN",
+                    "value": "[string(parameters('resetPin'))]"
+                  },
+                  {
+                    "name": "SPI_SPEED",
+                    "value": "[string(parameters('spiSpeed'))]"
+                  },
+                  {
+                    "name": "SPI_DEV",
+                    "value": "[string(parameters('spiDev'))]"
+                  },
+                  {
+                    "name": "FACADE_AUTH_CODE",
+                    "secureValue": "[listkeys(format('{0}/host/default', resourceId('Microsoft.Web/sites', parameters('functionAppName'))), '2016-08-01').functionKeys.default]"
+                  },
+                  {
+                    "name": "FACADE_SERVER_URL",
+                    "value": "[format('https://{0}.azurewebsites.net/api', parameters('functionAppName'))]"
+                  },
+                  {
+                    "name": "NETWORK",
+                    "value": "quickstartnetwork"
+                  },
+                  {
+                    "name": "LNS_HOST_ADDRESS",
+                    "value": "[parameters('lnsHostAddress')]"
+                  },
+                  {
+                    "name": "REGION",
+                    "value": "[toLower(parameters('region'))]"
+                  },
+                  {
+                    "name": "MONITORING_ENABLED",
+                    "value": "[if(parameters('useAzureMonitorOnEdge'), '1', '0')]"
+                  },
+                  {
+                    "name": "DEPLOY_DEVICE",
+                    "value": "[if(parameters('deployDevice'), '1', '0')]"
+                  },
+                  {
+                    "name": "LORA_CLI_URL",
+                    "value": "[parameters('loraCliUrl')]"
+                  },
+                  {
+                    "name": "LORA_VERSION",
+                    "value": "[parameters('version')]"
+                  }
+                ],
+                "scriptContent": "[variables('$fxv#0')]"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'function')]",
+        "[resourceId('Microsoft.Resources/deployments', 'iotHub')]",
+        "[resourceId('Microsoft.Resources/deployments', 'observability')]"
+      ]
+    }
+  ]
+}
