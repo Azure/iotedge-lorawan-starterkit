@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Input the version that needs to be deployed. For example 2.0.0. (And make sure you select the branch docs/main when triggering this action.)'
+        description: 'Input the version that needs to be deployed. For example 2.0.0 (and make sure you select the branch docs/main when triggering this action.)'
         required: true
 
 jobs:
