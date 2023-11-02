@@ -100,7 +100,7 @@ jobs:
           ${{ env.TESTS_RESULTS_FOLDER }}/Cli.Unit
 
     - name: Upload to Codecov test reports
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         directory: Tests/
 
