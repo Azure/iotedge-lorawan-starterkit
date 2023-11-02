@@ -1,16 +1,16 @@
 # This workflow needs to be triggered manually to create a 
-# new version of the documentation
+# new version of the documentation.
 # 
-# this workflow needs to live in default branch to be able
+# This workflow needs to live in default branch to be able
 # to be triggered manually due to a limitation of github actions.
 
-# make sure to select the branch `docs/main` when triggering this action
+# Make sure to select the branch `docs/main` when triggering this action
 name: publish-docs-new-version
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'The version that needs to be deployed'
+        description: 'Input the version that needs to be deployed. For example 2.0.0 (and make sure you select the branch docs/main when triggering this action.)'
         required: true
 
 jobs:
@@ -32,5 +32,3 @@ jobs:
       - run: | 
           mike deploy --push --update-aliases ${{ github.event.inputs.version }} latest
           mike list
-      # tag the repository
-      - run: git tag docs@${{ github.event.inputs.version }}
