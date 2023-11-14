@@ -39,7 +39,7 @@
       <XunitCombinatorialVersion>1.5.25</XunitCombinatorialVersion>
       <MicrosoftExtensionsConfigurationVersion>6.0.1</MicrosoftExtensionsConfigurationVersion>
       <MicrosoftExtensionsConfigurationBinderVersion>6.0.0</MicrosoftExtensionsConfigurationBinderVersion>
-      <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.1</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+      <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>8.0.0</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
       <MicrosoftExtensionsConfigurationJsonVersion>6.0.0</MicrosoftExtensionsConfigurationJsonVersion>
       <SystemIOPortsVersion>6.0.0</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.5</XUnitRunnerVisualStudio>
