@@ -52,7 +52,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await this.cacheStore.LockTakeAsync(keyLock, owner, TimeSpan.FromSeconds(10)))
                 {
-                    var findInCache = () => this.cacheStore.GetObject<DeviceKind>(RedisLnsDeviceCacheKey(lnsId));
+                    DeviceKind findInCache() => this.cacheStore.GetObject<DeviceKind>(RedisLnsDeviceCacheKey(lnsId));
                     var firstSearch = findInCache();
                     if (firstSearch is null)
                     {

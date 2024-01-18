@@ -91,7 +91,9 @@ namespace LoraKeysManagerFacade
                 try
                 {
                     if (!twin.Properties.Desired.TryReadJsonBlock(CupsPropertyName, out var cupsProperty))
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
                         throw new ArgumentOutOfRangeException(CupsPropertyName, "failed to read cups config");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
 
                     var parsedJson = JObject.Parse(cupsProperty);
                     var url = credentialType is ConcentratorCredentialType.Lns ? parsedJson[LnsCredentialsUrlPropertyName].ToString()

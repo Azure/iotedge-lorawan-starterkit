@@ -81,10 +81,7 @@ namespace LoRaWan.NetworkServerDiscovery
                                            this.logger.LogInformation("Loaded twin for station '{Station}'", stationEui);
                                            return this.registryManager.GetStationTwinAsync(stationEui, cancellationToken);
                                        },
-                                       null, cancellationToken);
-
-            if (twin is null)
-                throw new LoRaProcessingException($"Could not find twin for station '{stationEui}'", LoRaProcessingErrorCode.TwinFetchFailed);
+                                       null, cancellationToken) ?? throw new LoRaProcessingException($"Could not find twin for station '{stationEui}'", LoRaProcessingErrorCode.TwinFetchFailed);
 
             // Protect against SQL injection.
             if (twin.NetworkId.Any(n => !char.IsLetterOrDigit(n)))

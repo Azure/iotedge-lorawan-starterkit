@@ -77,7 +77,9 @@ namespace LoraKeysManagerFacade
                 try
                 {
                     if (!twin.Properties.Desired.TryReadJsonBlock(CupsPropertyName, out var cupsProperty))
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
                         throw new ArgumentOutOfRangeException(CupsPropertyName, "Failed to read CUPS config");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
 
                     var fwUrl = JObject.Parse(cupsProperty)[CupsFwUrlPropertyName].ToString();
                     var (fwLength, stream) = await GetBlobStreamAsync(fwUrl, cancellationToken);

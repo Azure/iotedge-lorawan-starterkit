@@ -12,7 +12,9 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
     public sealed class ExclusiveProcessor<T>
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
     {
         private readonly IScheduler scheduler;
         private readonly IEqualityComparer<T> comparer;

@@ -241,12 +241,7 @@ namespace LoRaWan.NetworkServer
         {
             _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            var connection = Client;
-            if (connection == null)
-            {
-                throw new LoRaProcessingException("No connection registered.", LoRaProcessingErrorCode.DeviceInitializationFailed);
-            }
-
+            var connection = Client ?? throw new LoRaProcessingException("No connection registered.", LoRaProcessingErrorCode.DeviceInitializationFailed);
             Twin twin;
 
             try

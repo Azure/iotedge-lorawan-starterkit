@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Tests.E2E
 {
-    using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
@@ -48,8 +47,10 @@ namespace LoRaWan.Tests.E2E
                 { "FIXED_STATION_EUI", TestFixture.Configuration.DefaultBasicStationEui },
                 { "RADIODEV", TestFixture.Configuration.RadioDev }
             }, out this.temporaryDirectoryName);
+#pragma warning disable CA1307 // Specify StringComparison for clarity
             var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(TestFixture.Configuration.DefaultBasicStationEui, StringComparison.Ordinal) != -1, new SearchLogOptions(TestFixture.Configuration.DefaultBasicStationEui));
+                (log) => log.Contains(TestFixture.Configuration.DefaultBasicStationEui), new SearchLogOptions(TestFixture.Configuration.DefaultBasicStationEui));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
             this.initializationSucceeded = log.Found;
         }
 
@@ -69,8 +70,10 @@ namespace LoRaWan.Tests.E2E
             var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity
             var droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));
+                (log) => log.Contains(this.expectedLog), new SearchLogOptions(this.expectedLog));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
             Assert.NotNull(droppedLog.MatchedEvent);
 
             // wait 1 second after joined
@@ -95,8 +98,10 @@ namespace LoRaWan.Tests.E2E
                 var expectedPayload = $"{{\"value\":{msg}}}";
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload, new SearchLogOptions(expectedPayload));
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity
                 droppedLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(this.expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(this.expectedLog));
+                    (log) => log.Contains(this.expectedLog), new SearchLogOptions(this.expectedLog));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
                 Assert.NotNull(droppedLog.MatchedEvent);
 
                 TestFixtureCi.ClearLogs();

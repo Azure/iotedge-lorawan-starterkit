@@ -110,12 +110,10 @@ namespace LoraKeysManagerFacade
 
         public async Task<bool> Reset(DevEui devEUI)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
+            if (await redisLock.TakeLockAsync())
             {
-                if (await redisLock.TakeLockAsync())
-                {
-                    return await this.redisCache.KeyDeleteAsync(GetEntryKey(devEUI));
-                }
+                return await this.redisCache.KeyDeleteAsync(GetEntryKey(devEUI));
             }
 
             return false;

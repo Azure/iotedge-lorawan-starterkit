@@ -15,19 +15,19 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
     public class LnsDataTests
     {
         [Theory]
-        [InlineData(@"{ 'msgtype': 'router_config' }", LnsMessageType.RouterConfig)]
-        [InlineData(@"{ 'msgtype': 'dnmsg' }", LnsMessageType.DownlinkMessage)]
-        [InlineData(@"{ 'msgtype': 'dntxed' }", LnsMessageType.TransmitConfirmation)]
-        [InlineData(@"{ 'msgtype': 'jreq' }", LnsMessageType.JoinRequest)]
-        [InlineData(@"{ 'msgtype': 'updf' }", LnsMessageType.UplinkDataFrame)]
-        [InlineData(@"{ 'msgtype': 'propdf' }", LnsMessageType.ProprietaryDataFrame)]
-        [InlineData(@"{ 'msgtype': 'dnsched' }", LnsMessageType.MulticastSchedule)]
-        [InlineData(@"{ 'msgtype': 'timesync' }", LnsMessageType.TimeSync)]
-        [InlineData(@"{ 'msgtype': 'runcmd' }", LnsMessageType.RunCommand)]
-        [InlineData(@"{ 'msgtype': 'rmtsh' }", LnsMessageType.RemoteShell)]
-        [InlineData(@"{ 'msgtype': 'version' }", LnsMessageType.Version)]
-        [InlineData(@"{ 'onePropBefore': { 'value': 123 }, 'msgtype': 'version' }", LnsMessageType.Version)]
-        [InlineData(@"{ 'msgtype': 'version', 'onePropAfter': { 'value': 123 } }", LnsMessageType.Version)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'router_config' }", LnsMessageType.RouterConfig)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'dnmsg' }", LnsMessageType.DownlinkMessage)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'dntxed' }", LnsMessageType.TransmitConfirmation)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'jreq' }", LnsMessageType.JoinRequest)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'updf' }", LnsMessageType.UplinkDataFrame)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'propdf' }", LnsMessageType.ProprietaryDataFrame)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'dnsched' }", LnsMessageType.MulticastSchedule)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'timesync' }", LnsMessageType.TimeSync)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'runcmd' }", LnsMessageType.RunCommand)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'rmtsh' }", LnsMessageType.RemoteShell)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'version' }", LnsMessageType.Version)]
+        [InlineData(/*lang=json*/ @"{ 'onePropBefore': { 'value': 123 }, 'msgtype': 'version' }", LnsMessageType.Version)]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'version', 'onePropAfter': { 'value': 123 } }", LnsMessageType.Version)]
         internal void ReadMessageType_Succeeds(string json, LnsMessageType expectedMessageType)
         {
             var messageType = LnsData.MessageTypeReader.Read(JsonUtil.Strictify(json));
@@ -36,14 +36,14 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 
 
         [Theory]
-        [InlineData(@"{ 'msgtype': 'NOTrouter_config' }")]
-        [InlineData(@"{ 'msgtype': 'NOTdnmsg' }")]
-        [InlineData(@"{ 'msgtype': 'NOTdntxed' }")]
-        [InlineData(@"{ 'msgtype': 'NOTjreq' }")]
-        [InlineData(@"{ 'msgtype': 'NOTupdf' }")]
-        [InlineData(@"{ 'msgtype': 'NOTversion' }")]
-        [InlineData(@"{ 'onePropBefore': { 'value': 123 }, 'msgtype': 'NOTversion' }")]
-        [InlineData(@"{ 'msgtype': 'NOTversion', 'onePropAfter': { 'value': 123 }}")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTrouter_config' }")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTdnmsg' }")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTdntxed' }")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTjreq' }")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTupdf' }")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTversion' }")]
+        [InlineData(/*lang=json*/ @"{ 'onePropBefore': { 'value': 123 }, 'msgtype': 'NOTversion' }")]
+        [InlineData(/*lang=json*/ @"{ 'msgtype': 'NOTversion', 'onePropAfter': { 'value': 123 }}")]
         internal void ReadMessageType_Fails(string json)
         {
             Assert.Throws<FormatException>(() => _ = LnsData.MessageTypeReader.Read(JsonUtil.Strictify(json)));
@@ -89,37 +89,48 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 
         [Theory]
         [InlineData("Invalid JSON value; expecting a JSON number compatible with Byte. See token \"Number\" at offset 25.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 300, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 300, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value; expecting a JSON number compatible with UInt32. See token ""Number"" at offset 39.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': -58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': -58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value; expecting a JSON number compatible with Byte. See token ""Number"" at offset 56.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 300, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 300, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value; expecting a JSON number compatible with UInt16. See token ""Number"" at offset 65.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': -164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': -164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Number"" at offset 77.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': 5, 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': 5, 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""Number"" at offset 88.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 300, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 300, 'FRMPayload': '5ABBBA', 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Number"" at offset 103.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': 5, 'MIC': -1943282916,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': 5, 'MIC': -1943282916,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value; expecting a JSON number compatible with Int32. See token ""Number"" at offset 118.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': 8, 'FRMPayload': '5ABBBA', 'MIC': 5.0,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid FPort in JSON, which must be either -1 or 0..255. See token ""Number"" at offset 88.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -2, 'FRMPayload': '5ABBBA', 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"Invalid JSON value where a JSON string was expected. See token ""Null"" at offset 104.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': null, 'MIC': 5,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': null, 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         [InlineData(@"""FRMPayload"" without an ""FPort"" is forbidden.",
-                    @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': '5ABBBA', 'MIC': 5,
+                    /*lang=json*/
+                                  @"{ 'msgtype': 'updf', 'MHdr': 128, 'DevAddr': 58772467, 'FCtrl': 0, 'FCnt': 164, 'FOpts': '', 'FPort': -1, 'FRMPayload': '5ABBBA', 'MIC': 5,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289} }")]
         internal void UpstreamDataframeReader_Fails(string expectedError, string json)
         {
@@ -130,7 +141,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         [Fact]
         internal void JoinRequestFrameReader_Succeeds()
         {
-            var json = @"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E',
+            var json = /*lang=json*/ @"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E',
                           'DevNonce':41675,'MIC':1528855177, 'DR': 4, 'Freq': 868100000,
                           'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289}}";
             var jreq = LnsData.JoinRequestFrameReader.Read(JsonUtil.Strictify(json));
@@ -149,15 +160,15 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         }
 
         [Theory]
-        [InlineData(@"{'msgtype':'jreq','MHdr':300,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':41675,'MIC':1528855177,
+        [InlineData(/*lang=json*/ @"{'msgtype':'jreq','MHdr':300,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':41675,'MIC':1528855177,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289}}")]
-        [InlineData(@"{'msgtype':'jreq','MHdr':0,'JoinEui':'476278C8E5D2C4B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':41675,'MIC':1528855177,
+        [InlineData(/*lang=json*/ @"{'msgtype':'jreq','MHdr':0,'JoinEui':'476278C8E5D2C4B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':41675,'MIC':1528855177,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289}}")]
-        [InlineData(@"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'8527C1DFEEA4169E','DevNonce':41675,'MIC':1528855177,
+        [InlineData(/*lang=json*/ @"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'8527C1DFEEA4169E','DevNonce':41675,'MIC':1528855177,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289}}")]
-        [InlineData(@"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':-41675,'MIC':1528855177,
+        [InlineData(/*lang=json*/ @"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':-41675,'MIC':1528855177,
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289}}")]
-        [InlineData(@"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':41675,'MIC':'-1528855177',
+        [InlineData(/*lang=json*/ @"{'msgtype':'jreq','MHdr':0,'JoinEui':'47-62-78-C8-E5-D2-C4-B5','DevEui':'85-27-C1-DF-EE-A4-16-9E','DevNonce':41675,'MIC':'-1528855177',
                         'DR': 4, 'Freq': 868100000, 'upinfo': {'rctx': 0,'xtime': 40250921680313459,'gpstime': 0,'fts': -1,'rssi': -60,'snr': 9,'rxtime': 1635347491.917289}}")]
         internal void JoinRequestFrameReader_Fails(string json)
         {
@@ -165,22 +176,22 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
         }
 
         [Theory]
-        [InlineData(@"{'DR': 0}", DR0)]
-        [InlineData(@"{'DR': 1}", DR1)]
-        [InlineData(@"{'DR': 2}", DR2)]
-        [InlineData(@"{'DR': 3}", DR3)]
-        [InlineData(@"{'DR': 4}", DR4)]
-        [InlineData(@"{'DR': 5}", DR5)]
-        [InlineData(@"{'DR': 6}", DR6)]
-        [InlineData(@"{'DR': 7}", DR7)]
-        [InlineData(@"{'DR': 8}", DR8)]
-        [InlineData(@"{'DR': 9}", DR9)]
-        [InlineData(@"{'DR': 10}", DR10)]
-        [InlineData(@"{'DR': 11}", DR11)]
-        [InlineData(@"{'DR': 12}", DR12)]
-        [InlineData(@"{'DR': 13}", DR13)]
-        [InlineData(@"{'DR': 14}", DR14)]
-        [InlineData(@"{'DR': 15}", DR15)]
+        [InlineData(/*lang=json*/ @"{'DR': 0}", DR0)]
+        [InlineData(/*lang=json*/ @"{'DR': 1}", DR1)]
+        [InlineData(/*lang=json*/ @"{'DR': 2}", DR2)]
+        [InlineData(/*lang=json*/ @"{'DR': 3}", DR3)]
+        [InlineData(/*lang=json*/ @"{'DR': 4}", DR4)]
+        [InlineData(/*lang=json*/ @"{'DR': 5}", DR5)]
+        [InlineData(/*lang=json*/ @"{'DR': 6}", DR6)]
+        [InlineData(/*lang=json*/ @"{'DR': 7}", DR7)]
+        [InlineData(/*lang=json*/ @"{'DR': 8}", DR8)]
+        [InlineData(/*lang=json*/ @"{'DR': 9}", DR9)]
+        [InlineData(/*lang=json*/ @"{'DR': 10}", DR10)]
+        [InlineData(/*lang=json*/ @"{'DR': 11}", DR11)]
+        [InlineData(/*lang=json*/ @"{'DR': 12}", DR12)]
+        [InlineData(/*lang=json*/ @"{'DR': 13}", DR13)]
+        [InlineData(/*lang=json*/ @"{'DR': 14}", DR14)]
+        [InlineData(/*lang=json*/ @"{'DR': 15}", DR15)]
         internal void RadioMetadata_DataRateProperty_CanReturnProperDataRate(string json, DataRateIndex expectedDataRate)
         {
             var actualDataRate = JsonReader.Object(LnsData.RadioMetadataProperties.DataRate).Read(JsonUtil.Strictify(json));
@@ -189,23 +200,23 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 
 
         [Theory]
-        [InlineData(@"{'DR': -2}")]
-        [InlineData(@"{'DR': '0'}")]
-        [InlineData(@"{'DR': 301}")]
+        [InlineData(/*lang=json*/ @"{'DR': -2}")]
+        [InlineData(/*lang=json*/ @"{'DR': '0'}")]
+        [InlineData(/*lang=json*/ @"{'DR': 301}")]
         internal void RadioMetadata_DataRateProperty_Fails(string json)
         {
             Assert.Throws<JsonException>(() => _ = JsonReader.Object(LnsData.RadioMetadataProperties.DataRate).Read(JsonUtil.Strictify(json)));
         }
 
         [Theory]
-        [InlineData(@"{'Freq': 860000000}", 860000000uL)]
-        [InlineData(@"{'Freq': 861000000}", 861000000uL)]
-        [InlineData(@"{'Freq': 862000000}", 862000000uL)]
-        [InlineData(@"{'Freq': 863000000}", 863000000uL)]
-        [InlineData(@"{'Freq': 864000000}", 864000000uL)]
-        [InlineData(@"{'Freq': 865000000}", 865000000uL)]
-        [InlineData(@"{'Freq': 866000000}", 866000000uL)]
-        [InlineData(@"{'Freq': 867000000}", 867000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 860000000}", 860000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 861000000}", 861000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 862000000}", 862000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 863000000}", 863000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 864000000}", 864000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 865000000}", 865000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 866000000}", 866000000uL)]
+        [InlineData(/*lang=json*/ @"{'Freq': 867000000}", 867000000uL)]
         internal void RadioMetadata_FreqProperty_CanReturnProperFreq(string json, ulong expectedFreq)
         {
             var actualFreq = JsonReader.Object(LnsData.RadioMetadataProperties.Freq).Read(JsonUtil.Strictify(json));
@@ -214,8 +225,8 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation.JsonHandlers
 
         [Theory]
         [InlineData(@"{}")]
-        [InlineData(@"{'Freq': -861000000}")]
-        [InlineData(@"{'Freq': '862000000'}")]
+        [InlineData(/*lang=json*/ @"{'Freq': -861000000}")]
+        [InlineData(/*lang=json*/ @"{'Freq': '862000000'}")]
         internal void RadioMetadata_FreqProperty_Fails(string json)
         {
             Assert.Throws<JsonException>(() => _ = JsonReader.Object(LnsData.RadioMetadataProperties.Freq).Read(JsonUtil.Strictify(json)));

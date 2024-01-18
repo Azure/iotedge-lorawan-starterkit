@@ -66,14 +66,18 @@ namespace LoRaWan.Tests.E2E
                 // +CMSG: ACK Received
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
-                var allGwGotIt = await TestFixtureCi.ValidateMultiGatewaySources((log) => log.IndexOf($"deduplication Strategy: {device.Deduplication}", StringComparison.OrdinalIgnoreCase) != -1);
+                var allGwGotIt = await TestFixtureCi.ValidateMultiGatewaySources((log) => log.Contains($"deduplication Strategy: {device.Deduplication}", StringComparison.OrdinalIgnoreCase));
                 if (allGwGotIt)
                 {
                     var notDuplicate = "\"IsDuplicate\":false";
                     var isDuplicate = "\"IsDuplicate\":true";
 
-                    var notDuplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate, StringComparison.Ordinal) != -1, new SearchLogOptions(notDuplicate));
-                    var duplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate, StringComparison.Ordinal) != -1, new SearchLogOptions(isDuplicate));
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+                    var notDuplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.Contains(notDuplicate), new SearchLogOptions(notDuplicate));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+                    var duplicateResult = await TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.Contains(isDuplicate), new SearchLogOptions(isDuplicate));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 
                     Assert.NotNull(notDuplicateResult.MatchedEvent);
                     Assert.NotNull(duplicateResult.MatchedEvent);
@@ -120,7 +124,9 @@ namespace LoRaWan.Tests.E2E
 
             // validate that one GW refused the join
             const string joinRefusedMsg = "join refused";
-            var joinRefused = await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+            var joinRefused = await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.Contains(joinRefusedMsg), new SearchLogOptions(joinRefusedMsg));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
             Assert.True(joinRefused.Found);
 
             await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DevEui);

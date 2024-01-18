@@ -28,18 +28,8 @@ namespace LoraKeysManagerFacade
 
             var configHandler = ConfigHandler.Create(builder);
 
-            var iotHubConnectionString = configHandler.IoTHubConnectionString;
-            if (iotHubConnectionString == null)
-            {
-                throw new InvalidOperationException($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
-            }
-
-            var redisConnectionString = configHandler.RedisConnectionString;
-            if (redisConnectionString == null)
-            {
-                throw new InvalidOperationException($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
-            }
-
+            var iotHubConnectionString = configHandler.IoTHubConnectionString ?? throw new InvalidOperationException($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
+            var redisConnectionString = configHandler.RedisConnectionString ?? throw new InvalidOperationException($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
             var redisCache = redis.GetDatabase();
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);

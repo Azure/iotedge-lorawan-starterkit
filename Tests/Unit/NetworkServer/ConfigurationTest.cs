@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var cloudDeploymentKey = "CLOUD_DEPLOYMENT";
             var key = "REDIS_CONNECTION_STRING";
             var value = "someValue";
-            var lnsConfigurationCreation = () => NetworkServerConfiguration.CreateFromEnvironmentVariables();
+            static NetworkServerConfiguration lnsConfigurationCreation() => NetworkServerConfiguration.CreateFromEnvironmentVariables();
 
             Environment.SetEnvironmentVariable("HOSTNAME", "test");
             Environment.SetEnvironmentVariable("IOTHUBHOSTNAME", "test");
@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             // act and assert
             if (isCloudDeployment && !shouldSetRedisString)
             {
-                _ = Assert.Throws<InvalidOperationException>(lnsConfigurationCreation);
+                _ = Assert.Throws<InvalidOperationException>((Func<NetworkServerConfiguration>)lnsConfigurationCreation);
             }
             else
             {

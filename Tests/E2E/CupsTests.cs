@@ -81,8 +81,10 @@ namespace LoRaWan.Tests.E2E
 
                 // If package log does not match, firmware upgrade process failed
                 var expectedLog = stationEui + $": Received 'version' message for station '{TestFixture.Configuration.CupsBasicStationVersion}' with package '{fwPackage}'";
+#pragma warning disable CA1307 // Specify StringComparison for clarity
                 var log = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog) { MaxAttempts = 1 });
+                    (log) => log.Contains(expectedLog), new SearchLogOptions(expectedLog) { MaxAttempts = 1 });
+#pragma warning restore CA1307 // Specify StringComparison for clarity
                 Assert.True(log.Found);
 
                 //the concentrator should be ready at this point to receive messages
@@ -97,8 +99,10 @@ namespace LoRaWan.Tests.E2E
                 Assert.True(joinSucceeded, "Join failed");
 
                 var expectedLog2 = stationEui + ": Received 'jreq' message";
+#pragma warning disable CA1307 // Specify StringComparison for clarity
                 var jreqLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog2, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog2) { MaxAttempts = 2 });
+                    (log) => log.Contains(expectedLog2), new SearchLogOptions(expectedLog2) { MaxAttempts = 2 });
+#pragma warning restore CA1307 // Specify StringComparison for clarity
                 Assert.NotNull(jreqLog.MatchedEvent);
 
                 // wait 1 second after joined
@@ -115,8 +119,10 @@ namespace LoRaWan.Tests.E2E
                 await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedLog3, new SearchLogOptions(expectedLog3) { MaxAttempts = 2 });
 
                 var expectedLog4 = stationEui + ": Received 'updf' message";
+#pragma warning disable CA1307 // Specify StringComparison for clarity
                 var updfLog = await TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (log) => log.IndexOf(expectedLog4, StringComparison.Ordinal) != -1, new SearchLogOptions(expectedLog4) { MaxAttempts = 2 });
+                    (log) => log.Contains(expectedLog4), new SearchLogOptions(expectedLog4) { MaxAttempts = 2 });
+#pragma warning restore CA1307 // Specify StringComparison for clarity
                 Assert.True(updfLog.Found);
 
                 var twin = await TestFixture.GetTwinAsync(stationEui.ToString());

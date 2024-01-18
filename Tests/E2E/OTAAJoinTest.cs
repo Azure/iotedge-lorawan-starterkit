@@ -262,7 +262,9 @@ namespace LoRaWan.Tests.E2E
             if (device.IsMultiGw)
             {
                 const string joinRefusedMsg = "join refused";
-                var joinRefused = await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+                var joinRefused = await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.Contains(joinRefusedMsg), new SearchLogOptions(joinRefusedMsg));
+#pragma warning restore CA1307 // Specify StringComparison for clarity
                 Assert.True(joinRefused.Found);
             }
         }
