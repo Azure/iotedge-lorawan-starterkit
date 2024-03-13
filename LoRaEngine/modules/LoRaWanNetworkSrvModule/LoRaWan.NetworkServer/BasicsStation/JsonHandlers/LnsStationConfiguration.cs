@@ -301,7 +301,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
             writer.WriteEndArray();
 
-            writer.WriteString("region", region);
+            writer.WriteString("region", region is "CN470RP1" or "CN470RP2" ? "CN470" : region);
             writer.WriteString("hwspec", hwspec);
 
             writer.WritePropertyName("freq_range");
